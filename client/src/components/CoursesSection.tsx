@@ -48,7 +48,7 @@ export default function CoursesSection() {
         "本課程帶你掌握 Gemini 的核心功能，從基礎模型認知出發，深度對接 Google 工作術（郵件、文件、行事曆、地圖），進階解鎖 Nano Banana 影像藝術與 Veo 影片生成，最後透過自定義 Gem 打造個人化 AI 專家系統。",
       tools: "打造專屬 Gemini 工作系統",
       originalPrice: "NT$ 4,000",
-      discountPrice: "NT$ 2,600",
+      discountPrice: "NT$ 2,000",
       instructorImage:
         "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop",
       instructorName: "",
@@ -65,7 +65,7 @@ export default function CoursesSection() {
         "本課程分為「核心觀念」、「核心操作」與「場景實戰」三大模組。透過 Google NotebookLM 這個 AI 知識管理神器，帶你從零基礎到能獨立建構專屬知識庫，讓海量的 PDF、網頁與筆記真正為你所用。",
       tools: "用 AI 整理 PDF 與筆記，打造知識庫",
       originalPrice: "NT$ 4,000",
-      discountPrice: "NT$ 2,600",
+      discountPrice: "NT$ 2,000",
       instructorImage:
         "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop",
       instructorName: "",
@@ -82,7 +82,7 @@ export default function CoursesSection() {
         "本課程專為追求效率的職場人士設計，透過「邏輯構思、內容生成、自動排版」三大關鍵步驟，將原本需要數天的簡報製作時間縮短至 3 小時內。結合 ChatGPT × Gemini × Gamma 三大 AI 工具，不只教工具，更教你建立「AI 協作思維」。",
       tools: "AI 幫你完成專業簡報",
       originalPrice: "NT$ 4,000",
-      discountPrice: "NT$ 2,600",
+      discountPrice: "NT$ 2,000",
       instructorImage:
         "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop",
       instructorName: "",
