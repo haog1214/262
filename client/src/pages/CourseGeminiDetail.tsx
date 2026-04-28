@@ -130,7 +130,7 @@ export default function CourseGeminiDetail() {
                   </div>
                   <div className="flex-shrink-0" style={{ marginLeft: "100px" }}>
                     <p className="text-gray-400 line-through text-sm">NT$ 4,000</p>
-                    <p className="text-3xl font-bold text-gray-900 mb-3">NT$ 2,600</p>
+                    <p className="text-3xl font-bold text-gray-900 mb-3">NT$ 2,000</p>
                     <a href="/enroll?course=gemini" className="px-8 font-bold rounded-full transition-colors shadow-lg text-base"
                       style={{ backgroundColor: "#1B3A6B", color: "#FFFFFF", marginTop: "15px", display: "inline-block", paddingTop: "calc(0.75rem * 0.9)", paddingBottom: "calc(0.75rem * 0.9)" }}>
                       立即報名
