@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Link } from "wouter";
+import { Menu, X } from "lucide-react";
 
 const navItems = [
   { href: "/#courses", label: "課程" },
@@ -7,18 +9,15 @@ const navItems = [
   { href: "/faq", label: "課前準備" },
 ];
 
-/**
- * Header Component - 262學院
- * 設計系統：現代漸層活力風格
- * 特點：簡潔導航、品牌突出、清晰視覺層級
- */
 export default function Header() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-border/40 backdrop-blur-sm">
       <div className="container flex items-center justify-between h-[80px]">
         {/* 品牌Logo */}
         <Link href="/">
-          <a className="flex w-[135px] items-center justify-start hover:opacity-80 transition-opacity translate-y-[50px] scale-[1.08] -translate-x-[25px]">
+          <a className="flex items-center justify-start hover:opacity-80 transition-opacity translate-y-0 scale-[0.54] -translate-x-[31px] md:translate-y-[50px] md:scale-[1.08] md:-translate-x-[25px]">
             <img
               src="/logo.png"
               alt="262學院 Logo"
@@ -27,7 +26,7 @@ export default function Header() {
           </a>
         </Link>
 
-        {/* 導航連結 */}
+        {/* 桌機導航 */}
         <nav className="hidden md:flex items-center gap-8">
           {navItems.map((item) =>
             item.href.startsWith("/") ? (
@@ -47,7 +46,43 @@ export default function Header() {
             )
           )}
         </nav>
+
+        {/* 手機漢堡選單按鈕 */}
+        <button
+          className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          onClick={() => setMenuOpen((prev) => !prev)}
+          aria-label="開啟選單"
+        >
+          {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
       </div>
+
+      {/* 手機下拉選單 */}
+      {menuOpen && (
+        <nav className="md:hidden bg-white border-t border-border/40 px-6 py-4 flex flex-col gap-4">
+          {navItems.map((item) =>
+            item.href.startsWith("/") ? (
+              <Link key={item.href} href={item.href}>
+                <a
+                  className="text-[17px] font-medium text-foreground/70 hover:text-foreground transition-colors py-1"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {item.label}
+                </a>
+              </Link>
+            ) : (
+              <a
+                key={item.href}
+                href={item.href}
+                className="text-[17px] font-medium text-foreground/70 hover:text-foreground transition-colors py-1"
+                onClick={() => setMenuOpen(false)}
+              >
+                {item.label}
+              </a>
+            )
+          )}
+        </nav>
+      )}
     </header>
   );
 }
