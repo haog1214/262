@@ -5,9 +5,13 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const sessions = [
-  { id: 1, date: "2026/5/10", weekday: "日", time: "13:00–17:00", location: "台北（地點待定）", remaining: 15, enterprise: false },
-  { id: 2, date: "2026/5/24", weekday: "日", time: "13:00–17:00", location: "台中（地點待定）", remaining: 15, enterprise: false },
-  { id: 3, date: "", weekday: "", time: "", location: "", remaining: 0, enterprise: true },
+  { id: 1, date: "2026/5/13", weekday: "三", time: "9:00–12:00", location: "台北（地點待定）", remaining: 15, enterprise: false },
+  { id: 2, date: "2026/5/13", weekday: "三", time: "13:30–16:30", location: "台北（地點待定）", remaining: 15, enterprise: false },
+  { id: 3, date: "2026/5/20", weekday: "三", time: "9:00–12:00", location: "台北（地點待定）", remaining: 15, enterprise: false },
+  { id: 4, date: "2026/5/20", weekday: "三", time: "13:30–16:30", location: "台北（地點待定）", remaining: 15, enterprise: false },
+  { id: 5, date: "2026/5/27", weekday: "三", time: "9:00–12:00", location: "台北（地點待定）", remaining: 15, enterprise: false },
+  { id: 6, date: "2026/5/27", weekday: "三", time: "13:30–16:30", location: "台北（地點待定）", remaining: 15, enterprise: false },
+  { id: 99, date: "", weekday: "", time: "", location: "", remaining: 0, enterprise: true },
 ];
 
 const curriculum = [

@@ -5,9 +5,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const sessions = [
-  { id: 1, date: "2026/5/14", weekday: "四", time: "19:00–22:00", remaining: 15, enterprise: false },
-  { id: 2, date: "2026/5/28", weekday: "四", time: "19:00–22:00", remaining: 15, enterprise: false },
-  { id: 3, date: "", weekday: "", time: "", remaining: 0, enterprise: true },
+  { id: 1, date: "2026/5/15", weekday: "五", time: "13:30–16:30", remaining: 15, enterprise: false },
+  { id: 2, date: "2026/5/22", weekday: "五", time: "13:30–16:30", remaining: 15, enterprise: false },
+  { id: 3, date: "2026/5/29", weekday: "五", time: "13:30–16:30", remaining: 15, enterprise: false },
+  { id: 99, date: "", weekday: "", time: "", remaining: 0, enterprise: true },
 ];
 
 const curriculum = [

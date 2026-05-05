@@ -8,32 +8,13 @@ const enterpriseSession = { id: 99, date: "", weekday: "", time: "", remaining: 
 
 const courses = [
   {
-    id: "ai-video",
-    label: "AI短影音即戰班（3H 特訓班）",
-    image: "/課程海報_工作區域1.webp",
-    sessions: [
-      { id: 1, date: "2026/5/10", weekday: "日", time: "13:00–17:00", remaining: 15, enterprise: false },
-      { id: 2, date: "2026/5/24", weekday: "日", time: "13:00–17:00", remaining: 15, enterprise: false },
-      enterpriseSession,
-    ],
-  },
-  {
-    id: "ai-life",
-    label: "讓 AI 幫你省時間（3H 特訓班）",
-    image: "/課程海報_工作區域1複本.webp",
-    sessions: [
-      { id: 1, date: "2026/5/11", weekday: "一", time: "19:00–22:00", remaining: 15, enterprise: false },
-      { id: 2, date: "2026/5/25", weekday: "一", time: "19:00–22:00", remaining: 15, enterprise: false },
-      enterpriseSession,
-    ],
-  },
-  {
     id: "gemini",
     label: "讓你的 Gemini 再進化（3H 特訓班）",
     image: "/課程海報_工作區域1複本4.webp",
     sessions: [
-      { id: 1, date: "2026/5/12", weekday: "二", time: "19:00–22:00", remaining: 15, enterprise: false },
-      { id: 2, date: "2026/5/26", weekday: "二", time: "19:00–22:00", remaining: 15, enterprise: false },
+      { id: 1, date: "2026/5/11", weekday: "一", time: "13:30–16:30", remaining: 15, enterprise: false },
+      { id: 2, date: "2026/5/18", weekday: "一", time: "13:30–16:30", remaining: 15, enterprise: false },
+      { id: 3, date: "2026/5/25", weekday: "一", time: "13:30–16:30", remaining: 15, enterprise: false },
       enterpriseSession,
     ],
   },
@@ -42,8 +23,34 @@ const courses = [
     label: "資料太多都用不起來（3H 特訓班）",
     image: "/課程海報_工作區域1複本2.webp",
     sessions: [
-      { id: 1, date: "2026/5/13", weekday: "三", time: "19:00–22:00", remaining: 15, enterprise: false },
-      { id: 2, date: "2026/5/27", weekday: "三", time: "19:00–22:00", remaining: 15, enterprise: false },
+      { id: 1, date: "2026/5/12", weekday: "二", time: "13:30–16:30", remaining: 15, enterprise: false },
+      { id: 2, date: "2026/5/19", weekday: "二", time: "13:30–16:30", remaining: 15, enterprise: false },
+      { id: 3, date: "2026/5/26", weekday: "二", time: "13:30–16:30", remaining: 15, enterprise: false },
+      enterpriseSession,
+    ],
+  },
+  {
+    id: "ai-video",
+    label: "AI短影音即戰班（3H 特訓班）",
+    image: "/課程海報_工作區域1.webp",
+    sessions: [
+      { id: 1, date: "2026/5/13", weekday: "三", time: "9:00–12:00", remaining: 15, enterprise: false },
+      { id: 2, date: "2026/5/13", weekday: "三", time: "13:30–16:30", remaining: 15, enterprise: false },
+      { id: 3, date: "2026/5/20", weekday: "三", time: "9:00–12:00", remaining: 15, enterprise: false },
+      { id: 4, date: "2026/5/20", weekday: "三", time: "13:30–16:30", remaining: 15, enterprise: false },
+      { id: 5, date: "2026/5/27", weekday: "三", time: "9:00–12:00", remaining: 15, enterprise: false },
+      { id: 6, date: "2026/5/27", weekday: "三", time: "13:30–16:30", remaining: 15, enterprise: false },
+      enterpriseSession,
+    ],
+  },
+  {
+    id: "ai-life",
+    label: "讓 AI 幫你省時間（3H 特訓班）",
+    image: "/課程海報_工作區域1複本.webp",
+    sessions: [
+      { id: 1, date: "2026/5/14", weekday: "四", time: "13:30–16:30", remaining: 15, enterprise: false },
+      { id: 2, date: "2026/5/21", weekday: "四", time: "13:30–16:30", remaining: 15, enterprise: false },
+      { id: 3, date: "2026/5/28", weekday: "四", time: "13:30–16:30", remaining: 15, enterprise: false },
       enterpriseSession,
     ],
   },
@@ -52,8 +59,9 @@ const courses = [
     label: "提升簡報的精美度（3H 特訓班）",
     image: "/課程海報_工作區域1複本3.webp",
     sessions: [
-      { id: 1, date: "2026/5/14", weekday: "四", time: "19:00–22:00", remaining: 15, enterprise: false },
-      { id: 2, date: "2026/5/28", weekday: "四", time: "19:00–22:00", remaining: 15, enterprise: false },
+      { id: 1, date: "2026/5/15", weekday: "五", time: "13:30–16:30", remaining: 15, enterprise: false },
+      { id: 2, date: "2026/5/22", weekday: "五", time: "13:30–16:30", remaining: 15, enterprise: false },
+      { id: 3, date: "2026/5/29", weekday: "五", time: "13:30–16:30", remaining: 15, enterprise: false },
       enterpriseSession,
     ],
   },
@@ -83,6 +91,8 @@ export default function EnrollPage() {
   const [selectedSessionId, setSelectedSessionId] = useState(initialSessionId);
   const [form, setForm] = useState({ name: "", phone: "", email: "", company: "", taxId: "", referral: "", note: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const currentCourse = courses.find((c) => c.id === selectedCourseId)!;
 
@@ -106,7 +116,9 @@ export default function EnrollPage() {
     return e;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const SHEET_URL = "https://script.google.com/macros/s/AKfycbxf45_uJ4ExZZTZf3Jg_wivMuOkaj6Yj4bME0luiycLnj48FI6O5OApPhrUAnhoP9jIUg/exec";
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
@@ -114,11 +126,31 @@ export default function EnrollPage() {
     const sessionLabel = session.enterprise
       ? "企業包班專案（日期 / 時間：專員洽談）"
       : `${session.date}（${session.weekday}）${session.time}`;
-    const subject = encodeURIComponent(`【報名】${currentCourse.label} — ${sessionLabel}`);
-    const body = encodeURIComponent(
-      `課程：${currentCourse.label}\n場次：${sessionLabel}\n\n姓名：${form.name}\n電話：${form.phone}\nEmail：${form.email}\n公司 / 職稱：${form.company || "（未填）"}\n統一編號：${form.taxId || "（未填）"}\n得知管道：${form.referral || "（未填）"}\n備註：${form.note || "（無）"}`
-    );
-    window.location.href = `mailto:liangchiahao1214@gmail.com?subject=${subject}&body=${body}`;
+
+    setSubmitting(true);
+    try {
+      await fetch(SHEET_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          course: currentCourse.label,
+          session: sessionLabel,
+          name: form.name,
+          phone: form.phone,
+          email: form.email,
+          company: form.company,
+          taxId: form.taxId,
+          referral: form.referral,
+          note: form.note,
+        }),
+      });
+      setSubmitted(true);
+    } catch {
+      alert("送出失敗，請稍後再試或直接來信聯絡我們。");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const inputClass = (field: string) =>
@@ -324,14 +356,27 @@ export default function EnrollPage() {
                       className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-[15px] outline-none transition-colors focus:border-[#1B3A6B] resize-none" />
                   </div>
 
-                  <button type="submit" className="w-full py-4 rounded-xl font-bold text-[17px] transition-colors shadow-lg mt-2"
-                    style={{ backgroundColor: "#1B3A6B", color: "#FFFFFF" }}>
-                    前往付款
-                  </button>
+                  {submitted ? (
+                    <div className="w-full py-6 rounded-xl text-center bg-green-50 border border-green-200">
+                      <p className="text-green-700 font-bold text-[17px] mb-1">報名資料已送出！</p>
+                      <p className="text-green-600 text-[14px]">我們會在 24 小時內以 Email 與您確認報名細節。</p>
+                    </div>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="w-full py-4 rounded-xl font-bold text-[17px] transition-colors shadow-lg mt-2 disabled:opacity-60"
+                      style={{ backgroundColor: "#1B3A6B", color: "#FFFFFF" }}
+                    >
+                      {submitting ? "送出中…" : "送出報名"}
+                    </button>
+                  )}
 
-                  <p className="text-center text-[12px] text-gray-400">
-                    送出後將跳轉至 Email 確認報名，我們會在 24 小時內回覆
-                  </p>
+                  {!submitted && (
+                    <p className="text-center text-[12px] text-gray-400">
+                      送出後我們會在 24 小時內以 Email 回覆確認
+                    </p>
+                  )}
                 </div>
               </div>
 

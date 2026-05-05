@@ -10,44 +10,58 @@ export default function ScheduleSection() {
   const schedules = [
     {
       id: 1,
-      course: "AI社群經營班",
-      date: "2026/4/25（六）",
-      time: "10:00–17:00",
-      location: "台北 Happ. 小樹屋 - 紅豆杉",
-      badgeColor: "pink",
+      course: "讓你的 Gemini 再進化",
+      date: "2026/5/11（一）",
+      time: "13:30–16:30",
+      location: "台北（地點待定）",
+      badgeColor: "gold",
     },
     {
       id: 2,
-      course: "AI社群經營班",
-      date: "2026/5/7（四）",
-      time: "10:00–17:00",
+      course: "資料太多都用不起來？",
+      date: "2026/5/12（二）",
+      time: "13:30–16:30",
       location: "台北（地點待定）",
-      badgeColor: "pink",
+      badgeColor: "purple",
     },
     {
       id: 3,
-      course: "AI短影音即戰班",
-      date: "2026/5/10（日）",
-      time: "13:00–17:00",
+      course: "零基礎也能做專業短片",
+      date: "2026/5/13（三）",
+      time: "9:00–12:00 / 13:30–16:30",
       location: "台北（地點待定）",
       badgeColor: "orange",
     },
     {
       id: 4,
-      course: "AI短影音即戰班",
-      date: "2026/5/24（日）",
-      time: "13:00–17:00",
-      location: "台中（地點待定）",
-      badgeColor: "orange",
+      course: "讓 AI 幫你省時間",
+      date: "2026/5/14（四）",
+      time: "13:30–16:30",
+      location: "台北（地點待定）",
+      badgeColor: "green",
+    },
+    {
+      id: 5,
+      course: "提升簡報的精美度",
+      date: "2026/5/15（五）",
+      time: "13:30–16:30",
+      location: "台北（地點待定）",
+      badgeColor: "teal",
     },
   ];
 
   const getBadgeColor = (color: string) => {
     switch (color) {
-      case "pink":
-        return "bg-pink-100 text-pink-700 border border-pink-200";
+      case "gold":
+        return "bg-yellow-100 text-yellow-700 border border-yellow-200";
+      case "purple":
+        return "bg-purple-100 text-purple-700 border border-purple-200";
       case "orange":
         return "bg-orange-100 text-orange-700 border border-orange-200";
+      case "green":
+        return "bg-green-100 text-green-700 border border-green-200";
+      case "teal":
+        return "bg-teal-100 text-teal-700 border border-teal-200";
       default:
         return "bg-gray-100 text-gray-700 border border-gray-200";
     }
