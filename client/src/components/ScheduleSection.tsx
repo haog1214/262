@@ -28,7 +28,7 @@ export default function ScheduleSection() {
       id: 3,
       course: "零基礎也能做專業短片",
       date: "2026/5/13（三）",
-      time: "9:00–12:00 / 13:30–16:30",
+      time: "9:00–16:30",
       location: "台北（地點待定）",
       badgeColor: "orange",
     },
