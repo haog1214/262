@@ -1,5 +1,7 @@
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, MapPin } from "lucide-react";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 /**
  * Schedule Section Component - 262學院
@@ -7,6 +9,7 @@ import { Calendar, Clock, MapPin } from "lucide-react";
  * 特點：清晰的課程日期列表、視覺層級、互動按鈕
  */
 export default function ScheduleSection() {
+  const sectionRef = useScrollReveal();
   const schedules = [
     {
       id: 1,
@@ -68,10 +71,10 @@ export default function ScheduleSection() {
   };
 
   return (
-    <section id="schedule" className="py-20 bg-gradient-to-b from-white to-gray-50">
+    <section id="schedule" className="py-20 bg-gradient-to-b from-white to-gray-50" ref={sectionRef as React.RefObject<HTMLElement>}>
       <div className="container">
         {/* 區域標題 */}
-        <div className="mb-12">
+        <div className="mb-12 scroll-reveal">
           <div className="flex items-center gap-3 mb-4">
             <Calendar className="w-6 h-6 text-primary" />
             <h2 className="text-3xl font-bold text-foreground">近期開課場次</h2>
@@ -83,10 +86,11 @@ export default function ScheduleSection() {
 
         {/* 開課日期列表 */}
         <div className="space-y-4 max-w-4xl">
-          {schedules.map((schedule) => (
+          {schedules.map((schedule, i) => (
             <div
               key={schedule.id}
-              className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 bg-white rounded-2xl border border-border hover:shadow-md transition-shadow"
+              className="scroll-reveal flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 bg-white rounded-2xl border border-border hover:shadow-md transition-shadow"
+              style={{ transitionDelay: `${i * 0.08}s` }}
             >
               {/* 左側課程資訊 */}
               <div className="flex-1 space-y-3">

@@ -1,3 +1,6 @@
+import React from "react";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
+
 const steps = [
   {
     num: "01",
@@ -17,14 +20,15 @@ const steps = [
 ];
 
 export default function PreparationSection() {
+  const sectionRef = useScrollReveal();
+
   return (
-    <section id="preparation" className="py-20 bg-gray-50">
+    <section id="preparation" className="py-20 bg-gray-50" ref={sectionRef as React.RefObject<HTMLElement>}>
       <div className="container">
         <div className="max-w-5xl mx-auto">
-          <p className="text-sm font-semibold text-primary mb-3">課前準備</p>
-
           <div className="grid md:grid-cols-[0.9fr_1.1fr] gap-10 md:gap-16 items-start">
-            <div>
+            <div className="scroll-reveal-left">
+              <p className="text-sm font-semibold text-primary mb-3">課前準備</p>
               <h2 className="text-3xl md:text-4xl font-bold text-foreground leading-snug">
                 三件事準備好，
                 <br />
@@ -36,8 +40,8 @@ export default function PreparationSection() {
             </div>
 
             <div className="space-y-6">
-              {steps.map((step) => (
-                <div key={step.num} className="flex gap-5 items-start">
+              {steps.map((step, i) => (
+                <div key={step.num} className="scroll-reveal flex gap-5 items-start" style={{ transitionDelay: `${i * 0.12}s` }}>
                   <span
                     className="flex-shrink-0 font-black text-foreground/10 leading-none select-none"
                     style={{ fontSize: "36px", lineHeight: 1 }}

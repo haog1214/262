@@ -1,3 +1,5 @@
+import React from "react";
+
 const outcomes = [
   {
     icon: (
@@ -68,28 +70,35 @@ const useCases = [
   },
 ];
 
+import { useScrollReveal } from "@/hooks/useScrollReveal";
+
 export default function InstructorSection() {
+  const sectionRef = useScrollReveal();
+
   return (
-    <section id="instructors" className="py-20 bg-white">
+    <section id="instructors" className="py-20 bg-white" ref={sectionRef as React.RefObject<HTMLElement>}>
       <div className="container">
         <div className="max-w-5xl mx-auto">
 
           {/* Header */}
-          <p className="text-sm font-semibold text-primary mb-3">課程成效</p>
-          <div className="mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground leading-snug">
-              學完就能用，
-              <br />
-              讓 AI 真正在企業裡跑起來
-            </h2>
+          <div className="scroll-reveal">
+            <p className="text-sm font-semibold text-primary mb-3">課程成效</p>
+            <div className="mb-14">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground leading-snug">
+                學完就能用，
+                <br />
+                讓 AI 真正在企業裡跑起來
+              </h2>
+            </div>
           </div>
 
           {/* Outcome stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
-            {outcomes.map((o) => (
+            {outcomes.map((o, i) => (
               <div
                 key={o.label}
-                className="bg-gray-50 rounded-lg px-5 py-6 flex flex-col gap-3"
+                className="scroll-reveal bg-gray-50 rounded-lg px-5 py-6 flex flex-col gap-3"
+                style={{ transitionDelay: `${i * 0.1}s` }}
               >
                 <span className="text-primary">{o.icon}</span>
                 <div>
@@ -105,12 +114,12 @@ export default function InstructorSection() {
 
           {/* Use cases */}
           <div className="border-t border-border/40 pt-12">
-            <p className="text-sm font-semibold text-foreground/40 tracking-widest uppercase mb-8">
+            <p className="scroll-reveal text-sm font-semibold text-foreground/40 tracking-widest uppercase mb-8">
               各部門應用場景
             </p>
             <div className="grid md:grid-cols-2 gap-x-10 gap-y-6">
-              {useCases.map((u) => (
-                <div key={u.dept} className="flex gap-4 items-start">
+              {useCases.map((u, i) => (
+                <div key={u.dept} className="scroll-reveal flex gap-4 items-start" style={{ transitionDelay: `${i * 0.1}s` }}>
                   <div className="flex-shrink-0 mt-1">
                     <span className="inline-block text-xs font-bold text-white bg-primary rounded px-2 py-0.5">
                       {u.dept}

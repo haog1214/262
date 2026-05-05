@@ -1,4 +1,6 @@
+import React from "react";
 import CourseCard from "./CourseCard";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 /**
  * Courses Section Component - 262學院
@@ -6,6 +8,7 @@ import CourseCard from "./CourseCard";
  * 特點：三欄+二欄網格、充分空間、視覺層級清晰
  */
 export default function CoursesSection() {
+  const sectionRef = useScrollReveal();
   const courses = [
     {
       id: 1,
@@ -95,10 +98,10 @@ export default function CoursesSection() {
   ];
 
   return (
-    <section id="courses" className="py-20 bg-white">
+    <section id="courses" className="py-20 bg-white" ref={sectionRef as React.RefObject<HTMLElement>}>
       <div className="container">
         {/* 區域標題 */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-16 scroll-reveal">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
             精選課程
           </h2>
@@ -109,8 +112,8 @@ export default function CoursesSection() {
 
         {/* 第一排：3個課程 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-8">
-          {courses.slice(0, 3).map((course) => (
-            <div key={course.id} className="animate-fade-in">
+          {courses.slice(0, 3).map((course, i) => (
+            <div key={course.id} className="scroll-reveal" style={{ transitionDelay: `${i * 0.1}s` }}>
               <CourseCard {...course} />
             </div>
           ))}
@@ -118,8 +121,8 @@ export default function CoursesSection() {
 
         {/* 第二排：2個課程 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {courses.slice(3, 5).map((course) => (
-            <div key={course.id} className="animate-fade-in">
+          {courses.slice(3, 5).map((course, i) => (
+            <div key={course.id} className="scroll-reveal" style={{ transitionDelay: `${i * 0.1}s` }}>
               <CourseCard {...course} />
             </div>
           ))}
