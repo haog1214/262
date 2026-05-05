@@ -31,16 +31,17 @@ export default function HeroSection() {
 
   return (
     <section className="relative w-full overflow-hidden bg-black">
-      {/* 滿版圖片 */}
-      <img
-        key={slide.image}
-        src={slide.image}
-        alt={`banner-${current + 1}`}
-        className={`w-full block object-cover transition-opacity duration-500 ${
-          transitioning ? "opacity-0" : "opacity-100"
-        }`}
-        style={{ height: "520px", objectPosition: "center" }}
-      />
+      <div className="relative w-full aspect-[16/9] md:aspect-auto md:h-[520px]">
+        <img
+          key={slide.image}
+          src={slide.image}
+          alt={`banner-${current + 1}`}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+            transitioning ? "opacity-0" : "opacity-100"
+          }`}
+          style={{ objectPosition: "center" }}
+        />
+      </div>
 
       {/* 左箭頭 */}
       <button
