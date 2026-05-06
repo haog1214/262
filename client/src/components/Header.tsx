@@ -17,12 +17,15 @@ export default function Header() {
       <div className="container flex items-center justify-between h-[80px]">
         {/* 品牌Logo */}
         <Link href="/">
-          <a className="flex items-center justify-start hover:opacity-80 transition-opacity translate-y-0 scale-[0.54] -translate-x-[31px] md:translate-y-[50px] md:scale-[1.08] md:-translate-x-[25px]">
-            <img
-              src="/logo.png"
-              alt="262學院 Logo"
-              className="block w-[135px] h-auto"
-            />
+          <a className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <span className="translate-y-0 scale-[0.54] -translate-x-[31px] md:translate-y-[50px] md:scale-[1.08] md:-translate-x-[25px] inline-block">
+              <img
+                src="/logo.png"
+                alt="262學院 Logo"
+                className="block w-[135px] h-auto"
+              />
+            </span>
+            <span className="text-[18px] font-bold text-[#1B3A6B] -translate-x-[24px] md:translate-y-[50px] md:-translate-x-[10px]">262學院</span>
           </a>
         </Link>
 
