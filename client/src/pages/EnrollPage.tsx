@@ -9,8 +9,8 @@ const enterpriseSession = { id: 99, date: "", weekday: "", time: "", remaining: 
 const courses = [
   {
     id: "gemini",
-    label: "讓你的 Gemini 再進化（3H 特訓班）",
-    image: "/課程海報_工作區域1複本4.webp",
+    label: "Gemini讓工作快一倍（3H 特訓班）",
+    image: "/讓你的Gemini再進化.jpg",
     sessions: [
       { id: 1, date: "2026/5/11", weekday: "一", time: "13:30–16:30", remaining: 15, enterprise: false },
       { id: 2, date: "2026/5/18", weekday: "一", time: "13:30–16:30", remaining: 15, enterprise: false },
@@ -20,8 +20,8 @@ const courses = [
   },
   {
     id: "ai-knowledge",
-    label: "資料太多都用不起來（3H 特訓班）",
-    image: "/課程海報_工作區域1複本2.webp",
+    label: "資料太多卻用不起來（3H 特訓班）",
+    image: "/資料太多都用不起來.jpg",
     sessions: [
       { id: 1, date: "2026/5/12", weekday: "二", time: "13:30–16:30", remaining: 15, enterprise: false },
       { id: 2, date: "2026/5/19", weekday: "二", time: "13:30–16:30", remaining: 15, enterprise: false },
@@ -32,7 +32,7 @@ const courses = [
   {
     id: "ai-video",
     label: "AI短影音即戰班（3H 特訓班）",
-    image: "/課程海報_工作區域1.webp",
+    image: "/零基礎也能做專業短片.jpg",
     sessions: [
       { id: 1, date: "2026/5/13", weekday: "三", time: "9:00–16:30", remaining: 15, enterprise: false },
       { id: 2, date: "2026/5/20", weekday: "三", time: "9:00–16:30", remaining: 15, enterprise: false },
@@ -43,7 +43,7 @@ const courses = [
   {
     id: "ai-life",
     label: "讓 AI 幫你省時間（3H 特訓班）",
-    image: "/課程海報_工作區域1複本.webp",
+    image: "/讓AI幫你省時間-2.jpg",
     sessions: [
       { id: 1, date: "2026/5/14", weekday: "四", time: "13:30–16:30", remaining: 15, enterprise: false },
       { id: 2, date: "2026/5/21", weekday: "四", time: "13:30–16:30", remaining: 15, enterprise: false },
@@ -53,8 +53,8 @@ const courses = [
   },
   {
     id: "ai-presentation",
-    label: "提升簡報的精美度（3H 特訓班）",
-    image: "/課程海報_工作區域1複本3.webp",
+    label: "簡報不用做到半夜（3H 特訓班）",
+    image: "/提升簡報的精美度.jpg",
     sessions: [
       { id: 1, date: "2026/5/15", weekday: "五", time: "13:30–16:30", remaining: 15, enterprise: false },
       { id: 2, date: "2026/5/22", weekday: "五", time: "13:30–16:30", remaining: 15, enterprise: false },

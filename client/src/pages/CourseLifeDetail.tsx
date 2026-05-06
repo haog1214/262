@@ -90,7 +90,7 @@ export default function CourseLifeDetail() {
                   讓 AI 幫你省時間
                 </h1>
                 <p className="text-lg text-gray-600 leading-relaxed">
-                  學會手機 AI 工具應用，掌定生活大小事
+                  學會手機AI工具應用，搞定生活大小事
                 </p>
                 <p className="text-base text-gray-600 leading-8">
                   本課程專為科技小白與長輩朋友設計，採「漸進式」教學。從基礎的 <strong>ChatGPT、Gemini 安裝設定</strong>出發，學習精準提問技巧，再深入 Google 生態系整合，最後動手體驗 Banana AI 繪圖與影像動態化，讓一支手機成為你最強大的 AI 工具。
@@ -162,7 +162,7 @@ export default function CourseLifeDetail() {
                 </div>
                 <div className="rounded-2xl overflow-hidden shadow-2xl aspect-square bg-gray-200" style={{ width: "90%" }}>
                   <img
-                    src="/課程海報_工作區域1複本.webp"
+                    src="/讓AI幫你省時間-2.jpg"
                     alt="AI生活效率班"
                     className="w-full h-full object-cover"
                   />

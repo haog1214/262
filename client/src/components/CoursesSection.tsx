@@ -24,7 +24,7 @@ export default function CoursesSection() {
       badge: "6H特訓班",
       badgeColor: "pink" as const,
       backgroundImage:
-        "/課程海報_工作區域1.webp",
+        "/零基礎也能做專業短片.jpg",
       detailPath: "/course/ai-video",
     },
     {
@@ -32,7 +32,7 @@ export default function CoursesSection() {
       title: "讓AI幫你省時間",
       description:
         "本課程專為科技小白與長輩朋友設計，採「漸進式」教學。從基礎的 ChatGPT、Gemini 安裝設定出發，學習精準提問技巧，再深入 Google 生態系整合，最後動手體驗 Banana AI 繪圖與影像動態化，讓一支手機成為你最強大的 AI 工具。",
-      tools: "學會手機 AI 工具應用，掌定生活大小事",
+      tools: "學會手機 AI 工具應用，搞定生活大小事",
       originalPrice: "NT$ 4,000",
       discountPrice: "NT$ 2,000",
       instructorImage:
@@ -41,15 +41,15 @@ export default function CoursesSection() {
       badge: "3H特訓班",
       badgeColor: "green" as const,
       backgroundImage:
-        "/課程海報_工作區域1複本.webp",
+        "/讓AI幫你省時間-2.jpg",
       detailPath: "/course/ai-life",
     },
     {
       id: 3,
-      title: "讓你的Gemini再進化",
+      title: "Gemini讓工作快一倍",
       description:
         "本課程帶你掌握 Gemini 的核心功能，從基礎模型認知出發，深度對接 Google 工作術（郵件、文件、行事曆、地圖），進階解鎖 Nano Banana 影像藝術與 Veo 影片生成，最後透過自定義 Gem 打造個人化 AI 專家系統。",
-      tools: "打造專屬 Gemini 工作系統",
+      tools: "打造你的AI工作助手",
       originalPrice: "NT$ 4,000",
       discountPrice: "NT$ 2,000",
       instructorImage:
@@ -58,15 +58,15 @@ export default function CoursesSection() {
       badge: "3H特訓班",
       badgeColor: "gold" as const,
       backgroundImage:
-        "/課程海報_工作區域1複本4.webp",
+        "/讓你的Gemini再進化.jpg",
       detailPath: "/course/gemini",
     },
     {
       id: 4,
-      title: "資料太多都用不起來",
+      title: "資料太多卻用不起來",
       description:
         "本課程分為「核心觀念」、「核心操作」與「場景實戰」三大模組。透過 Google NotebookLM 這個 AI 知識管理神器，帶你從零基礎到能獨立建構專屬知識庫，讓海量的 PDF、網頁與筆記真正為你所用。",
-      tools: "用 AI 整理 PDF 與筆記，打造知識庫",
+      tools: "用AI整理PDF與筆記打造知識庫",
       originalPrice: "NT$ 4,000",
       discountPrice: "NT$ 2,000",
       instructorImage:
@@ -75,15 +75,15 @@ export default function CoursesSection() {
       badge: "3H特訓班",
       badgeColor: "purple" as const,
       backgroundImage:
-        "/課程海報_工作區域1複本2.webp",
+        "/資料太多都用不起來.jpg",
       detailPath: "/course/ai-knowledge",
     },
     {
       id: 5,
-      title: "提升簡報的精美度",
+      title: "簡報不用做到半夜",
       description:
         "本課程專為追求效率的職場人士設計，透過「邏輯構思、內容生成、自動排版」三大關鍵步驟，將原本需要數天的簡報製作時間縮短至 3 小時內。結合 ChatGPT × Gemini × Gamma 三大 AI 工具，不只教工具，更教你建立「AI 協作思維」。",
-      tools: "AI 幫你完成專業簡報",
+      tools: "AI幫你完成內容與排版",
       originalPrice: "NT$ 4,000",
       discountPrice: "NT$ 2,000",
       instructorImage:
@@ -92,7 +92,7 @@ export default function CoursesSection() {
       badge: "3H特訓班",
       badgeColor: "teal" as const,
       backgroundImage:
-        "/課程海報_工作區域1複本3.webp",
+        "/提升簡報的精美度.jpg",
       detailPath: "/course/ai-presentation",
     },
   ];
