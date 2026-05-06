@@ -13,7 +13,7 @@ export default function ScheduleSection() {
   const schedules = [
     {
       id: 1,
-      course: "讓你的 Gemini 再進化",
+      course: "Gemini讓工作快一倍",
       date: "2026/5/11（一）",
       time: "13:30–16:30",
       location: "台北（地點待定）",
@@ -21,7 +21,7 @@ export default function ScheduleSection() {
     },
     {
       id: 2,
-      course: "資料太多都用不起來？",
+      course: "資料太多卻用不起來",
       date: "2026/5/12（二）",
       time: "13:30–16:30",
       location: "台北（地點待定）",
@@ -37,7 +37,7 @@ export default function ScheduleSection() {
     },
     {
       id: 4,
-      course: "讓 AI 幫你省時間",
+      course: "讓手機搞定大小事",
       date: "2026/5/14（四）",
       time: "13:30–16:30",
       location: "台北（地點待定）",
@@ -45,7 +45,7 @@ export default function ScheduleSection() {
     },
     {
       id: 5,
-      course: "提升簡報的精美度",
+      course: "簡報不用做到半夜",
       date: "2026/5/15（五）",
       time: "13:30–16:30",
       location: "台北（地點待定）",

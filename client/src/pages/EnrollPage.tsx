@@ -42,8 +42,8 @@ const courses = [
   },
   {
     id: "ai-life",
-    label: "讓 AI 幫你省時間（3H 特訓班）",
-    image: "/讓AI幫你省時間-2.jpg",
+    label: "讓手機搞定大小事（3H 特訓班）",
+    image: "/讓手機搞定大小事-2.jpg",
     sessions: [
       { id: 1, date: "2026/5/14", weekday: "四", time: "13:30–16:30", remaining: 15, enterprise: false },
       { id: 2, date: "2026/5/21", weekday: "四", time: "13:30–16:30", remaining: 15, enterprise: false },

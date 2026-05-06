@@ -29,7 +29,7 @@ export default function CoursesSection() {
     },
     {
       id: 2,
-      title: "讓AI幫你省時間",
+      title: "讓手機搞定大小事",
       description:
         "本課程專為科技小白與長輩朋友設計，採「漸進式」教學。從基礎的 ChatGPT、Gemini 安裝設定出發，學習精準提問技巧，再深入 Google 生態系整合，最後動手體驗 Banana AI 繪圖與影像動態化，讓一支手機成為你最強大的 AI 工具。",
       tools: "學會手機 AI 工具應用，搞定生活大小事",
@@ -41,7 +41,7 @@ export default function CoursesSection() {
       badge: "3H特訓班",
       badgeColor: "green" as const,
       backgroundImage:
-        "/讓AI幫你省時間-2.jpg",
+        "/讓手機搞定大小事-2.jpg",
       detailPath: "/course/ai-life",
     },
     {

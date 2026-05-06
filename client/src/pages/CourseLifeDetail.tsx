@@ -87,7 +87,7 @@ export default function CourseLifeDetail() {
                   3H 特訓班
                 </div>
                 <h1 className="text-4xl md:text-5xl font-bold leading-tight text-gray-900">
-                  讓 AI 幫你省時間
+                  讓手機搞定大小事
                 </h1>
                 <p className="text-lg text-gray-600 leading-relaxed">
                   學會手機AI工具應用，搞定生活大小事
@@ -162,7 +162,7 @@ export default function CourseLifeDetail() {
                 </div>
                 <div className="rounded-2xl overflow-hidden shadow-2xl aspect-square bg-gray-200" style={{ width: "90%" }}>
                   <img
-                    src="/讓AI幫你省時間-2.jpg"
+                    src="/讓手機搞定大小事-2.jpg"
                     alt="AI生活效率班"
                     className="w-full h-full object-cover"
                   />

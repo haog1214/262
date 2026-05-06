@@ -25,8 +25,8 @@ const schedules: ScheduleItem[] = [
   // Week 1: 5/11–5/15
   {
     id: 1,
-    course: "讓你的 Gemini 再進化",
-    subtitle: "打造專屬 Gemini 工作系統",
+    course: "Gemini讓工作快一倍",
+    subtitle: "打造你的AI工作助手",
     badge: "3H特訓班",
     date: "2026 / 05 / 11",
     weekday: "一",
@@ -42,8 +42,8 @@ const schedules: ScheduleItem[] = [
   },
   {
     id: 2,
-    course: "資料太多都用不起來",
-    subtitle: "用 AI 整理 PDF 與筆記，打造知識庫",
+    course: "資料太多卻用不起來",
+    subtitle: "用AI整理PDF與筆記打造知識庫",
     badge: "3H特訓班",
     date: "2026 / 05 / 12",
     weekday: "二",
@@ -76,8 +76,8 @@ const schedules: ScheduleItem[] = [
   },
   {
     id: 5,
-    course: "讓 AI 幫你省時間",
-    subtitle: "學會手機 AI 工具，掌定生活大小事",
+    course: "讓手機搞定大小事",
+    subtitle: "學會手機AI工具應用，搞定生活大小事",
     badge: "3H特訓班",
     date: "2026 / 05 / 14",
     weekday: "四",
@@ -93,8 +93,8 @@ const schedules: ScheduleItem[] = [
   },
   {
     id: 6,
-    course: "提升簡報的精美度",
-    subtitle: "AI 幫你完成專業簡報",
+    course: "簡報不用做到半夜",
+    subtitle: "AI幫你完成內容與排版",
     badge: "3H特訓班",
     date: "2026 / 05 / 15",
     weekday: "五",
@@ -111,8 +111,8 @@ const schedules: ScheduleItem[] = [
   // Week 2: 5/18–5/22
   {
     id: 7,
-    course: "讓你的 Gemini 再進化",
-    subtitle: "打造專屬 Gemini 工作系統",
+    course: "Gemini讓工作快一倍",
+    subtitle: "打造你的AI工作助手",
     badge: "3H特訓班",
     date: "2026 / 05 / 18",
     weekday: "一",
@@ -128,8 +128,8 @@ const schedules: ScheduleItem[] = [
   },
   {
     id: 8,
-    course: "資料太多都用不起來",
-    subtitle: "用 AI 整理 PDF 與筆記，打造知識庫",
+    course: "資料太多卻用不起來",
+    subtitle: "用AI整理PDF與筆記打造知識庫",
     badge: "3H特訓班",
     date: "2026 / 05 / 19",
     weekday: "二",
@@ -162,8 +162,8 @@ const schedules: ScheduleItem[] = [
   },
   {
     id: 11,
-    course: "讓 AI 幫你省時間",
-    subtitle: "學會手機 AI 工具，掌定生活大小事",
+    course: "讓手機搞定大小事",
+    subtitle: "學會手機AI工具應用，搞定生活大小事",
     badge: "3H特訓班",
     date: "2026 / 05 / 21",
     weekday: "四",
@@ -179,8 +179,8 @@ const schedules: ScheduleItem[] = [
   },
   {
     id: 12,
-    course: "提升簡報的精美度",
-    subtitle: "AI 幫你完成專業簡報",
+    course: "簡報不用做到半夜",
+    subtitle: "AI幫你完成內容與排版",
     badge: "3H特訓班",
     date: "2026 / 05 / 22",
     weekday: "五",
@@ -197,8 +197,8 @@ const schedules: ScheduleItem[] = [
   // Week 3: 5/25–5/29
   {
     id: 13,
-    course: "讓你的 Gemini 再進化",
-    subtitle: "打造專屬 Gemini 工作系統",
+    course: "Gemini讓工作快一倍",
+    subtitle: "打造你的AI工作助手",
     badge: "3H特訓班",
     date: "2026 / 05 / 25",
     weekday: "一",
@@ -214,8 +214,8 @@ const schedules: ScheduleItem[] = [
   },
   {
     id: 14,
-    course: "資料太多都用不起來",
-    subtitle: "用 AI 整理 PDF 與筆記，打造知識庫",
+    course: "資料太多卻用不起來",
+    subtitle: "用AI整理PDF與筆記打造知識庫",
     badge: "3H特訓班",
     date: "2026 / 05 / 26",
     weekday: "二",
@@ -248,8 +248,8 @@ const schedules: ScheduleItem[] = [
   },
   {
     id: 17,
-    course: "讓 AI 幫你省時間",
-    subtitle: "學會手機 AI 工具，掌定生活大小事",
+    course: "讓手機搞定大小事",
+    subtitle: "學會手機AI工具應用，搞定生活大小事",
     badge: "3H特訓班",
     date: "2026 / 05 / 28",
     weekday: "四",
@@ -265,8 +265,8 @@ const schedules: ScheduleItem[] = [
   },
   {
     id: 18,
-    course: "提升簡報的精美度",
-    subtitle: "AI 幫你完成專業簡報",
+    course: "簡報不用做到半夜",
+    subtitle: "AI幫你完成內容與排版",
     badge: "3H特訓班",
     date: "2026 / 05 / 29",
     weekday: "五",
