@@ -13,31 +13,14 @@ export default function Footer() {
     <footer className="border-t text-foreground pt-12 pb-8" style={{ backgroundColor: "#1B3A6B" }}>
       <div className="container">
         <div className="flex flex-col md:flex-row justify-between gap-10 mb-10">
-          {/* Brand */}
-          <div className="flex flex-col gap-3 max-w-xs">
-            <span className="text-lg font-bold" style={{ color: "#F5F0E8" }}>262 培訓學院</span>
-            <p className="text-xs leading-relaxed" style={{ color: "rgba(245,240,232,0.5)" }}>
+          {/* Brand — 放大20% */}
+          <div className="flex flex-col gap-3 max-w-sm">
+            <span className="text-[21.6px] font-bold" style={{ color: "#F5F0E8" }}>262 培訓學院</span>
+            <p className="text-[14.4px] leading-relaxed" style={{ color: "rgba(245,240,232,0.5)" }}>
               傳啓資訊打造的專業課程教學平台<br />
               讓專業被看見、讓經驗被傳承
             </p>
           </div>
-
-          {/* Nav */}
-          <nav className="flex flex-wrap gap-x-8 gap-y-3 text-sm">
-            {navItems.map((item) =>
-              item.href.startsWith("/") && !item.href.startsWith("/#") ? (
-                <Link key={item.href} href={item.href}>
-                  <a className="transition-colors hover:opacity-100" style={{ color: "rgba(245,240,232,0.65)" }}>
-                    {item.label}
-                  </a>
-                </Link>
-              ) : (
-                <a key={item.href} href={item.href} className="transition-colors hover:opacity-100" style={{ color: "rgba(245,240,232,0.65)" }}>
-                  {item.label}
-                </a>
-              )
-            )}
-          </nav>
 
           {/* Company info */}
           <div className="flex flex-col gap-1.5 text-xs" style={{ color: "rgba(245,240,232,0.5)" }}>

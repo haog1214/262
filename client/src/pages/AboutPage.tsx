@@ -208,7 +208,19 @@ export default function AboutPage() {
 
           <div className="container relative z-10 py-24">
             <div className="flex flex-col md:flex-row gap-16 items-start">
-              {/* Left text */}
+              {/* Left photo */}
+              <div className="md:w-1/2">
+                <div
+                  className="w-full aspect-[4/3] rounded-sm shadow-2xl flex items-center justify-center"
+                  style={{ backgroundColor: "#E8EEF7", border: "1px solid #1B3A6B15" }}
+                >
+                  <div className="text-center">
+                    <MapPin className="w-14 h-14 mx-auto mb-3" style={{ color: "#1B3A6B30" }} />
+                    <p className="text-sm" style={{ color: "#1B3A6B50" }}>地點 / 周邊環境照片</p>
+                  </div>
+                </div>
+              </div>
+              {/* Right text */}
               <div className="md:w-1/2">
                 <div className="flex items-center gap-3 mb-8">
                   <div className="w-5 h-5 rotate-45 flex-shrink-0" style={{ backgroundColor: "#D4AF37" }} />
@@ -230,18 +242,6 @@ export default function AboutPage() {
                   <p>
                     適合舉辦企業內訓、專業課程、講座分享、工作坊、顧問培訓與小型交流活動。
                   </p>
-                </div>
-              </div>
-              {/* Right photo */}
-              <div className="md:w-1/2">
-                <div
-                  className="w-full aspect-[4/3] rounded-sm shadow-2xl flex items-center justify-center"
-                  style={{ backgroundColor: "#E8EEF7", border: "1px solid #1B3A6B15" }}
-                >
-                  <div className="text-center">
-                    <MapPin className="w-14 h-14 mx-auto mb-3" style={{ color: "#1B3A6B30" }} />
-                    <p className="text-sm" style={{ color: "#1B3A6B50" }}>地點 / 周邊環境照片</p>
-                  </div>
                 </div>
               </div>
             </div>
