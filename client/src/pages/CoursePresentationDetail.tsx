@@ -77,10 +77,10 @@ export default function CoursePresentationDetail() {
                   3H 特訓班
                 </div>
                 <h1 className="text-4xl md:text-5xl font-bold leading-tight text-gray-900">
-                  提升簡報的精美度
+                  簡報不用做到半夜
                 </h1>
                 <p className="text-lg text-gray-600 leading-relaxed">
-                  AI 幫你完成專業簡報
+                  AI幫你完成內容與排版
                 </p>
                 <p className="text-base text-gray-600 leading-8">
                   本課程專為追求效率的職場人士設計，透過「邏輯構思、內容生成、自動排版」三大關鍵步驟，將原本需要數天的簡報製作時間縮短至 3 小時內。我們結合 <strong>ChatGPT × Gemini × Gamma</strong> 三大 AI 工具，不只教工具，更教你建立「AI 協作思維」。
@@ -150,11 +150,10 @@ export default function CoursePresentationDetail() {
                     </a>
                   </Link>
                 </div>
-                <div className="rounded-2xl overflow-hidden shadow-2xl aspect-square bg-gray-200" style={{ width: "90%" }}>
-                  <img
-                    src="/課程海報_工作區域1複本3.webp"
-                    alt="AI專業簡報班"
-                    className="w-full h-full object-cover"
+                <div className="rounded-2xl overflow-hidden shadow-2xl aspect-square" style={{ width: "90%" }}>
+                  <div
+                    className="w-full h-full bg-cover bg-center"
+                    style={{ backgroundImage: "url('/提升簡報的精美度.jpg')" }}
                   />
                 </div>
               </div>

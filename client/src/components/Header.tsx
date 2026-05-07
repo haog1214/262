@@ -25,7 +25,7 @@ export default function Header() {
                 className="block w-[135px] h-auto"
               />
             </span>
-            <span className="text-[22px] font-bold text-[#1B3A6B] -translate-x-[24px] self-start pt-[6px] md:self-auto md:pt-0 md:-translate-x-[10px]">262 培訓學院</span>
+            <span className="text-[22px] font-bold text-[#1B3A6B] -translate-x-[9px] translate-y-[10px] self-start pt-[6px] md:self-auto md:pt-0 md:translate-x-[5px] md:translate-y-[10px]">262 培訓學院</span>
           </a>
         </Link>
 

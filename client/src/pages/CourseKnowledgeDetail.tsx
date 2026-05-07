@@ -92,10 +92,10 @@ export default function CourseKnowledgeDetail() {
                   3H 特訓班
                 </div>
                 <h1 className="text-4xl md:text-5xl font-bold leading-tight text-gray-900">
-                  資料太多都用不起來？
+                  資料太多卻用不起來
                 </h1>
                 <p className="text-lg text-gray-600 leading-relaxed">
-                  用 AI 整理 PDF 與筆記，打造知識庫
+                  用AI整理PDF與筆記打造知識庫
                 </p>
                 <p className="text-base text-gray-600 leading-8">
                   本課程分為「核心觀念」、「核心操作」與「場景實戰」三大模組。透過 <strong>Google NotebookLM</strong> 這個 AI 知識管理神器，帶你從零基礎到能獨立建構專屬知識庫，讓海量的 PDF、網頁與筆記真正為你所用。
@@ -165,11 +165,10 @@ export default function CourseKnowledgeDetail() {
                     </a>
                   </Link>
                 </div>
-                <div className="rounded-2xl overflow-hidden shadow-2xl aspect-square bg-gray-200" style={{ width: "90%" }}>
-                  <img
-                    src="/課程海報_工作區域1複本2.webp"
-                    alt="AI知識管理班"
-                    className="w-full h-full object-cover"
+                <div className="rounded-2xl overflow-hidden shadow-2xl aspect-square" style={{ width: "90%" }}>
+                  <div
+                    className="w-full h-full bg-cover bg-center"
+                    style={{ backgroundImage: "url('/資料太多都用不起來.jpg')" }}
                   />
                 </div>
               </div>

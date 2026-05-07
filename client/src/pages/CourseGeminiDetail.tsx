@@ -82,10 +82,10 @@ export default function CourseGeminiDetail() {
                   3H 特訓班
                 </div>
                 <h1 className="text-4xl md:text-5xl font-bold leading-tight text-gray-900">
-                  讓你的 Gemini 再進化
+                  Gemini讓工作快一倍
                 </h1>
                 <p className="text-lg text-gray-600 leading-relaxed">
-                  打造專屬 Gemini 工作系統
+                  打造你的AI工作助手
                 </p>
                 <p className="text-base text-gray-600 leading-8">
                   本課程帶你掌握 Gemini 的核心功能，從基礎模型認知出發，深度對接 <strong>Google 工作術（郵件、文件、行事曆、地圖）</strong>，進階解鎖 Nano Banana 影像藝術與 Veo 影片生成，最後透過自定義 Gem 打造個人化 AI 專家系統。
@@ -155,11 +155,10 @@ export default function CourseGeminiDetail() {
                     </a>
                   </Link>
                 </div>
-                <div className="rounded-2xl overflow-hidden shadow-2xl aspect-square bg-gray-200" style={{ width: "90%" }}>
-                  <img
-                    src="/課程海報_工作區域1複本4.webp"
-                    alt="Gemini進階班"
-                    className="w-full h-full object-cover"
+                <div className="rounded-2xl overflow-hidden shadow-2xl aspect-square" style={{ width: "90%" }}>
+                  <div
+                    className="w-full h-full bg-cover bg-center"
+                    style={{ backgroundImage: "url('/讓你的Gemini再進化.jpg')" }}
                   />
                 </div>
               </div>

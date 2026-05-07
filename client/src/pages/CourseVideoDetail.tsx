@@ -182,11 +182,10 @@ export default function CourseVideoDetail() {
                 </div>
 
                 {/* 海報：縮小 10% */}
-                <div className="rounded-2xl overflow-hidden shadow-2xl aspect-square bg-gray-200" style={{ width: "90%" }}>
-                  <img
-                    src="/課程海報_工作區域1.webp"
-                    alt="圖像、短影音製作教學班"
-                    className="w-full h-full object-cover"
+                <div className="rounded-2xl overflow-hidden shadow-2xl aspect-square" style={{ width: "90%" }}>
+                  <div
+                    className="w-full h-full bg-cover bg-center"
+                    style={{ backgroundImage: "url('/零基礎也能做專業短片.jpg')" }}
                   />
                 </div>
               </div>

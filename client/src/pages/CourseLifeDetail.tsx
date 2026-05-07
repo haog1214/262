@@ -160,11 +160,10 @@ export default function CourseLifeDetail() {
                     </a>
                   </Link>
                 </div>
-                <div className="rounded-2xl overflow-hidden shadow-2xl aspect-square bg-gray-200" style={{ width: "90%" }}>
-                  <img
-                    src="/讓手機搞定大小事-2.jpg"
-                    alt="AI生活效率班"
-                    className="w-full h-full object-cover"
+                <div className="rounded-2xl overflow-hidden shadow-2xl aspect-square" style={{ width: "90%" }}>
+                  <div
+                    className="w-full h-full bg-cover bg-center"
+                    style={{ backgroundImage: "url('/讓手機搞定大小事-2.jpg')" }}
                   />
                 </div>
               </div>
