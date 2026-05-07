@@ -43,6 +43,7 @@ export default function Footer() {
           <div className="flex flex-col gap-1.5 text-xs" style={{ color: "rgba(245,240,232,0.5)" }}>
             <p className="font-semibold text-sm" style={{ color: "rgba(245,240,232,0.75)" }}>二六二有限公司</p>
             <p>統一編號：60357703</p>
+            <p>服務電話：04-24529252</p>
             <p>台中市西屯區河南路二段262號3樓之11</p>
           </div>
         </div>
