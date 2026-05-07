@@ -56,25 +56,49 @@ export default function AboutPage() {
               <div className="w-8 h-px" style={{ backgroundColor: "#D4AF37" }} />
               <span className="text-[11px] font-semibold tracking-[0.35em] uppercase" style={{ color: "#D4AF37" }}>About Us</span>
             </div>
-            <div className="max-w-2xl">
-              <h1 className="text-5xl md:text-7xl font-black leading-[1.05] mb-6 tracking-tight" style={{ color: "#F5F0E8" }}>
-                262<br />培訓學院
+            <div className="max-w-3xl">
+              <h1 className="text-5xl md:text-7xl font-black leading-[1.05] mb-6 tracking-tight whitespace-nowrap" style={{ color: "#F5F0E8" }}>
+                262培訓學院
               </h1>
-              <p className="text-lg leading-relaxed mb-12" style={{ color: "rgba(245,240,232,0.65)" }}>
-                傳啓資訊打造的專業課程教學平台<br />
-                近30年資訊服務經驗 × 實戰型師資 × 台中便利場域
+              <p className="text-base md:text-lg leading-relaxed mb-14" style={{ color: "rgba(245,240,232,0.65)" }}>
+                台中西屯專業課程教室，鄰近逢甲大學，交通便利、好停車。<br />
+                提供企業內訓、講座活動、AI課程平台
               </p>
-              <div className="flex flex-wrap gap-12">
+              <div className="flex flex-wrap gap-10 md:gap-16">
                 {[
-                  { num: "30", unit: "年", label: "資訊服務經驗" },
-                  { num: "5+", unit: "", label: "專業課程領域" },
-                  { num: "2", unit: "家", label: "共同創辦企業" },
-                ].map((s) => (
-                  <div key={s.label} className="border-l-2 pl-4" style={{ borderColor: "#D4AF37" }}>
-                    <div className="text-3xl font-black" style={{ color: "#D4AF37" }}>{s.num}<span className="text-xl ml-0.5">{s.unit}</span></div>
-                    <div className="text-xs tracking-widest mt-1" style={{ color: "rgba(245,240,232,0.45)" }}>{s.label}</div>
-                  </div>
-                ))}
+                  { value: "30", unit: "年", label: "資訊服務經驗", pct: 0.75 },
+                  { value: "1100", unit: "+", label: "輔導過學員", pct: 0.85 },
+                  { value: "50", unit: "+", label: "輔導過的企業", pct: 0.65 },
+                ].map((s) => {
+                  const r = 42;
+                  const circ = 2 * Math.PI * r;
+                  const offset = circ * (1 - s.pct);
+                  return (
+                    <div key={s.label} className="flex flex-col items-center">
+                      <div className="relative w-28 h-28">
+                        <svg viewBox="0 0 100 100" className="w-full h-full" style={{ transform: "rotate(-90deg)" }}>
+                          <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="7" />
+                          <circle
+                            cx="50" cy="50" r={r}
+                            fill="none"
+                            stroke="#D4AF37"
+                            strokeWidth="7"
+                            strokeLinecap="round"
+                            strokeDasharray={`${circ}`}
+                            strokeDashoffset={`${offset}`}
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="font-black leading-none" style={{ color: "#D4AF37", fontSize: s.value.length > 2 ? "1.3rem" : "1.6rem" }}>
+                            {s.value}
+                          </span>
+                          <span className="text-sm font-bold" style={{ color: "#D4AF37" }}>{s.unit}</span>
+                        </div>
+                      </div>
+                      <p className="text-xs tracking-wide mt-3 text-center" style={{ color: "rgba(245,240,232,0.5)" }}>{s.label}</p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
