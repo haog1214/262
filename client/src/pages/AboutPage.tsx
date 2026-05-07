@@ -1,320 +1,348 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { MapPin, Users, Lightbulb, TrendingUp, Award, BookOpen, Briefcase, Monitor, Mic, Building2 } from "lucide-react";
+import { MapPin, Monitor, TrendingUp, Briefcase, Users, Mic, Building2, BookOpen, Award, Lightbulb } from "lucide-react";
 
 const directions = [
-  {
-    icon: <Monitor className="w-6 h-6" />,
-    title: "AI工具應用與企業導入",
-    desc: "協助企業與個人學會運用 AI 提升工作效率、內容產出與營運決策能力。",
-  },
-  {
-    icon: <TrendingUp className="w-6 h-6" />,
-    title: "數位行銷與品牌經營",
-    desc: "從社群內容、短影音、廣告文案到顧客經營，協助品牌建立更有效的行銷流程。",
-  },
-  {
-    icon: <Briefcase className="w-6 h-6" />,
-    title: "電商與系統應用課程",
-    desc: "結合傳啓資訊長期服務電商與企業系統的經驗，協助學員理解數位工具如何真正落地。",
-  },
-  {
-    icon: <Users className="w-6 h-6" />,
-    title: "企業內訓與顧問培訓",
-    desc: "針對企業需求規劃客製化課程，協助團隊提升數位素養、管理效率與市場競爭力。",
-  },
-  {
-    icon: <Mic className="w-6 h-6" />,
-    title: "跨領域專業講座與工作坊",
-    desc: "邀請不同產業的專家分享實務經驗，讓學員接觸更多市場觀點與創新方法。",
-  },
+  { icon: <Monitor className="w-5 h-5" />, title: "AI工具應用與企業導入", desc: "協助企業與個人學會運用 AI 提升工作效率、內容產出與營運決策能力。" },
+  { icon: <TrendingUp className="w-5 h-5" />, title: "數位行銷與品牌經營", desc: "從社群內容、短影音、廣告文案到顧客經營，協助品牌建立更有效的行銷流程。" },
+  { icon: <Briefcase className="w-5 h-5" />, title: "電商與系統應用課程", desc: "結合傳啓資訊長期服務電商與企業系統的經驗，協助學員理解數位工具如何真正落地。" },
+  { icon: <Users className="w-5 h-5" />, title: "企業內訓與顧問培訓", desc: "針對企業需求規劃客製化課程，協助團隊提升數位素養、管理效率與市場競爭力。" },
+  { icon: <Mic className="w-5 h-5" />, title: "跨領域專業講座與工作坊", desc: "邀請不同產業的專家分享實務經驗，讓學員接觸更多市場觀點與創新方法。" },
 ];
 
-const pillars = [
+const values = [
   {
-    icon: <BookOpen className="w-7 h-7" />,
+    icon: <BookOpen className="w-6 h-6" />,
     label: "企業",
-    desc: "協助團隊升級的培訓場域",
+    en: "Enterprise",
+    desc: "對企業而言，262培訓學院是一個能協助團隊升級的培訓場域，規劃客製化課程，提升數位素養與市場競爭力。",
   },
   {
-    icon: <Award className="w-7 h-7" />,
+    icon: <Award className="w-6 h-6" />,
     label: "講師",
-    desc: "穩定開課、建立品牌、連結學員的平台",
+    en: "Instructor",
+    desc: "對講師而言，這裡是一個能穩定開課、建立品牌、連結學員的專業平台，讓教學價值被更多人看見。",
   },
   {
-    icon: <Lightbulb className="w-7 h-7" />,
+    icon: <Lightbulb className="w-6 h-6" />,
     label: "學員",
-    desc: "持續學習新技能、拓展視野、提升職場競爭力的據點",
+    en: "Learner",
+    desc: "對學員而言，這裡是一個能持續學習新技能、拓展視野、提升職場競爭力的長期學習據點。",
   },
 ];
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#fff" }}>
       <Header />
 
       <main className="flex-1">
 
         {/* ── HERO ── */}
-        <section className="relative overflow-hidden" style={{ backgroundColor: "#1B3A6B", minHeight: "520px" }}>
-          {/* Grid decoration */}
-          <div className="absolute inset-0 pointer-events-none" aria-hidden>
-            <svg className="absolute right-0 top-0 w-[560px] h-full opacity-[0.07]" preserveAspectRatio="xMaxYMin slice" viewBox="0 0 560 520">
-              {Array.from({ length: 12 }).map((_, i) => (
-                <line key={`v${i}`} x1={i * 50} y1="0" x2={i * 50} y2="520" stroke="#fff" strokeWidth="1" />
-              ))}
-              {Array.from({ length: 12 }).map((_, i) => (
-                <line key={`h${i}`} x1="0" y1={i * 50} x2="560" y2={i * 50} stroke="#fff" strokeWidth="1" />
+        <section className="relative overflow-hidden" style={{ backgroundColor: "#1B3A6B", minHeight: "560px" }}>
+          {/* Diagonal stripes - top right */}
+          <div className="absolute top-0 right-0 w-[480px] h-full overflow-hidden pointer-events-none" aria-hidden>
+            <svg className="absolute top-0 right-0 opacity-[0.08]" width="480" height="560" viewBox="0 0 480 560">
+              {Array.from({ length: 20 }).map((_, i) => (
+                <line key={i} x1={i * 28 - 80} y1="0" x2={i * 28 + 480} y2="560" stroke="#ffffff" strokeWidth="1.5" />
               ))}
             </svg>
-            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white opacity-10" />
           </div>
+          {/* Gold accent line top */}
+          <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: "#D4AF37" }} />
 
-          <div className="container relative z-10 py-20 md:py-28">
-            {/* Label */}
-            <div className="flex items-center gap-4 mb-10">
-              <span className="text-[10px] font-semibold tracking-[0.3em] uppercase" style={{ color: "#D4AF37" }}>About Us</span>
-              <div className="w-16 h-px" style={{ backgroundColor: "#D4AF37" }} />
+          <div className="container relative z-10 py-24 md:py-32">
+            <div className="flex items-center gap-3 mb-10">
+              <div className="w-8 h-px" style={{ backgroundColor: "#D4AF37" }} />
+              <span className="text-[11px] font-semibold tracking-[0.35em] uppercase" style={{ color: "#D4AF37" }}>About Us</span>
             </div>
-
-            {/* Headline */}
-            <div className="max-w-3xl">
-              <h1 className="text-4xl md:text-6xl font-black leading-tight mb-6" style={{ color: "#F5F0E8" }}>
+            <div className="max-w-2xl">
+              <h1 className="text-5xl md:text-7xl font-black leading-[1.05] mb-6 tracking-tight" style={{ color: "#F5F0E8" }}>
                 262<br />培訓學院
               </h1>
-              <p className="text-lg md:text-xl font-light leading-relaxed" style={{ color: "rgba(245,240,232,0.75)" }}>
+              <p className="text-lg leading-relaxed mb-12" style={{ color: "rgba(245,240,232,0.65)" }}>
                 傳啓資訊打造的專業課程教學平台<br />
-                <span className="text-base" style={{ color: "rgba(245,240,232,0.5)" }}>近30年資訊服務經驗 × 實戰型師資 × 台中便利場域</span>
+                近30年資訊服務經驗 × 實戰型師資 × 台中便利場域
               </p>
-            </div>
-
-            {/* Stats row */}
-            <div className="flex flex-wrap gap-10 mt-14">
-              {[
-                { num: "30", unit: "年", label: "資訊服務經驗" },
-                { num: "5+", unit: "", label: "專業課程領域" },
-                { num: "262", unit: "號", label: "河南路二段" },
-              ].map((s) => (
-                <div key={s.label}>
-                  <div className="flex items-end gap-1">
-                    <span className="text-4xl font-black" style={{ color: "#D4AF37" }}>{s.num}</span>
-                    <span className="text-lg font-bold mb-1" style={{ color: "#D4AF37" }}>{s.unit}</span>
+              <div className="flex flex-wrap gap-12">
+                {[
+                  { num: "30", unit: "年", label: "資訊服務經驗" },
+                  { num: "5+", unit: "", label: "專業課程領域" },
+                  { num: "262", unit: "號", label: "河南路二段" },
+                ].map((s) => (
+                  <div key={s.label} className="border-l-2 pl-4" style={{ borderColor: "#D4AF37" }}>
+                    <div className="text-3xl font-black" style={{ color: "#D4AF37" }}>{s.num}<span className="text-xl ml-0.5">{s.unit}</span></div>
+                    <div className="text-xs tracking-widest mt-1" style={{ color: "rgba(245,240,232,0.45)" }}>{s.label}</div>
                   </div>
-                  <p className="text-xs tracking-wider mt-1" style={{ color: "rgba(245,240,232,0.5)" }}>{s.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── INTRO ── */}
-        <section className="py-20" style={{ backgroundColor: "#F5F0E8" }}>
-          <div className="container max-w-5xl">
-            <div className="flex items-center gap-4 mb-12">
-              <div className="w-1 h-10 rounded-full" style={{ backgroundColor: "#1B3A6B" }} />
-              <h2 className="text-2xl md:text-3xl font-bold" style={{ color: "#1B3A6B" }}>學院簡介</h2>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-12 items-start">
-              {/* Text */}
-              <div className="space-y-5 text-[16px] leading-relaxed text-gray-700">
-                <p>
-                  262培訓學院是由深耕資訊服務領域近<strong className="text-gray-900">30年</strong>的傳啓資訊股份有限公司和有椿有限公司共同所打造的專業課程教學平台。長期協助企業進行網站建置、系統開發、電商平台規劃、數位行銷整合與企業數位轉型，累積了豐富的跨產業實戰經驗。
-                </p>
-                <p>
-                  因此，262培訓學院不只是單純提供上課空間，更希望成為一個結合專業知識、實務經驗、產業應用與人才培育的學習基地。
-                </p>
-                <p>
-                  我們相信，好的課程不應該只是知識輸出，而是要協助學員完成「從聽懂、會用，到真正落地」的轉換。
-                </p>
-              </div>
-
-              {/* Image placeholder */}
-              <div
-                className="rounded-2xl overflow-hidden shadow-xl aspect-[4/3] flex items-center justify-center"
-                style={{ backgroundColor: "#dde4ef", border: "2px dashed #1B3A6B30" }}
-              >
-                <div className="text-center">
-                  <Building2 className="w-12 h-12 mx-auto mb-3" style={{ color: "#1B3A6B40" }} />
-                  <p className="text-sm" style={{ color: "#1B3A6B60" }}>學院外觀 / 環境照片</p>
-                </div>
+                ))}
               </div>
             </div>
           </div>
         </section>
 
-        {/* ── LOCATION ── */}
-        <section className="py-20 bg-white">
-          <div className="container max-w-5xl">
-            <div className="flex items-center gap-4 mb-12">
-              <div className="w-1 h-10 rounded-full" style={{ backgroundColor: "#D4AF37" }} />
-              <h2 className="text-2xl md:text-3xl font-bold" style={{ color: "#1B3A6B" }}>場域位置</h2>
-            </div>
+        {/* ── MISSION ── */}
+        <section className="relative overflow-hidden" style={{ backgroundColor: "#F5F0E8" }}>
+          <div className="relative">
+            {/* Full bleed layout */}
+            <div className="flex flex-col md:flex-row min-h-[540px]">
 
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              {/* Image placeholder */}
-              <div
-                className="rounded-2xl overflow-hidden shadow-xl aspect-[4/3] flex items-center justify-center order-2 md:order-1"
-                style={{ backgroundColor: "#f0f4fa", border: "2px dashed #1B3A6B30" }}
-              >
-                <div className="text-center">
-                  <MapPin className="w-12 h-12 mx-auto mb-3" style={{ color: "#1B3A6B40" }} />
-                  <p className="text-sm" style={{ color: "#1B3A6B60" }}>地點 / 周邊環境照片</p>
+              {/* Left: accent panel */}
+              <div className="relative md:w-[45%] flex-shrink-0 p-10 md:p-16 flex flex-col justify-center" style={{ backgroundColor: "#E8EEF7" }}>
+                {/* Section label */}
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="w-5 h-5 rounded-sm flex-shrink-0" style={{ backgroundColor: "#1B3A6B" }} />
+                  <span className="text-[11px] font-bold tracking-[0.3em] uppercase" style={{ color: "#1B3A6B" }}>Mission</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-black leading-tight mb-4" style={{ color: "#1B3A6B" }}>
+                  使命
+                </h2>
+                <p className="text-lg font-bold mb-6" style={{ color: "#1B3A6B" }}>
+                  讓專業被看見，讓經驗被傳承
+                </p>
+                <div className="space-y-4 text-[15px] leading-relaxed" style={{ color: "#334155" }}>
+                  <p>
+                    262培訓學院是由深耕資訊服務領域近<strong>30年</strong>的傳啓資訊股份有限公司和有椿有限公司共同打造的專業課程教學平台。長期協助企業進行網站建置、系統開發、電商平台規劃、數位行銷整合與企業數位轉型，累積了豐富的跨產業實戰經驗。
+                  </p>
+                  <p>
+                    因此，262培訓學院不只是單純提供上課空間，更希望成為一個結合專業知識、實務經驗、產業應用與人才培育的學習基地。
+                  </p>
+                  <p>
+                    我們相信，好的課程不應該只是知識輸出，而是要協助學員完成「從聽懂、會用，到真正落地」的轉換。
+                  </p>
                 </div>
               </div>
 
-              {/* Text */}
-              <div className="order-1 md:order-2 space-y-6">
-                <div className="flex items-start gap-4 p-5 rounded-2xl" style={{ backgroundColor: "#E8EEF7" }}>
-                  <MapPin className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "#1B3A6B" }} />
-                  <div>
-                    <p className="font-bold text-gray-900 mb-1">台中市西屯區河南路二段262號3樓之11</p>
-                    <p className="text-sm text-gray-500">鄰近逢甲大學商圈，周邊停車便利</p>
-                  </div>
-                </div>
-                <p className="text-[16px] leading-relaxed text-gray-700">
-                  學院鄰近台中國際展覽館、高速公路與快速道路，不論是台中在地學員、外縣市講師，或企業團隊前來參與課程與培訓，都能快速抵達。
-                </p>
-                <p className="text-[16px] leading-relaxed text-gray-700">
-                  適合舉辦企業內訓、專業課程、講座分享、工作坊、顧問培訓與小型交流活動。
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── WHO IS IT FOR ── */}
-        <section className="py-20" style={{ backgroundColor: "#1B3A6B" }}>
-          <div className="container max-w-5xl">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-1 h-10 rounded-full" style={{ backgroundColor: "#D4AF37" }} />
-              <h2 className="text-2xl md:text-3xl font-bold" style={{ color: "#F5F0E8" }}>這裡適合誰</h2>
-            </div>
-            <p className="text-base mb-12 ml-5" style={{ color: "rgba(245,240,232,0.55)" }}>
-              三種角色，一個共同成長的空間
-            </p>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {pillars.map((p) => (
-                <div key={p.label} className="rounded-2xl p-8" style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style={{ backgroundColor: "#D4AF37" }}>
-                    <span style={{ color: "#1B3A6B" }}>{p.icon}</span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-3" style={{ color: "#F5F0E8" }}>{p.label}</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: "rgba(245,240,232,0.6)" }}>{p.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── TEACHING PHILOSOPHY ── */}
-        <section className="py-20" style={{ backgroundColor: "#F5F0E8" }}>
-          <div className="container max-w-5xl">
-            <div className="flex items-center gap-4 mb-12">
-              <div className="w-1 h-10 rounded-full" style={{ backgroundColor: "#1B3A6B" }} />
-              <h2 className="text-2xl md:text-3xl font-bold" style={{ color: "#1B3A6B" }}>專業師資，多元課程</h2>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-12 items-start">
-              <div className="space-y-5 text-[16px] leading-relaxed text-gray-700">
-                <p>
-                  262培訓學院重視「<strong className="text-gray-900">實戰型教學</strong>」與「<strong className="text-gray-900">產業型師資</strong>」。我們期待邀請來自不同領域的專業講師、企業顧問、產業實務工作者與數位工具應用專家，共同打造多元化的課程內容。
-                </p>
-                <p>
-                  師資陣容涵蓋 AI 應用、數位行銷、電商經營、品牌經營、影音製作、系統導入、商業簡報、企業管理、財務應用、服務流程優化等領域，讓學員不只學會觀念，更能把所學直接應用在工作與企業經營中。
-                </p>
-                <p>
-                  262培訓學院強調案例教學、工具實作、情境演練與產業經驗分享，讓每一堂課都更貼近真實工作現場。
-                </p>
-              </div>
-
-              {/* Image placeholder */}
-              <div
-                className="rounded-2xl overflow-hidden shadow-xl aspect-[4/3] flex items-center justify-center"
-                style={{ backgroundColor: "#dde4ef", border: "2px dashed #1B3A6B30" }}
-              >
-                <div className="text-center">
-                  <Users className="w-12 h-12 mx-auto mb-3" style={{ color: "#1B3A6B40" }} />
-                  <p className="text-sm" style={{ color: "#1B3A6B60" }}>課程現場 / 師資照片</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── FUTURE DIRECTIONS ── */}
-        <section className="py-20 bg-white">
-          <div className="container max-w-5xl">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-1 h-10 rounded-full" style={{ backgroundColor: "#D4AF37" }} />
-              <h2 className="text-2xl md:text-3xl font-bold" style={{ color: "#1B3A6B" }}>未來課程方向</h2>
-            </div>
-            <p className="text-base mb-12 ml-5 text-gray-500">持續發展，與時俱進</p>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {directions.map((d, i) => (
+              {/* Right: photo */}
+              <div className="md:w-[55%] flex-shrink-0 relative min-h-[320px] md:min-h-0">
                 <div
-                  key={i}
-                  className="group rounded-2xl p-6 border transition-all duration-300 hover:shadow-lg"
-                  style={{ borderColor: "#E2E8F0", backgroundColor: "#FAFAFA" }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = "#D4AF37"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = "#E2E8F0"; }}
+                  className="absolute inset-0 flex items-center justify-center"
+                  style={{ backgroundColor: "#dde4ef" }}
                 >
-                  <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: "#E8EEF7" }}>
-                    <span style={{ color: "#1B3A6B" }}>{d.icon}</span>
+                  <div className="text-center">
+                    <Building2 className="w-14 h-14 mx-auto mb-3" style={{ color: "#1B3A6B30" }} />
+                    <p className="text-sm" style={{ color: "#1B3A6B50" }}>學院外觀 / 環境照片</p>
                   </div>
-                  <h3 className="font-bold text-gray-900 mb-2 text-[15px]">{d.title}</h3>
-                  <p className="text-sm leading-relaxed text-gray-600">{d.desc}</p>
                 </div>
-              ))}
+                {/* Overlapping accent box */}
+                <div
+                  className="absolute bottom-8 left-0 -translate-x-8 hidden md:flex items-center gap-3 px-6 py-4 shadow-xl z-10"
+                  style={{ backgroundColor: "#1B3A6B" }}
+                >
+                  <MapPin className="w-4 h-4 flex-shrink-0" style={{ color: "#D4AF37" }} />
+                  <span className="text-xs font-medium whitespace-nowrap" style={{ color: "#F5F0E8" }}>台中市西屯區河南路二段262號</span>
+                </div>
+              </div>
+
             </div>
           </div>
         </section>
 
-        {/* ── BRAND SPIRIT ── */}
-        <section className="py-24 relative overflow-hidden" style={{ backgroundColor: "#1B3A6B" }}>
-          <div className="absolute inset-0 pointer-events-none" aria-hidden>
-            <svg className="absolute left-0 bottom-0 opacity-[0.05] w-[400px]" viewBox="0 0 400 400">
-              <circle cx="0" cy="400" r="300" fill="none" stroke="#fff" strokeWidth="80" />
+        {/* ── VISION ── */}
+        <section className="relative overflow-hidden bg-white">
+          {/* Watermark text */}
+          <div className="absolute inset-0 flex items-center pointer-events-none select-none overflow-hidden" aria-hidden>
+            <span
+              className="font-black whitespace-nowrap"
+              style={{
+                fontSize: "clamp(100px, 20vw, 220px)",
+                color: "rgba(27,58,107,0.04)",
+                letterSpacing: "-0.04em",
+                lineHeight: 1,
+                paddingLeft: "2rem",
+              }}
+            >
+              VISION
+            </span>
+          </div>
+          {/* Diagonal stripes right */}
+          <div className="absolute top-0 right-0 w-[300px] h-full overflow-hidden pointer-events-none" aria-hidden>
+            <svg className="absolute top-0 right-0 opacity-[0.06]" width="300" height="600" viewBox="0 0 300 600">
+              {Array.from({ length: 14 }).map((_, i) => (
+                <line key={i} x1={i * 24 - 40} y1="0" x2={i * 24 + 280} y2="600" stroke="#1B3A6B" strokeWidth="2" />
+              ))}
             </svg>
           </div>
+
+          <div className="container relative z-10 py-24">
+            <div className="flex flex-col md:flex-row gap-16 items-start">
+              {/* Left text */}
+              <div className="md:w-1/2">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="w-5 h-5 rotate-45 flex-shrink-0" style={{ backgroundColor: "#D4AF37" }} />
+                  <span className="text-[11px] font-bold tracking-[0.3em] uppercase" style={{ color: "#D4AF37" }}>Vision</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-black leading-tight mb-4" style={{ color: "#1B3A6B" }}>
+                  願景
+                </h2>
+                <p className="text-lg font-bold mb-6" style={{ color: "#1B3A6B" }}>
+                  台中最具實戰力的培訓平台
+                </p>
+                <div className="space-y-4 text-[15px] leading-relaxed text-gray-700">
+                  <p>
+                    262培訓學院定位為台中地區兼具交通便利、產業實務與專業課程資源的培訓平台。我們希望整合傳啓資訊近30年的資訊服務經驗，結合多元師資與不同產業的專業課程，打造一個適合企業、講師與學員共同成長的知識交流空間。
+                  </p>
+                  <p>
+                    學院鄰近逢甲大學商圈，鄰近台中國際展覽館、高速公路與快速道路，不論是台中在地學員、外縣市講師，或企業團隊前來參與課程與培訓，都能快速抵達。
+                  </p>
+                  <p>
+                    適合舉辦企業內訓、專業課程、講座分享、工作坊、顧問培訓與小型交流活動。
+                  </p>
+                </div>
+              </div>
+              {/* Right photo */}
+              <div className="md:w-1/2">
+                <div
+                  className="w-full aspect-[4/3] rounded-sm shadow-2xl flex items-center justify-center"
+                  style={{ backgroundColor: "#E8EEF7", border: "1px solid #1B3A6B15" }}
+                >
+                  <div className="text-center">
+                    <MapPin className="w-14 h-14 mx-auto mb-3" style={{ color: "#1B3A6B30" }} />
+                    <p className="text-sm" style={{ color: "#1B3A6B50" }}>地點 / 周邊環境照片</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── FULL-WIDTH PHOTO BREAK ── */}
+        <div
+          className="w-full flex items-center justify-center"
+          style={{ height: "340px", backgroundColor: "#c8d3e6" }}
+        >
+          <div className="text-center">
+            <Building2 className="w-14 h-14 mx-auto mb-3" style={{ color: "#1B3A6B30" }} />
+            <p className="text-sm" style={{ color: "#1B3A6B50" }}>學院全景 / 課程現場照片（全幅）</p>
+          </div>
+        </div>
+
+        {/* ── VALUES ── */}
+        <section className="relative overflow-hidden bg-white py-24">
+          <div className="container max-w-5xl">
+            {/* Header row */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-16">
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-5 h-5 rounded-full border-2 flex-shrink-0" style={{ borderColor: "#1B3A6B" }} />
+                  <span className="text-[11px] font-bold tracking-[0.3em] uppercase" style={{ color: "#1B3A6B" }}>Value</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-black" style={{ color: "#1B3A6B" }}>這裡，適合誰</h2>
+              </div>
+              <p className="text-sm text-gray-400 md:mb-1">三種角色，一個共同成長的空間</p>
+            </div>
+
+            {/* Value list — Image 1 style with dividers */}
+            <div className="divide-y" style={{ borderColor: "#E2E8F0" }}>
+              {values.map((v, i) => (
+                <div key={v.label} className="flex flex-col md:flex-row gap-8 py-10 group">
+                  {/* Number */}
+                  <div className="md:w-16 flex-shrink-0">
+                    <span className="text-4xl font-black" style={{ color: "#1B3A6B10" }}>0{i + 1}</span>
+                  </div>
+                  {/* Icon + label */}
+                  <div className="md:w-48 flex-shrink-0">
+                    <div
+                      className="w-12 h-12 rounded-sm flex items-center justify-center mb-3"
+                      style={{ backgroundColor: "#E8EEF7" }}
+                    >
+                      <span style={{ color: "#1B3A6B" }}>{v.icon}</span>
+                    </div>
+                    <h3 className="text-xl font-black mb-0.5" style={{ color: "#1B3A6B" }}>{v.label}</h3>
+                    <span className="text-[11px] tracking-widest uppercase" style={{ color: "#D4AF37" }}>{v.en}</span>
+                  </div>
+                  {/* Description */}
+                  <div className="flex-1 flex items-center">
+                    <p className="text-[15px] leading-relaxed text-gray-600">{v.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── DIRECTIONS ── Image 2 style: bold left header + right list ── */}
+        <section className="py-24" style={{ backgroundColor: "#F5F0E8" }}>
+          <div className="container max-w-5xl">
+            <div className="flex flex-col md:flex-row gap-16">
+              {/* Left: large heading */}
+              <div className="md:w-[38%] flex-shrink-0">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-5 h-5 flex-shrink-0" style={{ backgroundColor: "#D4AF37" }} />
+                  <span className="text-[11px] font-bold tracking-[0.3em] uppercase" style={{ color: "#D4AF37" }}>Direction</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-black leading-tight mb-6" style={{ color: "#1B3A6B" }}>
+                  未來<br />課程方向
+                </h2>
+                <p className="text-[15px] leading-relaxed text-gray-600">
+                  262培訓學院重視「實戰型教學」與「產業型師資」，持續發展多元課程領域，讓每一堂課都更貼近真實工作現場。
+                </p>
+              </div>
+
+              {/* Right: list with dividers — Image 2 style */}
+              <div className="flex-1 divide-y" style={{ borderColor: "#D4AF3740" }}>
+                {directions.map((d) => (
+                  <div key={d.title} className="flex items-start gap-5 py-6">
+                    <div
+                      className="w-10 h-10 rounded-sm flex-shrink-0 flex items-center justify-center mt-0.5"
+                      style={{ backgroundColor: "#E8EEF7" }}
+                    >
+                      <span style={{ color: "#1B3A6B" }}>{d.icon}</span>
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 mb-1">{d.title}</p>
+                      <p className="text-sm leading-relaxed text-gray-500">{d.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── BRAND SPIRIT — large typography, Image 2 "WHY WE DO THIS" style ── */}
+        <section className="relative overflow-hidden py-32" style={{ backgroundColor: "#1B3A6B" }}>
+          {/* Circle decoration */}
+          <div className="absolute -bottom-32 -left-32 w-[480px] h-[480px] rounded-full pointer-events-none" style={{ border: "80px solid rgba(255,255,255,0.03)" }} aria-hidden />
+          <div className="absolute -top-16 -right-16 w-[280px] h-[280px] rounded-full pointer-events-none" style={{ border: "40px solid rgba(212,175,55,0.07)" }} aria-hidden />
+
           <div className="container max-w-3xl relative z-10 text-center">
-            <span className="text-[10px] font-semibold tracking-[0.3em] uppercase mb-6 block" style={{ color: "#D4AF37" }}>Brand Spirit</span>
-            <h2 className="text-3xl md:text-4xl font-black leading-tight mb-8" style={{ color: "#F5F0E8" }}>
+            <span className="text-[11px] font-bold tracking-[0.35em] uppercase block mb-8" style={{ color: "#D4AF37" }}>Brand Spirit</span>
+            <h2
+              className="font-black leading-tight mb-10"
+              style={{ color: "#F5F0E8", fontSize: "clamp(2rem, 5vw, 3.5rem)" }}
+            >
               不只是教室，<br />而是能力升級的起點
             </h2>
-            <p className="text-base leading-relaxed mb-6" style={{ color: "rgba(245,240,232,0.7)" }}>
-              262培訓學院，不只是教室，而是一個讓專業被看見、讓經驗被傳承、讓技能被實踐的學習平台。
+            <div className="w-10 h-0.5 mx-auto mb-10" style={{ backgroundColor: "#D4AF37" }} />
+            <p className="text-base leading-relaxed mb-6" style={{ color: "rgba(245,240,232,0.65)" }}>
+              262培訓學院，不只是教室，而是一個讓專業被看見、讓經驗被傳承、讓技能被實踐的學習平台。我們以近30年的資訊產業經驗為基礎，結合專業師資、便利場地與實務課程，協助企業與個人在快速變動的數位時代中，持續學習、快速應用、穩健成長。
             </p>
-            <p className="text-base leading-relaxed mb-10" style={{ color: "rgba(245,240,232,0.7)" }}>
-              我們以近30年的資訊產業經驗為基礎，結合專業師資、便利場地與實務課程，協助企業與個人在快速變動的數位時代中，持續學習、快速應用、穩健成長。
+            <p
+              className="font-light italic"
+              style={{ color: "rgba(245,240,232,0.4)", fontSize: "1.05rem", lineHeight: 2 }}
+            >
+              這裡，是課程開始的地方；<br />
+              也是能力升級、資源連結與商業機會發生的地方。
             </p>
-            <div className="border-t pt-8" style={{ borderColor: "rgba(255,255,255,0.15)" }}>
-              <p className="text-lg font-light italic" style={{ color: "rgba(245,240,232,0.55)" }}>
-                這裡，是課程開始的地方；<br />
-                也是能力升級、資源連結與商業機會發生的地方。
-              </p>
-            </div>
           </div>
         </section>
 
         {/* ── COMPANY INFO ── */}
-        <section className="py-14" style={{ backgroundColor: "#F5F0E8" }}>
+        <section className="py-16 bg-white">
           <div className="container max-w-5xl">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-1 h-8 rounded-full" style={{ backgroundColor: "#1B3A6B" }} />
-              <h2 className="text-xl font-bold" style={{ color: "#1B3A6B" }}>公司資訊</h2>
+            <div className="flex items-center gap-3 mb-10">
+              <div className="w-px h-8" style={{ backgroundColor: "#1B3A6B" }} />
+              <span className="text-[11px] font-bold tracking-[0.3em] uppercase" style={{ color: "#1B3A6B" }}>Company</span>
             </div>
-            <div className="grid sm:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-3 gap-px" style={{ backgroundColor: "#E2E8F0" }}>
               {[
                 { label: "公司名稱", value: "二六二有限公司" },
                 { label: "統一編號", value: "60357703" },
                 { label: "公司地址", value: "台中市西屯區河南路二段262號3樓之11" },
               ].map((item) => (
-                <div key={item.label} className="bg-white rounded-xl px-6 py-5 shadow-sm border border-gray-100">
-                  <p className="text-xs font-semibold tracking-wider uppercase mb-2" style={{ color: "#1B3A6B80" }}>{item.label}</p>
-                  <p className="text-[15px] font-medium text-gray-800">{item.value}</p>
+                <div key={item.label} className="bg-white px-8 py-8">
+                  <p className="text-[10px] font-bold tracking-[0.2em] uppercase mb-3" style={{ color: "#1B3A6B60" }}>{item.label}</p>
+                  <p className="text-[15px] font-semibold text-gray-800">{item.value}</p>
                 </div>
               ))}
             </div>
