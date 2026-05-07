@@ -15,6 +15,7 @@ import EnrollPage from "./pages/EnrollPage";
 import InstructorPage from "./pages/InstructorPage";
 import SchedulePage from "./pages/SchedulePage";
 import FaqPage from "./pages/FaqPage";
+import AboutPage from "./pages/AboutPage";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -39,6 +40,7 @@ function Router() {
       <Route path={"/instructor"} component={InstructorPage} />
       <Route path={"/schedule"} component={SchedulePage} />
       <Route path={"/faq"} component={FaqPage} />
+      <Route path={"/about"} component={AboutPage} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
