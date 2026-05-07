@@ -7,7 +7,7 @@ const navItems = [
   { href: "/schedule", label: "開課日期" },
   { href: "/instructor", label: "講師介紹" },
   { href: "/faq", label: "課前準備" },
-  { href: "/about", label: "關於262" },
+  { href: "/about", label: "關於我們" },
 ];
 
 export default function Header() {

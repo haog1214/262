@@ -68,7 +68,7 @@ export default function AboutPage() {
                 {[
                   { num: "30", unit: "年", label: "資訊服務經驗" },
                   { num: "5+", unit: "", label: "專業課程領域" },
-                  { num: "262", unit: "號", label: "河南路二段" },
+                  { num: "2", unit: "家", label: "共同創辦企業" },
                 ].map((s) => (
                   <div key={s.label} className="border-l-2 pl-4" style={{ borderColor: "#D4AF37" }}>
                     <div className="text-3xl font-black" style={{ color: "#D4AF37" }}>{s.num}<span className="text-xl ml-0.5">{s.unit}</span></div>
@@ -128,8 +128,8 @@ export default function AboutPage() {
                   className="absolute bottom-8 left-0 -translate-x-8 hidden md:flex items-center gap-3 px-6 py-4 shadow-xl z-10"
                   style={{ backgroundColor: "#1B3A6B" }}
                 >
-                  <MapPin className="w-4 h-4 flex-shrink-0" style={{ color: "#D4AF37" }} />
-                  <span className="text-xs font-medium whitespace-nowrap" style={{ color: "#F5F0E8" }}>台中市西屯區河南路二段262號</span>
+                  <Building2 className="w-4 h-4 flex-shrink-0" style={{ color: "#D4AF37" }} />
+                  <span className="text-xs font-medium whitespace-nowrap" style={{ color: "#F5F0E8" }}>傳啓資訊 × 有椿有限公司</span>
                 </div>
               </div>
 
