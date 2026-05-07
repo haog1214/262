@@ -64,38 +64,65 @@ export default function AboutPage() {
                 台中西屯專業課程教室，鄰近逢甲大學，交通便利、好停車。<br />
                 提供企業內訓、講座活動、AI課程平台
               </p>
-              <div className="flex flex-wrap gap-10 md:gap-16">
+              <div className="flex flex-wrap gap-10 md:gap-14">
                 {[
                   { value: "30", unit: "年", label: "資訊服務經驗", pct: 0.75 },
                   { value: "1100", unit: "+", label: "輔導過學員", pct: 0.85 },
                   { value: "50", unit: "+", label: "輔導過的企業", pct: 0.65 },
                 ].map((s) => {
-                  const r = 42;
-                  const circ = 2 * Math.PI * r;
-                  const offset = circ * (1 - s.pct);
+                  const total = 54;
+                  const active = Math.round(total * s.pct);
+                  const cx = 50, cy = 50;
+                  const tickOuter = 46, tickInnerA = 38, tickInnerI = 43;
+                  const endAngle = ((active - 1) / total) * 2 * Math.PI - Math.PI / 2;
+                  const dotX = cx + Math.cos(endAngle) * (tickOuter - 1);
+                  const dotY = cy + Math.sin(endAngle) * (tickOuter - 1);
                   return (
                     <div key={s.label} className="flex flex-col items-center">
-                      <div className="relative w-28 h-28">
-                        <svg viewBox="0 0 100 100" className="w-full h-full" style={{ transform: "rotate(-90deg)" }}>
-                          <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="7" />
-                          <circle
-                            cx="50" cy="50" r={r}
-                            fill="none"
-                            stroke="#D4AF37"
-                            strokeWidth="7"
-                            strokeLinecap="round"
-                            strokeDasharray={`${circ}`}
-                            strokeDashoffset={`${offset}`}
-                          />
+                      <div className="relative" style={{ width: 130, height: 130 }}>
+                        <svg viewBox="0 0 100 100" className="w-full h-full">
+                          {/* Corner brackets */}
+                          <path d="M6,17 L6,6 L17,6" fill="none" stroke="#D4AF37" strokeWidth="1.5" strokeOpacity="0.6"/>
+                          <path d="M83,6 L94,6 L94,17" fill="none" stroke="#D4AF37" strokeWidth="1.5" strokeOpacity="0.6"/>
+                          <path d="M6,83 L6,94 L17,94" fill="none" stroke="#D4AF37" strokeWidth="1.5" strokeOpacity="0.6"/>
+                          <path d="M94,83 L94,94 L83,94" fill="none" stroke="#D4AF37" strokeWidth="1.5" strokeOpacity="0.6"/>
+                          {/* Inner ring */}
+                          <circle cx={cx} cy={cy} r="32" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5"/>
+                          {/* Tick marks */}
+                          {Array.from({ length: total }).map((_, i) => {
+                            const angle = (i / total) * 2 * Math.PI - Math.PI / 2;
+                            const on = i < active;
+                            const x1 = cx + Math.cos(angle) * tickOuter;
+                            const y1 = cy + Math.sin(angle) * tickOuter;
+                            const x2 = cx + Math.cos(angle) * (on ? tickInnerA : tickInnerI);
+                            const y2 = cy + Math.sin(angle) * (on ? tickInnerA : tickInnerI);
+                            return (
+                              <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
+                                stroke={on ? "#D4AF37" : "rgba(255,255,255,0.13)"}
+                                strokeWidth={on ? "2" : "1"}
+                                strokeLinecap="round"
+                              />
+                            );
+                          })}
+                          {/* End glow dot */}
+                          <circle cx={dotX} cy={dotY} r="2.5" fill="#D4AF37" opacity="0.9"/>
+                          <circle cx={dotX} cy={dotY} r="4" fill="none" stroke="#D4AF37" strokeWidth="0.8" opacity="0.3"/>
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <span className="font-black leading-none" style={{ color: "#D4AF37", fontSize: s.value.length > 2 ? "1.3rem" : "1.6rem" }}>
+                          <span
+                            className="font-black leading-none"
+                            style={{
+                              color: "#D4AF37",
+                              fontSize: s.value.length > 2 ? "1.4rem" : "1.9rem",
+                              textShadow: "0 0 18px rgba(212,175,55,0.55)",
+                            }}
+                          >
                             {s.value}
                           </span>
-                          <span className="text-sm font-bold" style={{ color: "#D4AF37" }}>{s.unit}</span>
+                          <span className="text-sm font-bold mt-0.5" style={{ color: "#D4AF37" }}>{s.unit}</span>
                         </div>
                       </div>
-                      <p className="text-xs tracking-wide mt-3 text-center" style={{ color: "rgba(245,240,232,0.5)" }}>{s.label}</p>
+                      <p className="text-[11px] tracking-widest mt-2 text-center uppercase" style={{ color: "rgba(245,240,232,0.4)" }}>{s.label}</p>
                     </div>
                   );
                 })}
