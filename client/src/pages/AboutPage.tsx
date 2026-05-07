@@ -378,29 +378,8 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── COMPANY INFO + MAP ── */}
+        {/* ── MAP ── */}
         <section className="bg-white">
-          {/* Company info bar */}
-          <div className="container max-w-5xl py-10">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-px h-8" style={{ backgroundColor: "#1B3A6B" }} />
-              <span className="text-[11px] font-bold tracking-[0.3em] uppercase" style={{ color: "#1B3A6B" }}>Company</span>
-            </div>
-            <div className="grid sm:grid-cols-4 gap-px" style={{ backgroundColor: "#E2E8F0" }}>
-              {[
-                { label: "公司名稱", value: "二六二有限公司" },
-                { label: "統一編號", value: "60357703" },
-                { label: "服務電話", value: "04-24529252" },
-                { label: "公司地址", value: "台中市西屯區河南路二段262號3樓之11" },
-              ].map((item) => (
-                <div key={item.label} className="bg-white px-6 py-6">
-                  <p className="text-[10px] font-bold tracking-[0.2em] uppercase mb-2" style={{ color: "#1B3A6B60" }}>{item.label}</p>
-                  <p className="text-[14px] font-semibold text-gray-800">{item.value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Full-width Google Map */}
           <div className="w-full" style={{ height: "420px" }}>
             <iframe
