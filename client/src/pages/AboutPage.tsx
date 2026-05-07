@@ -144,13 +144,13 @@ export default function AboutPage() {
                   <div className="w-5 h-5 rounded-sm flex-shrink-0" style={{ backgroundColor: "#1B3A6B" }} />
                   <span className="text-[11px] font-bold tracking-[0.3em] uppercase" style={{ color: "#1B3A6B" }}>Mission</span>
                 </div>
-                <h2 className="text-3xl md:text-4xl font-black leading-tight mb-4" style={{ color: "#1B3A6B" }}>
+                <h2 className="text-[24px] font-black leading-tight mb-4" style={{ color: "#1B3A6B" }}>
                   使命
                 </h2>
-                <p className="text-lg font-bold mb-6" style={{ color: "#1B3A6B" }}>
+                <p className="text-[20px] font-bold mb-6" style={{ color: "#1B3A6B" }}>
                   讓專業被看見，讓經驗被傳承
                 </p>
-                <div className="space-y-4 text-[15px] leading-relaxed" style={{ color: "#334155" }}>
+                <div className="space-y-4 text-[18px] leading-relaxed" style={{ color: "#334155" }}>
                   <p>
                     262培訓學院是由深耕資訊服務領域近<strong>30年</strong>的傳啓資訊股份有限公司和有椿有限公司共同打造的專業課程教學平台。長期協助企業進行網站建置、系統開發、電商平台規劃、數位行銷整合與企業數位轉型，累積了豐富的跨產業實戰經驗。
                   </p>
@@ -173,14 +173,6 @@ export default function AboutPage() {
                     <Building2 className="w-14 h-14 mx-auto mb-3" style={{ color: "#1B3A6B30" }} />
                     <p className="text-sm" style={{ color: "#1B3A6B50" }}>學院外觀 / 環境照片</p>
                   </div>
-                </div>
-                {/* Overlapping accent box */}
-                <div
-                  className="absolute bottom-8 left-0 -translate-x-8 hidden md:flex items-center gap-3 px-6 py-4 shadow-xl z-10"
-                  style={{ backgroundColor: "#1B3A6B" }}
-                >
-                  <Building2 className="w-4 h-4 flex-shrink-0" style={{ color: "#D4AF37" }} />
-                  <span className="text-xs font-medium whitespace-nowrap" style={{ color: "#F5F0E8" }}>傳啓資訊 × 有椿有限公司</span>
                 </div>
               </div>
 
@@ -222,13 +214,13 @@ export default function AboutPage() {
                   <div className="w-5 h-5 rotate-45 flex-shrink-0" style={{ backgroundColor: "#D4AF37" }} />
                   <span className="text-[11px] font-bold tracking-[0.3em] uppercase" style={{ color: "#D4AF37" }}>Vision</span>
                 </div>
-                <h2 className="text-3xl md:text-4xl font-black leading-tight mb-4" style={{ color: "#1B3A6B" }}>
+                <h2 className="text-[24px] font-black leading-tight mb-4" style={{ color: "#1B3A6B" }}>
                   願景
                 </h2>
-                <p className="text-lg font-bold mb-6" style={{ color: "#1B3A6B" }}>
+                <p className="text-[20px] font-bold mb-6" style={{ color: "#1B3A6B" }}>
                   台中最具實戰力的培訓平台
                 </p>
-                <div className="space-y-4 text-[15px] leading-relaxed text-gray-700">
+                <div className="space-y-4 text-[18px] leading-relaxed text-gray-700">
                   <p>
                     262培訓學院定位為台中地區兼具交通便利、產業實務與專業課程資源的培訓平台。我們希望整合傳啓資訊近30年的資訊服務經驗，結合多元師資與不同產業的專業課程，打造一個適合企業、講師與學員共同成長的知識交流空間。
                   </p>
@@ -277,9 +269,9 @@ export default function AboutPage() {
                   <div className="w-5 h-5 rounded-full border-2 flex-shrink-0" style={{ borderColor: "#1B3A6B" }} />
                   <span className="text-[11px] font-bold tracking-[0.3em] uppercase" style={{ color: "#1B3A6B" }}>Value</span>
                 </div>
-                <h2 className="text-3xl md:text-4xl font-black" style={{ color: "#1B3A6B" }}>這裡，適合誰</h2>
+                <h2 className="text-[24px] font-black" style={{ color: "#1B3A6B" }}>這裡，適合誰</h2>
               </div>
-              <p className="text-sm text-gray-400 md:mb-1">三種角色，一個共同成長的空間</p>
+              <p className="text-[18px] text-gray-400 md:mb-1">三種角色，一個共同成長的空間</p>
             </div>
 
             {/* Value list — Image 1 style with dividers */}
@@ -298,12 +290,12 @@ export default function AboutPage() {
                     >
                       <span style={{ color: "#1B3A6B" }}>{v.icon}</span>
                     </div>
-                    <h3 className="text-xl font-black mb-0.5" style={{ color: "#1B3A6B" }}>{v.label}</h3>
+                    <h3 className="text-[20px] font-black mb-0.5" style={{ color: "#1B3A6B" }}>{v.label}</h3>
                     <span className="text-[11px] tracking-widest uppercase" style={{ color: "#D4AF37" }}>{v.en}</span>
                   </div>
                   {/* Description */}
                   <div className="flex-1 flex items-center">
-                    <p className="text-[15px] leading-relaxed text-gray-600">{v.desc}</p>
+                    <p className="text-[18px] leading-relaxed text-gray-600">{v.desc}</p>
                   </div>
                 </div>
               ))}
@@ -321,10 +313,10 @@ export default function AboutPage() {
                   <div className="w-5 h-5 flex-shrink-0" style={{ backgroundColor: "#D4AF37" }} />
                   <span className="text-[11px] font-bold tracking-[0.3em] uppercase" style={{ color: "#D4AF37" }}>Direction</span>
                 </div>
-                <h2 className="text-3xl md:text-4xl font-black leading-tight mb-6" style={{ color: "#1B3A6B" }}>
+                <h2 className="text-[24px] font-black leading-tight mb-6" style={{ color: "#1B3A6B" }}>
                   未來<br />課程方向
                 </h2>
-                <p className="text-[15px] leading-relaxed text-gray-600">
+                <p className="text-[18px] leading-relaxed text-gray-600">
                   262培訓學院重視「實戰型教學」與「產業型師資」，持續發展多元課程領域，讓每一堂課都更貼近真實工作現場。
                 </p>
               </div>
@@ -340,8 +332,8 @@ export default function AboutPage() {
                       <span style={{ color: "#1B3A6B" }}>{d.icon}</span>
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900 mb-1">{d.title}</p>
-                      <p className="text-sm leading-relaxed text-gray-500">{d.desc}</p>
+                      <p className="text-[20px] font-bold text-gray-900 mb-1">{d.title}</p>
+                      <p className="text-[18px] leading-relaxed text-gray-500">{d.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -365,7 +357,7 @@ export default function AboutPage() {
               不只是教室，<br />而是能力升級的起點
             </h2>
             <div className="w-10 h-0.5 mx-auto mb-10" style={{ backgroundColor: "#D4AF37" }} />
-            <p className="text-base leading-relaxed mb-6" style={{ color: "rgba(245,240,232,0.65)" }}>
+            <p className="text-[18px] leading-relaxed mb-6" style={{ color: "rgba(245,240,232,0.65)" }}>
               262培訓學院，不只是教室，而是一個讓專業被看見、讓經驗被傳承、讓技能被實踐的學習平台。我們以近30年的資訊產業經驗為基礎，結合專業師資、便利場地與實務課程，協助企業與個人在快速變動的數位時代中，持續學習、快速應用、穩健成長。
             </p>
             <p
