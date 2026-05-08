@@ -43,6 +43,7 @@ export default function CoursesSection() {
                 badgeColor={course.badgeColor}
                 backgroundImage={course.backgroundImage}
                 detailPath={course.detailPath}
+                status={course.status}
               />
             </div>
           ))}

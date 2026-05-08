@@ -7,7 +7,20 @@ import {
   exportCoursesConfig,
   importCoursesConfig,
 } from "@/lib/coursesStorage";
-import { defaultCoursesConfig, type Course, type CoursesConfig, type BadgeColor } from "@/data/defaultCourses";
+import {
+  fetchSchedules,
+  saveSchedules,
+  fetchEnrollments,
+  saveEnrollments,
+  type Schedule,
+  type Enrollment,
+} from "@/lib/enrollmentsStorage";
+import {
+  defaultCoursesConfig,
+  type Course,
+  type CoursesConfig,
+  type BadgeColor,
+} from "@/data/defaultCourses";
 
 const ADMIN_PASSWORD = "262@Admin";
 const BADGE_COLORS: BadgeColor[] = ["pink", "purple", "green", "gold", "teal"];
@@ -18,6 +31,9 @@ const BADGE_COLOR_LABELS: Record<BadgeColor, string> = {
   gold: "金色",
   teal: "青色",
 };
+
+const genId = () =>
+  Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
 
 function emptyCourseDraft(): Omit<Course, "id"> {
   return {
@@ -30,10 +46,11 @@ function emptyCourseDraft(): Omit<Course, "id"> {
     badgeColor: "pink",
     backgroundImage: "",
     detailPath: "",
+    status: "open",
   };
 }
 
-// ── Styles ──────────────────────────────────────────────────────────────────
+// ── Styles ───────────────────────────────────────────────────────────────────
 const s = {
   page: {
     minHeight: "100vh",
@@ -49,7 +66,7 @@ const s = {
     justifyContent: "space-between",
   } as React.CSSProperties,
   main: {
-    maxWidth: "960px",
+    maxWidth: "1000px",
     margin: "0 auto",
     padding: "32px 16px",
   } as React.CSSProperties,
@@ -77,6 +94,15 @@ const s = {
     outline: "none",
     marginBottom: "14px",
   } as React.CSSProperties,
+  inputSm: {
+    border: "1px solid #D1D5DB",
+    borderRadius: "6px",
+    padding: "6px 8px",
+    fontSize: "13px",
+    boxSizing: "border-box" as const,
+    outline: "none",
+    width: "100%",
+  } as React.CSSProperties,
   textarea: {
     width: "100%",
     border: "1px solid #D1D5DB",
@@ -97,6 +123,13 @@ const s = {
     fontSize: "14px",
     boxSizing: "border-box" as const,
     marginBottom: "14px",
+    backgroundColor: "#fff",
+  } as React.CSSProperties,
+  selectSm: {
+    border: "1px solid #D1D5DB",
+    borderRadius: "6px",
+    padding: "6px 8px",
+    fontSize: "13px",
     backgroundColor: "#fff",
   } as React.CSSProperties,
   btnPrimary: {
@@ -138,6 +171,25 @@ const s = {
     fontWeight: 600,
     cursor: "pointer",
   } as React.CSSProperties,
+  btnIcon: {
+    backgroundColor: "transparent",
+    border: "1px solid #E5E7EB",
+    borderRadius: "6px",
+    padding: "6px 10px",
+    fontSize: "16px",
+    cursor: "pointer",
+    lineHeight: 1,
+  } as React.CSSProperties,
+  btnIconDanger: {
+    backgroundColor: "transparent",
+    border: "1px solid #FCA5A5",
+    borderRadius: "6px",
+    padding: "6px 10px",
+    fontSize: "16px",
+    cursor: "pointer",
+    lineHeight: 1,
+    color: "#EF4444",
+  } as React.CSSProperties,
   courseRow: {
     display: "flex",
     alignItems: "center",
@@ -150,7 +202,50 @@ const s = {
     gridTemplateColumns: "1fr 1fr",
     gap: "0 16px",
   } as React.CSSProperties,
+  table: {
+    width: "100%",
+    borderCollapse: "collapse" as const,
+    fontSize: "13px",
+  } as React.CSSProperties,
+  th: {
+    textAlign: "left" as const,
+    padding: "8px 10px",
+    backgroundColor: "#F9FAFB",
+    borderBottom: "2px solid #E5E7EB",
+    fontWeight: 600,
+    color: "#374151",
+    fontSize: "12px",
+  } as React.CSSProperties,
+  td: {
+    padding: "8px 10px",
+    borderBottom: "1px solid #F3F4F6",
+    verticalAlign: "middle" as const,
+  } as React.CSSProperties,
 };
+
+// ── Toast ────────────────────────────────────────────────────────────────────
+function Toast({ msg }: { msg: string }) {
+  if (!msg) return null;
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: "20px",
+        right: "20px",
+        zIndex: 9999,
+        backgroundColor: "#1B3A6B",
+        color: "#fff",
+        padding: "12px 20px",
+        borderRadius: "10px",
+        fontWeight: 600,
+        fontSize: "14px",
+        boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+      }}
+    >
+      {msg}
+    </div>
+  );
+}
 
 // ── Login screen ─────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin }: { onLogin: () => void }) {
@@ -196,7 +291,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-// ── Course form ───────────────────────────────────────────────────────────────
+// ── Course edit form ──────────────────────────────────────────────────────────
 function CourseForm({
   initial,
   onSave,
@@ -211,9 +306,12 @@ function CourseForm({
 
   return (
     <div style={s.card}>
-      <h3 style={{ fontWeight: 700, fontSize: "16px", color: "#1B3A6B", marginBottom: "20px" }}>
-        {"id" in draft ? `編輯課程 #${"id" in draft ? (draft as Course).id : ""}` : "新增課程"}
-      </h3>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+        <button style={s.btnGhost} onClick={onCancel}>← 返回</button>
+        <h3 style={{ fontWeight: 700, fontSize: "16px", color: "#1B3A6B", margin: 0 }}>
+          {"id" in draft ? `編輯課程` : "新增課程"}
+        </h3>
+      </div>
 
       <label style={s.label}>課程標題</label>
       <input style={s.input} value={draft.title} onChange={e => set("title", e.target.value)} placeholder="課程標題" />
@@ -272,17 +370,466 @@ function CourseForm({
   );
 }
 
+// ── Enrollment view ───────────────────────────────────────────────────────────
+function EnrollmentView({
+  course,
+  allSchedules,
+  allEnrollments,
+  onBack,
+  onToggleStatus,
+  showToast,
+  onSchedulesChange,
+  onEnrollmentsChange,
+}: {
+  course: Course;
+  allSchedules: Schedule[];
+  allEnrollments: Enrollment[];
+  onBack: () => void;
+  onToggleStatus: (status: "open" | "full") => Promise<void>;
+  showToast: (msg: string) => void;
+  onSchedulesChange: (all: Schedule[]) => void;
+  onEnrollmentsChange: (all: Enrollment[]) => void;
+}) {
+  const cid = String(course.id);
+  const [schedules, setSchedules] = useState<Schedule[]>(
+    allSchedules.filter(s => s.courseId === cid)
+  );
+  const [enrollments, setEnrollments] = useState<Enrollment[]>(
+    allEnrollments.filter(e => e.courseId === cid)
+  );
+  const [editingSchedId, setEditingSchedId] = useState<string | null>(null);
+  const [schedDraft, setSchedDraft] = useState<Schedule | null>(null);
+  const [newSchedIds, setNewSchedIds] = useState<Set<string>>(new Set());
+  const [editingEnrollId, setEditingEnrollId] = useState<string | null>(null);
+  const [enrollDraft, setEnrollDraft] = useState<Enrollment | null>(null);
+  const [newEnrollIds, setNewEnrollIds] = useState<Set<string>>(new Set());
+  const [filterSchedId, setFilterSchedId] = useState<string>("all");
+  const [savingSched, setSavingSched] = useState(false);
+  const [savingEnroll, setSavingEnroll] = useState(false);
+  const [togglingStatus, setTogglingStatus] = useState(false);
+
+  const persistSchedules = async (updated: Schedule[]) => {
+    setSavingSched(true);
+    const others = allSchedules.filter(s => s.courseId !== cid);
+    const all = [...others, ...updated];
+    const result = await saveSchedules(all);
+    setSavingSched(false);
+    if (result.ok) {
+      onSchedulesChange(all);
+      showToast("✅ 梯次已儲存");
+    } else {
+      showToast(`❌ 儲存失敗：${result.error}`);
+    }
+    return result.ok;
+  };
+
+  const persistEnrollments = async (updated: Enrollment[]) => {
+    setSavingEnroll(true);
+    const others = allEnrollments.filter(e => e.courseId !== cid);
+    const all = [...others, ...updated];
+    const result = await saveEnrollments(all);
+    setSavingEnroll(false);
+    if (result.ok) {
+      onEnrollmentsChange(all);
+      showToast("✅ 報名資料已儲存");
+    } else {
+      showToast(`❌ 儲存失敗：${result.error}`);
+    }
+    return result.ok;
+  };
+
+  // ── Schedule actions ──
+  const addSchedule = () => {
+    const id = genId();
+    const newS: Schedule = { id, courseId: cid, date: "", time: "", maxCapacity: "20", status: "open" };
+    const updated = [...schedules, newS];
+    setSchedules(updated);
+    setNewSchedIds(p => new Set(p).add(id));
+    setEditingSchedId(id);
+    setSchedDraft(newS);
+  };
+
+  const startEditSched = (s: Schedule) => {
+    setEditingSchedId(s.id);
+    setSchedDraft({ ...s });
+  };
+
+  const saveSchedRow = async () => {
+    if (!schedDraft) return;
+    const updated = schedules.map(s => (s.id === schedDraft.id ? schedDraft : s));
+    setSchedules(updated);
+    setNewSchedIds(p => { const n = new Set(p); n.delete(schedDraft.id); return n; });
+    setEditingSchedId(null);
+    setSchedDraft(null);
+    await persistSchedules(updated);
+  };
+
+  const cancelSchedEdit = () => {
+    if (schedDraft && newSchedIds.has(schedDraft.id)) {
+      setSchedules(prev => prev.filter(s => s.id !== schedDraft.id));
+      setNewSchedIds(p => { const n = new Set(p); n.delete(schedDraft.id); return n; });
+    }
+    setEditingSchedId(null);
+    setSchedDraft(null);
+  };
+
+  const deleteSched = async (id: string) => {
+    if (!confirm("確定要刪除此梯次？相關報名資料也將一併刪除。")) return;
+    const updatedScheds = schedules.filter(s => s.id !== id);
+    const updatedEnrolls = enrollments.filter(e => e.scheduleId !== id);
+    setSchedules(updatedScheds);
+    setEnrollments(updatedEnrolls);
+    await persistSchedules(updatedScheds);
+    await persistEnrollments(updatedEnrolls);
+  };
+
+  // ── Enrollment actions ──
+  const addEnrollment = () => {
+    const id = genId();
+    const schedId = filterSchedId === "all" ? (schedules[0]?.id ?? "") : filterSchedId;
+    const newE: Enrollment = { id, courseId: cid, scheduleId: schedId, name: "", phone: "", email: "", notes: "" };
+    const updated = [...enrollments, newE];
+    setEnrollments(updated);
+    setNewEnrollIds(p => new Set(p).add(id));
+    setEditingEnrollId(id);
+    setEnrollDraft(newE);
+  };
+
+  const startEditEnroll = (e: Enrollment) => {
+    setEditingEnrollId(e.id);
+    setEnrollDraft({ ...e });
+  };
+
+  const saveEnrollRow = async () => {
+    if (!enrollDraft) return;
+    const updated = enrollments.map(e => (e.id === enrollDraft.id ? enrollDraft : e));
+    setEnrollments(updated);
+    setNewEnrollIds(p => { const n = new Set(p); n.delete(enrollDraft.id); return n; });
+    setEditingEnrollId(null);
+    setEnrollDraft(null);
+    await persistEnrollments(updated);
+  };
+
+  const cancelEnrollEdit = () => {
+    if (enrollDraft && newEnrollIds.has(enrollDraft.id)) {
+      setEnrollments(prev => prev.filter(e => e.id !== enrollDraft.id));
+      setNewEnrollIds(p => { const n = new Set(p); n.delete(enrollDraft.id); return n; });
+    }
+    setEditingEnrollId(null);
+    setEnrollDraft(null);
+  };
+
+  const deleteEnroll = async (id: string) => {
+    if (!confirm("確定要刪除此報名資料？")) return;
+    const updated = enrollments.filter(e => e.id !== id);
+    setEnrollments(updated);
+    await persistEnrollments(updated);
+  };
+
+  const filteredEnrollments =
+    filterSchedId === "all"
+      ? enrollments
+      : enrollments.filter(e => e.scheduleId === filterSchedId);
+
+  const enrollCountFor = (id: string) =>
+    enrollments.filter(e => e.scheduleId === id).length;
+
+  const handleToggleStatus = async (newStatus: "open" | "full") => {
+    setTogglingStatus(true);
+    await onToggleStatus(newStatus);
+    setTogglingStatus(false);
+  };
+
+  return (
+    <div>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+        <button style={s.btnGhost} onClick={onBack}>← 返回課程列表</button>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: "18px", color: "#1B3A6B" }}>{course.title}</div>
+          <div style={{ fontSize: "12px", color: "#9CA3AF" }}>報名管理</div>
+        </div>
+      </div>
+
+      {/* Course status toggle */}
+      <div style={{ ...s.card, display: "flex", alignItems: "center", gap: "16px" }}>
+        <div style={{ fontWeight: 600, fontSize: "14px", color: "#374151" }}>前台課程狀態：</div>
+        <button
+          style={{
+            ...s.btnGreen,
+            opacity: course.status === "open" ? 1 : 0.4,
+            outline: course.status === "open" ? "3px solid #059669" : "none",
+          }}
+          onClick={() => !togglingStatus && handleToggleStatus("open")}
+          disabled={togglingStatus || course.status === "open"}
+        >
+          ✅ 開放報名
+        </button>
+        <button
+          style={{
+            ...s.btnDanger,
+            opacity: course.status === "full" ? 1 : 0.4,
+            outline: course.status === "full" ? "3px solid #DC2626" : "none",
+          }}
+          onClick={() => !togglingStatus && handleToggleStatus("full")}
+          disabled={togglingStatus || course.status === "full"}
+        >
+          🚫 額滿
+        </button>
+        {togglingStatus && (
+          <span style={{ fontSize: "13px", color: "#9CA3AF" }}>儲存中...</span>
+        )}
+        <span style={{ fontSize: "12px", color: "#9CA3AF", marginLeft: "auto" }}>
+          切換狀態後，前台課程卡片會即時顯示「額滿」覆蓋
+        </span>
+      </div>
+
+      {/* Schedules */}
+      <div style={s.card}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+          <h3 style={{ fontWeight: 700, fontSize: "15px", color: "#1B3A6B", margin: 0 }}>
+            課程梯次 {savingSched && <span style={{ fontSize: "12px", color: "#9CA3AF" }}>儲存中...</span>}
+          </h3>
+          <button style={s.btnGreen} onClick={addSchedule} disabled={!!editingSchedId}>
+            ＋ 新增梯次
+          </button>
+        </div>
+
+        <table style={s.table}>
+          <thead>
+            <tr>
+              <th style={s.th}>日期</th>
+              <th style={s.th}>時間</th>
+              <th style={s.th}>人數上限</th>
+              <th style={s.th}>已報名</th>
+              <th style={{ ...s.th, width: "100px" }}>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {schedules.length === 0 && (
+              <tr>
+                <td colSpan={5} style={{ ...s.td, textAlign: "center", color: "#9CA3AF", padding: "24px" }}>
+                  尚無梯次，點擊「新增梯次」建立
+                </td>
+              </tr>
+            )}
+            {schedules.map(sched => {
+              const isEditing = editingSchedId === sched.id;
+              const d = isEditing ? schedDraft! : sched;
+              return (
+                <tr key={sched.id}>
+                  <td style={s.td}>
+                    {isEditing ? (
+                      <input
+                        style={s.inputSm}
+                        value={d.date}
+                        onChange={e => setSchedDraft(p => p ? { ...p, date: e.target.value } : p)}
+                        placeholder="2025/06/01"
+                      />
+                    ) : sched.date || "—"}
+                  </td>
+                  <td style={s.td}>
+                    {isEditing ? (
+                      <input
+                        style={s.inputSm}
+                        value={d.time}
+                        onChange={e => setSchedDraft(p => p ? { ...p, time: e.target.value } : p)}
+                        placeholder="10:00–13:00"
+                      />
+                    ) : sched.time || "—"}
+                  </td>
+                  <td style={s.td}>
+                    {isEditing ? (
+                      <input
+                        style={{ ...s.inputSm, width: "80px" }}
+                        type="number"
+                        value={d.maxCapacity}
+                        onChange={e => setSchedDraft(p => p ? { ...p, maxCapacity: e.target.value } : p)}
+                      />
+                    ) : sched.maxCapacity}
+                  </td>
+                  <td style={s.td}>
+                    {enrollCountFor(sched.id)} / {sched.maxCapacity}
+                  </td>
+                  <td style={s.td}>
+                    {isEditing ? (
+                      <div style={{ display: "flex", gap: "4px" }}>
+                        <button style={{ ...s.btnPrimary, padding: "5px 10px", fontSize: "13px" }} onClick={saveSchedRow}>
+                          💾
+                        </button>
+                        <button style={{ ...s.btnGhost, padding: "5px 8px", fontSize: "13px" }} onClick={cancelSchedEdit}>
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", gap: "4px" }}>
+                        <button style={s.btnIcon} onClick={() => startEditSched(sched)} title="編輯">✏️</button>
+                        <button style={s.btnIconDanger} onClick={() => deleteSched(sched.id)} title="刪除">🗑️</button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Enrollments */}
+      <div style={s.card}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <h3 style={{ fontWeight: 700, fontSize: "15px", color: "#1B3A6B", margin: 0 }}>
+              報名人員 {savingEnroll && <span style={{ fontSize: "12px", color: "#9CA3AF" }}>儲存中...</span>}
+            </h3>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ fontSize: "12px", color: "#6B7280" }}>篩選梯次：</span>
+              <select
+                style={s.selectSm}
+                value={filterSchedId}
+                onChange={e => setFilterSchedId(e.target.value)}
+              >
+                <option value="all">全部（{enrollments.length} 人）</option>
+                {schedules.map(s => (
+                  <option key={s.id} value={s.id}>
+                    {s.date} {s.time}（{enrollCountFor(s.id)} 人）
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <button style={s.btnGreen} onClick={addEnrollment} disabled={!!editingEnrollId}>
+            ＋ 新增報名
+          </button>
+        </div>
+
+        <table style={s.table}>
+          <thead>
+            <tr>
+              <th style={{ ...s.th, width: "32px" }}>#</th>
+              <th style={s.th}>姓名</th>
+              <th style={s.th}>電話</th>
+              <th style={s.th}>Email</th>
+              <th style={s.th}>梯次</th>
+              <th style={s.th}>備注</th>
+              <th style={{ ...s.th, width: "90px" }}>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredEnrollments.length === 0 && (
+              <tr>
+                <td colSpan={7} style={{ ...s.td, textAlign: "center", color: "#9CA3AF", padding: "24px" }}>
+                  尚無報名資料
+                </td>
+              </tr>
+            )}
+            {filteredEnrollments.map((enroll, idx) => {
+              const isEditing = editingEnrollId === enroll.id;
+              const d = isEditing ? enrollDraft! : enroll;
+              const schedLabel = schedules.find(s => s.id === enroll.scheduleId);
+              return (
+                <tr key={enroll.id}>
+                  <td style={{ ...s.td, color: "#9CA3AF", fontSize: "12px" }}>{idx + 1}</td>
+                  <td style={s.td}>
+                    {isEditing ? (
+                      <input
+                        style={s.inputSm}
+                        value={d.name}
+                        onChange={e => setEnrollDraft(p => p ? { ...p, name: e.target.value } : p)}
+                        placeholder="姓名"
+                        autoFocus
+                      />
+                    ) : enroll.name || "—"}
+                  </td>
+                  <td style={s.td}>
+                    {isEditing ? (
+                      <input
+                        style={s.inputSm}
+                        value={d.phone}
+                        onChange={e => setEnrollDraft(p => p ? { ...p, phone: e.target.value } : p)}
+                        placeholder="0912345678"
+                      />
+                    ) : enroll.phone || "—"}
+                  </td>
+                  <td style={s.td}>
+                    {isEditing ? (
+                      <input
+                        style={s.inputSm}
+                        value={d.email}
+                        onChange={e => setEnrollDraft(p => p ? { ...p, email: e.target.value } : p)}
+                        placeholder="email@example.com"
+                      />
+                    ) : enroll.email || "—"}
+                  </td>
+                  <td style={s.td}>
+                    {isEditing ? (
+                      <select
+                        style={s.selectSm}
+                        value={d.scheduleId}
+                        onChange={e => setEnrollDraft(p => p ? { ...p, scheduleId: e.target.value } : p)}
+                      >
+                        <option value="">— 未指定 —</option>
+                        {schedules.map(s => (
+                          <option key={s.id} value={s.id}>{s.date} {s.time}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span style={{ fontSize: "12px", color: "#6B7280" }}>
+                        {schedLabel ? `${schedLabel.date} ${schedLabel.time}` : "未指定"}
+                      </span>
+                    )}
+                  </td>
+                  <td style={s.td}>
+                    {isEditing ? (
+                      <input
+                        style={s.inputSm}
+                        value={d.notes}
+                        onChange={e => setEnrollDraft(p => p ? { ...p, notes: e.target.value } : p)}
+                        placeholder="備注"
+                      />
+                    ) : enroll.notes || "—"}
+                  </td>
+                  <td style={s.td}>
+                    {isEditing ? (
+                      <div style={{ display: "flex", gap: "4px" }}>
+                        <button style={{ ...s.btnPrimary, padding: "5px 10px", fontSize: "13px" }} onClick={saveEnrollRow}>
+                          💾
+                        </button>
+                        <button style={{ ...s.btnGhost, padding: "5px 8px", fontSize: "13px" }} onClick={cancelEnrollEdit}>
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", gap: "4px" }}>
+                        <button style={s.btnIcon} onClick={() => startEditEnroll(enroll)} title="編輯">✏️</button>
+                        <button style={s.btnIconDanger} onClick={() => deleteEnroll(enroll.id)} title="刪除">🗑️</button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 // ── Main admin page ───────────────────────────────────────────────────────────
 export default function AdminCoursesPage() {
   const [authed, setAuthed] = useState(false);
+  const [view, setView] = useState<"list" | "edit" | "enrollment">("list");
   const [config, setConfig] = useState<CoursesConfig>(getLocalCoursesConfig);
   const [editingId, setEditingId] = useState<number | "new" | null>(null);
+  const [enrollCourseId, setEnrollCourseId] = useState<number | null>(null);
+  const [allSchedules, setAllSchedules] = useState<Schedule[]>([]);
+  const [allEnrollments, setAllEnrollments] = useState<Enrollment[]>([]);
   const [toast, setToast] = useState("");
   const [saving, setSaving] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const importRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load from Google Sheets on mount
   useEffect(() => {
     getCoursesConfig().then(setConfig);
   }, []);
@@ -305,23 +852,35 @@ export default function AdminCoursesPage() {
     }
   };
 
-  const saveSectionMeta = (field: "sectionTitle" | "sectionSubtitle", val: string) => {
-    setConfig(c => ({ ...c, [field]: val }));
+  const openEditView = (id: number | "new") => {
+    setEditingId(id);
+    setView("edit");
   };
 
-  const flushSectionMeta = () => {
-    persist(config);
+  const openEnrollmentView = async (courseId: number) => {
+    setEnrollCourseId(courseId);
+    const [schedData, enrollData] = await Promise.all([
+      fetchSchedules(),
+      fetchEnrollments(),
+    ]);
+    setAllSchedules(schedData);
+    setAllEnrollments(enrollData);
+    setView("enrollment");
   };
 
   const saveCourseDraft = (draft: Course | Omit<Course, "id">) => {
     let updated: CoursesConfig;
-    if ("id" in draft && typeof (draft as Course).id === "number") {
-      updated = { ...config, courses: config.courses.map(c => c.id === (draft as Course).id ? draft as Course : c) };
+    if ("id" in draft) {
+      updated = {
+        ...config,
+        courses: config.courses.map(c => (c.id === (draft as Course).id ? (draft as Course) : c)),
+      };
     } else {
       const maxId = config.courses.reduce((m, c) => Math.max(m, c.id), 0);
       const newCourse: Course = { ...(draft as Omit<Course, "id">), id: maxId + 1 };
       updated = { ...config, courses: [...config.courses, newCourse] };
     }
+    setView("list");
     setEditingId(null);
     persist(updated);
   };
@@ -329,14 +888,6 @@ export default function AdminCoursesPage() {
   const deleteCourse = (id: number) => {
     if (!confirm("確定要刪除這門課程嗎？")) return;
     persist({ ...config, courses: config.courses.filter(c => c.id !== id) });
-  };
-
-  const moveCourse = (idx: number, dir: -1 | 1) => {
-    const arr = [...config.courses];
-    const target = idx + dir;
-    if (target < 0 || target >= arr.length) return;
-    [arr[idx], arr[target]] = [arr[target], arr[idx]];
-    persist({ ...config, courses: arr });
   };
 
   const handleReset = () => {
@@ -369,27 +920,84 @@ export default function AdminCoursesPage() {
     }
   };
 
+  const saveSectionMeta = (field: "sectionTitle" | "sectionSubtitle", val: string) => {
+    setConfig(c => ({ ...c, [field]: val }));
+  };
+
   if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />;
 
-  const editing = editingId === "new"
-    ? emptyCourseDraft()
-    : editingId !== null
-    ? config.courses.find(c => c.id === editingId)
+  const enrollCourse = enrollCourseId !== null
+    ? config.courses.find(c => c.id === enrollCourseId)
     : null;
 
+  // ── Edit view ──
+  if (view === "edit") {
+    const initial = editingId === "new"
+      ? emptyCourseDraft()
+      : config.courses.find(c => c.id === editingId) ?? emptyCourseDraft();
+    return (
+      <div style={s.page}>
+        <Toast msg={toast} />
+        <div style={s.header}>
+          <div>
+            <div style={{ fontSize: "18px", fontWeight: 700 }}>262學院 後台管理</div>
+            <div style={{ fontSize: "12px", color: "#93C5FD", marginTop: "2px" }}>
+              {saving ? "⏳ 儲存中..." : "精選課程編輯 · 已連接 Google Sheets"}
+            </div>
+          </div>
+        </div>
+        <div style={s.main}>
+          <CourseForm
+            initial={initial}
+            onSave={saveCourseDraft}
+            onCancel={() => setView("list")}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ── Enrollment view ──
+  if (view === "enrollment" && enrollCourse) {
+    return (
+      <div style={s.page}>
+        <Toast msg={toast} />
+        <div style={s.header}>
+          <div>
+            <div style={{ fontSize: "18px", fontWeight: 700 }}>262學院 後台管理</div>
+            <div style={{ fontSize: "12px", color: "#93C5FD", marginTop: "2px" }}>
+              報名管理 · 已連接 Google Sheets
+            </div>
+          </div>
+        </div>
+        <div style={s.main}>
+          <EnrollmentView
+            course={enrollCourse}
+            allSchedules={allSchedules}
+            allEnrollments={allEnrollments}
+            onBack={() => setView("list")}
+            onToggleStatus={async (status) => {
+              const updated = {
+                ...config,
+                courses: config.courses.map(c =>
+                  c.id === enrollCourse.id ? { ...c, status } : c
+                ),
+              };
+              await persist(updated);
+            }}
+            showToast={showToast}
+            onSchedulesChange={setAllSchedules}
+            onEnrollmentsChange={setAllEnrollments}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ── List view (default) ──
   return (
     <div style={s.page}>
-      {/* Toast */}
-      {toast && (
-        <div style={{
-          position: "fixed", top: "20px", right: "20px", zIndex: 9999,
-          backgroundColor: "#1B3A6B", color: "#fff", padding: "12px 20px",
-          borderRadius: "10px", fontWeight: 600, fontSize: "14px",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
-        }}>
-          {toast}
-        </div>
-      )}
+      <Toast msg={toast} />
 
       {/* Header */}
       <div style={s.header}>
@@ -418,7 +1026,7 @@ export default function AdminCoursesPage() {
             <textarea
               ref={importRef}
               style={{ ...s.textarea, minHeight: "120px", fontFamily: "monospace", fontSize: "12px" }}
-              placeholder='貼上備份的 JSON 內容...'
+              placeholder="貼上備份的 JSON 內容..."
             />
             <div style={{ display: "flex", gap: "10px" }}>
               <button style={s.btnGreen} onClick={handleImport}>確認匯入</button>
@@ -439,7 +1047,7 @@ export default function AdminCoursesPage() {
                 style={s.input}
                 value={config.sectionTitle}
                 onChange={e => saveSectionMeta("sectionTitle", e.target.value)}
-                onBlur={flushSectionMeta}
+                onBlur={() => persist(config)}
               />
             </div>
             <div>
@@ -448,7 +1056,7 @@ export default function AdminCoursesPage() {
                 style={s.input}
                 value={config.sectionSubtitle}
                 onChange={e => saveSectionMeta("sectionSubtitle", e.target.value)}
-                onBlur={flushSectionMeta}
+                onBlur={() => persist(config)}
               />
             </div>
           </div>
@@ -463,15 +1071,20 @@ export default function AdminCoursesPage() {
             <h2 style={{ fontWeight: 700, fontSize: "16px", color: "#1B3A6B" }}>
               課程列表（共 {config.courses.length} 門）
             </h2>
-            <button style={s.btnGreen} onClick={() => setEditingId("new")}>＋ 新增課程</button>
+            <button style={s.btnGreen} onClick={() => openEditView("new")}>＋ 新增課程</button>
           </div>
 
-          {config.courses.map((course, idx) => (
+          {config.courses.map(course => (
             <div key={course.id} style={s.courseRow}>
               {/* Thumbnail */}
               <div style={{
-                width: "56px", height: "56px", borderRadius: "8px", overflow: "hidden",
-                backgroundColor: "#E5E7EB", flexShrink: 0,
+                width: "56px",
+                height: "56px",
+                borderRadius: "8px",
+                overflow: "hidden",
+                backgroundColor: "#E5E7EB",
+                flexShrink: 0,
+                position: "relative",
               }}>
                 {course.backgroundImage && (
                   <img
@@ -480,6 +1093,21 @@ export default function AdminCoursesPage() {
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     onError={e => ((e.target as HTMLImageElement).style.display = "none")}
                   />
+                )}
+                {course.status === "full" && (
+                  <div style={{
+                    position: "absolute",
+                    inset: 0,
+                    backgroundColor: "rgba(0,0,0,0.5)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    color: "#fff",
+                  }}>
+                    額滿
+                  </div>
                 )}
               </div>
 
@@ -493,25 +1121,41 @@ export default function AdminCoursesPage() {
                 </div>
               </div>
 
+              {/* Status badge */}
+              <div style={{
+                padding: "4px 10px",
+                borderRadius: "20px",
+                fontSize: "12px",
+                fontWeight: 600,
+                backgroundColor: course.status === "full" ? "#FEE2E2" : "#D1FAE5",
+                color: course.status === "full" ? "#DC2626" : "#065F46",
+                flexShrink: 0,
+              }}>
+                {course.status === "full" ? "🚫 額滿" : "✅ 開放中"}
+              </div>
+
               {/* Actions */}
               <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
                 <button
-                  style={{ ...s.btnGhost, padding: "6px 10px", fontSize: "16px" }}
-                  onClick={() => moveCourse(idx, -1)}
-                  disabled={idx === 0}
-                  title="上移"
-                >▲</button>
-                <button
-                  style={{ ...s.btnGhost, padding: "6px 10px", fontSize: "16px" }}
-                  onClick={() => moveCourse(idx, 1)}
-                  disabled={idx === config.courses.length - 1}
-                  title="下移"
-                >▼</button>
-                <button style={{ ...s.btnPrimary, padding: "6px 14px", fontSize: "13px" }} onClick={() => setEditingId(course.id)}>
-                  編輯
+                  style={{ ...s.btnIcon, fontSize: "18px", padding: "6px 12px" }}
+                  onClick={() => openEditView(course.id)}
+                  title="編輯課程"
+                >
+                  ✏️
                 </button>
-                <button style={{ ...s.btnDanger, padding: "6px 10px" }} onClick={() => deleteCourse(course.id)}>
-                  刪除
+                <button
+                  style={{ ...s.btnIconDanger, fontSize: "18px", padding: "6px 12px" }}
+                  onClick={() => deleteCourse(course.id)}
+                  title="刪除課程"
+                >
+                  🗑️
+                </button>
+                <button
+                  style={{ ...s.btnIcon, fontSize: "18px", padding: "6px 12px", borderColor: "#BFDBFE", color: "#1D4ED8" }}
+                  onClick={() => openEnrollmentView(course.id)}
+                  title="報名清單"
+                >
+                  📋
                 </button>
               </div>
             </div>
@@ -523,15 +1167,6 @@ export default function AdminCoursesPage() {
             </div>
           )}
         </div>
-
-        {/* Edit form */}
-        {editing !== undefined && editing !== null && (
-          <CourseForm
-            initial={editing}
-            onSave={saveCourseDraft}
-            onCancel={() => setEditingId(null)}
-          />
-        )}
 
         <p style={{ textAlign: "center", fontSize: "12px", color: "#D1D5DB", marginTop: "32px" }}>
           262學院後台管理系統 · 資料儲存於 Google Sheets

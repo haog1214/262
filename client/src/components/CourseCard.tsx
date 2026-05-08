@@ -19,6 +19,7 @@ interface CourseCardProps {
   badgeColor: "pink" | "purple" | "green" | "gold" | "teal";
   backgroundImage: string;
   detailPath?: string;
+  status?: "open" | "full";
 }
 
 export default function CourseCard({
@@ -33,6 +34,7 @@ export default function CourseCard({
   badgeColor,
   backgroundImage,
   detailPath,
+  status,
 }: CourseCardProps) {
   const getBadgeColorClass = () => {
     switch (badgeColor) {
@@ -65,6 +67,14 @@ export default function CourseCard({
             {badge}
           </div>
         </div>
+        {/* 額滿覆蓋層 */}
+        {status === "full" && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/55">
+            <span className="text-white text-2xl font-extrabold tracking-widest border-4 border-white rounded-xl px-5 py-2 rotate-[-12deg]">
+              額　滿
+            </span>
+          </div>
+        )}
       </div>
 
       {/* 文案區域 - 放在圖片下方，18級文字 */}

@@ -11,6 +11,7 @@ export interface Course {
   badgeColor: string;
   backgroundImage: string;
   detailPath: string;
+  status: string;
 }
 
 export interface CoursesConfig {
@@ -19,11 +20,59 @@ export interface CoursesConfig {
   courses: Course[];
 }
 
+export interface Schedule {
+  id: string;
+  courseId: string;
+  date: string;
+  time: string;
+  maxCapacity: string;
+  status: string;
+}
+
+export interface Enrollment {
+  id: string;
+  courseId: string;
+  scheduleId: string;
+  name: string;
+  phone: string;
+  email: string;
+  notes: string;
+}
+
 const COURSE_HEADERS: (keyof Course)[] = [
   "id", "title", "description", "tools",
   "originalPrice", "discountPrice", "badge", "badgeColor",
-  "backgroundImage", "detailPath",
+  "backgroundImage", "detailPath", "status",
 ];
+
+const SCHEDULE_HEADERS: (keyof Schedule)[] = [
+  "id", "courseId", "date", "time", "maxCapacity", "status",
+];
+
+const ENROLLMENT_HEADERS: (keyof Enrollment)[] = [
+  "id", "courseId", "scheduleId", "name", "phone", "email", "notes",
+];
+
+async function ensureTab(
+  sheets: ReturnType<typeof google.sheets>,
+  sheetId: string,
+  tabName: string
+): Promise<void> {
+  try {
+    const meta = await sheets.spreadsheets.get({ spreadsheetId: sheetId });
+    const exists = meta.data.sheets?.some(s => s.properties?.title === tabName);
+    if (!exists) {
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId: sheetId,
+        requestBody: {
+          requests: [{ addSheet: { properties: { title: tabName } } }],
+        },
+      });
+    }
+  } catch {
+    // ignore — write will surface the real error
+  }
+}
 
 function getSheets() {
   const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
@@ -43,7 +92,7 @@ export async function readCoursesFromSheet(): Promise<CoursesConfig> {
 
   const [metaRes, coursesRes] = await Promise.all([
     sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: "meta!A:B" }),
-    sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: "courses!A:J" }),
+    sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: "courses!A:K" }),
   ]);
 
   const meta: Record<string, string> = {};
@@ -59,7 +108,11 @@ export async function readCoursesFromSheet(): Promise<CoursesConfig> {
       (headers ?? COURSE_HEADERS).forEach((h: string, i: number) => {
         obj[h] = row[i] ?? "";
       });
-      return { ...obj, id: Number(obj.id) } as unknown as Course;
+      return {
+        ...obj,
+        id: Number(obj.id),
+        status: (obj.status as "open" | "full") || "open",
+      } as unknown as Course;
     });
 
   return {
@@ -98,4 +151,86 @@ export async function writeCoursesToSheet(config: CoursesConfig): Promise<void> 
       })
     ),
   ]);
+}
+
+export async function readSchedulesFromSheet(): Promise<Schedule[]> {
+  const { sheets, sheetId } = getSheets();
+  try {
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: sheetId,
+      range: "schedules!A:F",
+    });
+    const [headers, ...dataRows] = res.data.values ?? [];
+    if (!dataRows?.length) return [];
+    return dataRows
+      .filter(row => row.some(Boolean))
+      .map(row => {
+        const obj: Record<string, string> = {};
+        (headers ?? SCHEDULE_HEADERS).forEach((h: string, i: number) => {
+          obj[h] = row[i] ?? "";
+        });
+        return obj as unknown as Schedule;
+      });
+  } catch {
+    return [];
+  }
+}
+
+export async function writeSchedulesToSheet(schedules: Schedule[]): Promise<void> {
+  const { sheets, sheetId } = getSheets();
+  await ensureTab(sheets, sheetId, "schedules");
+  const rows = [
+    SCHEDULE_HEADERS,
+    ...schedules.map(s => SCHEDULE_HEADERS.map(h => String(s[h] ?? ""))),
+  ];
+  await sheets.spreadsheets.values.clear({ spreadsheetId: sheetId, range: "schedules!A:Z" });
+  if (rows.length > 1) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: sheetId,
+      range: "schedules!A1",
+      valueInputOption: "RAW",
+      requestBody: { values: rows },
+    });
+  }
+}
+
+export async function readEnrollmentsFromSheet(): Promise<Enrollment[]> {
+  const { sheets, sheetId } = getSheets();
+  try {
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: sheetId,
+      range: "enrollments!A:G",
+    });
+    const [headers, ...dataRows] = res.data.values ?? [];
+    if (!dataRows?.length) return [];
+    return dataRows
+      .filter(row => row.some(Boolean))
+      .map(row => {
+        const obj: Record<string, string> = {};
+        (headers ?? ENROLLMENT_HEADERS).forEach((h: string, i: number) => {
+          obj[h] = row[i] ?? "";
+        });
+        return obj as unknown as Enrollment;
+      });
+  } catch {
+    return [];
+  }
+}
+
+export async function writeEnrollmentsToSheet(enrollments: Enrollment[]): Promise<void> {
+  const { sheets, sheetId } = getSheets();
+  await ensureTab(sheets, sheetId, "enrollments");
+  const rows = [
+    ENROLLMENT_HEADERS,
+    ...enrollments.map(e => ENROLLMENT_HEADERS.map(h => String(e[h] ?? ""))),
+  ];
+  await sheets.spreadsheets.values.clear({ spreadsheetId: sheetId, range: "enrollments!A:Z" });
+  if (rows.length > 1) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: sheetId,
+      range: "enrollments!A1",
+      valueInputOption: "RAW",
+      requestBody: { values: rows },
+    });
+  }
 }

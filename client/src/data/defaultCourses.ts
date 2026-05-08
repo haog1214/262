@@ -11,6 +11,7 @@ export interface Course {
   badgeColor: BadgeColor;
   backgroundImage: string;
   detailPath: string;
+  status: "open" | "full";
 }
 
 export interface CoursesConfig {
@@ -35,6 +36,7 @@ export const defaultCoursesConfig: CoursesConfig = {
       badgeColor: "pink",
       backgroundImage: "/零基礎也能做專業短片.jpg",
       detailPath: "/course/ai-video",
+      status: "open",
     },
     {
       id: 2,
@@ -48,6 +50,7 @@ export const defaultCoursesConfig: CoursesConfig = {
       badgeColor: "green",
       backgroundImage: "/讓手機搞定大小事-2.jpg",
       detailPath: "/course/ai-life",
+      status: "open",
     },
     {
       id: 3,
@@ -61,6 +64,7 @@ export const defaultCoursesConfig: CoursesConfig = {
       badgeColor: "gold",
       backgroundImage: "/讓你的Gemini再進化.jpg",
       detailPath: "/course/gemini",
+      status: "open",
     },
     {
       id: 4,
@@ -74,6 +78,7 @@ export const defaultCoursesConfig: CoursesConfig = {
       badgeColor: "purple",
       backgroundImage: "/資料太多都用不起來.jpg",
       detailPath: "/course/ai-knowledge",
+      status: "open",
     },
     {
       id: 5,
@@ -87,6 +92,7 @@ export const defaultCoursesConfig: CoursesConfig = {
       badgeColor: "teal",
       backgroundImage: "/提升簡報的精美度.jpg",
       detailPath: "/course/ai-presentation",
+      status: "open",
     },
   ],
 };
