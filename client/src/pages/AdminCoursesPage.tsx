@@ -858,6 +858,8 @@ export default function AdminCoursesPage() {
   const [saving, setSaving] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const importRef = useRef<HTMLTextAreaElement>(null);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   useEffect(() => {
     getCoursesConfig().then(setConfig);
@@ -895,6 +897,26 @@ export default function AdminCoursesPage() {
     setAllSchedules(schedData);
     setAllEnrollments(enrollData);
     setView("enrollment");
+  };
+
+  const onDragStart = (e: React.DragEvent, idx: number) => {
+    setDragIndex(idx);
+    e.dataTransfer.effectAllowed = "move";
+  };
+  const onDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (idx !== dragOverIndex) setDragOverIndex(idx);
+  };
+  const onDragEnd = () => {
+    if (dragIndex !== null && dragOverIndex !== null && dragIndex !== dragOverIndex) {
+      const arr = [...config.courses];
+      const [item] = arr.splice(dragIndex, 1);
+      arr.splice(dragOverIndex, 0, item);
+      persist({ ...config, courses: arr });
+    }
+    setDragIndex(null);
+    setDragOverIndex(null);
   };
 
   const saveCourseDraft = (draft: Course | Omit<Course, "id">) => {
@@ -1103,8 +1125,39 @@ export default function AdminCoursesPage() {
             <button style={s.btnGreen} onClick={() => openEditView("new")}>＋ 新增課程</button>
           </div>
 
-          {config.courses.map(course => (
-            <div key={course.id} style={s.courseRow}>
+          {config.courses.map((course, idx) => (
+            <div
+              key={course.id}
+              style={{
+                ...s.courseRow,
+                opacity: dragIndex === idx ? 0.4 : 1,
+                borderTop: dragOverIndex === idx && dragIndex !== null && dragIndex !== idx
+                  ? "2px solid #1B3A6B"
+                  : "none",
+                cursor: dragIndex !== null ? "grabbing" : "default",
+                transition: "opacity 0.15s",
+              }}
+              draggable
+              onDragStart={e => onDragStart(e, idx)}
+              onDragOver={e => onDragOver(e, idx)}
+              onDragEnd={onDragEnd}
+            >
+              {/* Drag handle */}
+              <div
+                style={{
+                  color: "#CBD5E1",
+                  fontSize: "20px",
+                  flexShrink: 0,
+                  cursor: "grab",
+                  userSelect: "none",
+                  lineHeight: 1,
+                  padding: "0 2px",
+                }}
+                title="拖拉以調整順序"
+              >
+                ⠿
+              </div>
+
               {/* Thumbnail */}
               <div style={{
                 width: "56px",
