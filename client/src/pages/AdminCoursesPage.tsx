@@ -1,7 +1,8 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   getCoursesConfig,
-  saveCoursesConfig,
+  getLocalCoursesConfig,
+  saveCoursesToAPI,
   resetCoursesConfig,
   exportCoursesConfig,
   importCoursesConfig,
@@ -274,44 +275,60 @@ function CourseForm({
 // ── Main admin page ───────────────────────────────────────────────────────────
 export default function AdminCoursesPage() {
   const [authed, setAuthed] = useState(false);
-  const [config, setConfig] = useState<CoursesConfig>(getCoursesConfig);
+  const [config, setConfig] = useState<CoursesConfig>(getLocalCoursesConfig);
   const [editingId, setEditingId] = useState<number | "new" | null>(null);
   const [toast, setToast] = useState("");
+  const [saving, setSaving] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const importRef = useRef<HTMLTextAreaElement>(null);
 
+  // Load from Google Sheets on mount
+  useEffect(() => {
+    getCoursesConfig().then(setConfig);
+  }, []);
+
   const showToast = (msg: string) => {
     setToast(msg);
-    setTimeout(() => setToast(""), 3000);
+    setTimeout(() => setToast(""), 3500);
   };
 
-  const persist = (updated: CoursesConfig) => {
-    saveCoursesConfig(updated);
+  const persist = async (updated: CoursesConfig) => {
     setConfig(updated);
-    window.dispatchEvent(new Event("courses-updated"));
+    setSaving(true);
+    const result = await saveCoursesToAPI(updated);
+    setSaving(false);
+    if (result.ok) {
+      window.dispatchEvent(new Event("courses-updated"));
+      showToast("✅ 已儲存至 Google Sheets");
+    } else {
+      showToast(`❌ 儲存失敗：${result.error}`);
+    }
   };
 
   const saveSectionMeta = (field: "sectionTitle" | "sectionSubtitle", val: string) => {
-    persist({ ...config, [field]: val });
+    setConfig(c => ({ ...c, [field]: val }));
+  };
+
+  const flushSectionMeta = () => {
+    persist(config);
   };
 
   const saveCourseDraft = (draft: Course | Omit<Course, "id">) => {
+    let updated: CoursesConfig;
     if ("id" in draft && typeof (draft as Course).id === "number") {
-      const updated = config.courses.map(c => c.id === (draft as Course).id ? draft as Course : c);
-      persist({ ...config, courses: updated });
+      updated = { ...config, courses: config.courses.map(c => c.id === (draft as Course).id ? draft as Course : c) };
     } else {
       const maxId = config.courses.reduce((m, c) => Math.max(m, c.id), 0);
       const newCourse: Course = { ...(draft as Omit<Course, "id">), id: maxId + 1 };
-      persist({ ...config, courses: [...config.courses, newCourse] });
+      updated = { ...config, courses: [...config.courses, newCourse] };
     }
     setEditingId(null);
-    showToast("✅ 已儲存");
+    persist(updated);
   };
 
   const deleteCourse = (id: number) => {
     if (!confirm("確定要刪除這門課程嗎？")) return;
     persist({ ...config, courses: config.courses.filter(c => c.id !== id) });
-    showToast("🗑️ 已刪除");
   };
 
   const moveCourse = (idx: number, dir: -1 | 1) => {
@@ -325,9 +342,7 @@ export default function AdminCoursesPage() {
   const handleReset = () => {
     if (!confirm("確定要還原為預設課程資料嗎？此操作無法復原。")) return;
     resetCoursesConfig();
-    setConfig(defaultCoursesConfig);
-    window.dispatchEvent(new Event("courses-updated"));
-    showToast("🔄 已還原預設");
+    persist(defaultCoursesConfig);
   };
 
   const handleExport = () => {
@@ -345,10 +360,10 @@ export default function AdminCoursesPage() {
   const handleImport = () => {
     const json = importRef.current?.value ?? "";
     if (importCoursesConfig(json)) {
-      setConfig(getCoursesConfig());
-      window.dispatchEvent(new Event("courses-updated"));
+      const imported = getLocalCoursesConfig();
+      persist(imported);
       setShowImport(false);
-      showToast("✅ 匯入成功");
+      showToast("✅ 匯入成功，已同步至 Google Sheets");
     } else {
       alert("格式錯誤，請確認 JSON 內容正確");
     }
@@ -380,7 +395,9 @@ export default function AdminCoursesPage() {
       <div style={s.header}>
         <div>
           <div style={{ fontSize: "18px", fontWeight: 700 }}>262學院 後台管理</div>
-          <div style={{ fontSize: "12px", color: "#93C5FD", marginTop: "2px" }}>精選課程編輯</div>
+          <div style={{ fontSize: "12px", color: "#93C5FD", marginTop: "2px" }}>
+            {saving ? "⏳ 儲存中..." : "精選課程編輯 · 已連接 Google Sheets"}
+          </div>
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
           <button style={s.btnGhost} onClick={handleExport}>📥 匯出備份</button>
@@ -422,6 +439,7 @@ export default function AdminCoursesPage() {
                 style={s.input}
                 value={config.sectionTitle}
                 onChange={e => saveSectionMeta("sectionTitle", e.target.value)}
+                onBlur={flushSectionMeta}
               />
             </div>
             <div>
@@ -430,11 +448,12 @@ export default function AdminCoursesPage() {
                 style={s.input}
                 value={config.sectionSubtitle}
                 onChange={e => saveSectionMeta("sectionSubtitle", e.target.value)}
+                onBlur={flushSectionMeta}
               />
             </div>
           </div>
           <p style={{ fontSize: "12px", color: "#9CA3AF" }}>
-            修改後即時生效（標題輸入後自動儲存）
+            輸入完成後點擊其他地方即自動儲存至 Google Sheets
           </p>
         </div>
 
@@ -515,7 +534,7 @@ export default function AdminCoursesPage() {
         )}
 
         <p style={{ textAlign: "center", fontSize: "12px", color: "#D1D5DB", marginTop: "32px" }}>
-          262學院後台管理系統 · 所有修改即時儲存於此瀏覽器
+          262學院後台管理系統 · 資料儲存於 Google Sheets
         </p>
       </div>
     </div>

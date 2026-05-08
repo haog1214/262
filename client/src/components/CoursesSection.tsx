@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
 import CourseCard from "./CourseCard";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
-import { getCoursesConfig } from "@/lib/coursesStorage";
+import { getCoursesConfig, getLocalCoursesConfig } from "@/lib/coursesStorage";
 import type { CoursesConfig } from "@/data/defaultCourses";
 
 export default function CoursesSection() {
   const sectionRef = useScrollReveal();
-  const [config, setConfig] = useState<CoursesConfig>(getCoursesConfig);
+  const [config, setConfig] = useState<CoursesConfig>(getLocalCoursesConfig);
 
   useEffect(() => {
-    const onStorage = () => setConfig(getCoursesConfig());
-    window.addEventListener("courses-updated", onStorage);
-    return () => window.removeEventListener("courses-updated", onStorage);
+    getCoursesConfig().then(setConfig);
+
+    const onUpdate = () => getCoursesConfig().then(setConfig);
+    window.addEventListener("courses-updated", onUpdate);
+    return () => window.removeEventListener("courses-updated", onUpdate);
   }, []);
 
   const { sectionTitle, sectionSubtitle, courses } = config;
