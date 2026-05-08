@@ -2,21 +2,30 @@ import React, { useState, useEffect } from "react";
 import CourseCard from "./CourseCard";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { getCoursesConfig, getLocalCoursesConfig } from "@/lib/coursesStorage";
+import { fetchSchedules, type Schedule } from "@/lib/enrollmentsStorage";
 import type { CoursesConfig } from "@/data/defaultCourses";
 
 export default function CoursesSection() {
   const sectionRef = useScrollReveal();
   const [config, setConfig] = useState<CoursesConfig>(getLocalCoursesConfig);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
 
   useEffect(() => {
     getCoursesConfig().then(setConfig);
+    fetchSchedules().then(setSchedules);
 
-    const onUpdate = () => getCoursesConfig().then(setConfig);
+    const onUpdate = () => {
+      getCoursesConfig().then(setConfig);
+      fetchSchedules().then(setSchedules);
+    };
     window.addEventListener("courses-updated", onUpdate);
     return () => window.removeEventListener("courses-updated", onUpdate);
   }, []);
 
   const { sectionTitle, sectionSubtitle, courses } = config;
+
+  const schedulesFor = (courseId: number) =>
+    schedules.filter(s => s.courseId === String(courseId));
 
   return (
     <section id="courses" className="py-20 bg-white" ref={sectionRef as React.RefObject<HTMLElement>}>
@@ -44,6 +53,7 @@ export default function CoursesSection() {
                 backgroundImage={course.backgroundImage}
                 detailPath={course.detailPath}
                 status={course.status}
+                schedules={schedulesFor(course.id)}
               />
             </div>
           ))}
@@ -65,6 +75,8 @@ export default function CoursesSection() {
                   badgeColor={course.badgeColor}
                   backgroundImage={course.backgroundImage}
                   detailPath={course.detailPath}
+                  status={course.status}
+                  schedules={schedulesFor(course.id)}
                 />
               </div>
             ))}

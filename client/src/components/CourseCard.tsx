@@ -7,6 +7,11 @@ import { Link } from "wouter";
  * 設計系統：1:1正方形圖片 + 下方文案
  * 特點：清晰的圖片展示、18級文字、簡潔布局
  */
+interface CourseSchedule {
+  date: string;
+  time: string;
+}
+
 interface CourseCardProps {
   title: string;
   description: string;
@@ -20,6 +25,7 @@ interface CourseCardProps {
   backgroundImage: string;
   detailPath?: string;
   status?: "open" | "full";
+  schedules?: CourseSchedule[];
 }
 
 export default function CourseCard({
@@ -35,6 +41,7 @@ export default function CourseCard({
   backgroundImage,
   detailPath,
   status,
+  schedules,
 }: CourseCardProps) {
   const getBadgeColorClass = () => {
     switch (badgeColor) {
@@ -89,6 +96,21 @@ export default function CourseCard({
         <p className="text-[16px] font-light mb-3 text-gray-700 flex-grow line-clamp-2">
           {description}
         </p>
+
+        {/* 開課時間 */}
+        {schedules && schedules.length > 0 && (
+          <div className="mb-3 rounded-lg bg-gray-50 border border-gray-100 px-3 py-2">
+            <p className="text-[12px] font-semibold text-gray-500 mb-1">📅 開課時間</p>
+            <ul className="space-y-0.5">
+              {schedules.map((s, i) => (
+                <li key={i} className="text-[13px] text-gray-700 flex gap-2">
+                  <span className="font-medium">{s.date}</span>
+                  {s.time && <span className="text-gray-500">{s.time}</span>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* 價格區域 - 18級 */}
         <div className="mb-3">
