@@ -5,9 +5,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const sessions = [
-  { id: 1, date: "2026/5/13", weekday: "三", time: "9:00–16:30", location: "台北（地點待定）", remaining: 15, enterprise: false },
-  { id: 2, date: "2026/5/20", weekday: "三", time: "9:00–16:30", location: "台北（地點待定）", remaining: 15, enterprise: false },
-  { id: 3, date: "2026/5/27", weekday: "三", time: "9:00–16:30", location: "台北（地點待定）", remaining: 15, enterprise: false },
+  { id: 1, date: "2026/5/13", weekday: "三", time: "9:00–16:30", location: "台中西屯分校", remaining: 0, isFull: true, enterprise: false },
+  { id: 2, date: "2026/5/20", weekday: "三", time: "9:00–16:30", location: "台中西屯分校", remaining: 15, enterprise: false },
+  { id: 3, date: "2026/5/27", weekday: "三", time: "9:00–16:30", location: "台中西屯分校", remaining: 15, enterprise: false },
   { id: 99, date: "", weekday: "", time: "", location: "", remaining: 0, enterprise: true },
 ];
 
@@ -71,7 +71,7 @@ const highlights = [
 ];
 
 export default function CourseVideoDetail() {
-  const [selectedSession, setSelectedSession] = useState(sessions[0].id);
+  const [selectedSession, setSelectedSession] = useState(sessions[1].id);
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -119,27 +119,33 @@ export default function CourseVideoDetail() {
                       return (
                         <button
                           key={s.id}
-                          onClick={() => setSelectedSession(s.id)}
-                          className="w-full text-left rounded-xl px-5 py-4 transition-all border-2 bg-white"
-                          style={{ borderColor: isSelected ? "#D4AF37" : "#e5e7eb" }}
+                          onClick={() => { if (!s.isFull && !s.enterprise) setSelectedSession(s.id); else if (s.enterprise) setSelectedSession(s.id); }}
+                          className="w-full text-left rounded-xl px-5 py-4 transition-all border-2"
+                          style={{
+                            borderColor: s.isFull ? "#e5e7eb" : (isSelected ? "#D4AF37" : "#e5e7eb"),
+                            background: s.isFull ? "#f9fafb" : "#fff",
+                            cursor: s.isFull ? "not-allowed" : "pointer",
+                          }}
                         >
                           <div className="flex items-center justify-between mb-0.5">
                             <div className="flex items-center gap-2">
                               <span
                                 className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                                style={{ backgroundColor: isSelected ? "#D4AF37" : "#d1d5db" }}
+                                style={{ backgroundColor: s.isFull ? "#d1d5db" : (isSelected ? "#D4AF37" : "#d1d5db") }}
                               />
                               {s.enterprise ? (
                                 <span className="font-semibold text-[17px] text-gray-900">企業包班專案</span>
                               ) : (
                                 <>
-                                  <span className="font-semibold text-[17px] text-gray-900">{s.date}（{s.weekday}）</span>
+                                  <span className={`font-semibold text-[17px] ${s.isFull ? "text-gray-400 line-through" : "text-gray-900"}`}>{s.date}（{s.weekday}）</span>
                                   <span className="text-[17px] text-gray-500">{s.time}</span>
                                 </>
                               )}
                             </div>
                             {s.enterprise ? (
                               <span className="text-[13px] text-gray-400">滿 10 人以上</span>
+                            ) : s.isFull ? (
+                              <span className="text-[13px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#fee2e2", color: "#dc2626" }}>額滿</span>
                             ) : (
                               <span className="text-[14px] text-gray-400">剩餘 {s.remaining} 個名額</span>
                             )}
