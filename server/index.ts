@@ -21,8 +21,9 @@ async function startServer() {
       const data = await readCoursesFromSheet();
       res.json(data);
     } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
       console.error("GET /api/courses error:", err);
-      res.status(500).json({ error: "Failed to read courses" });
+      res.status(500).json({ error: "Failed to read courses", detail: msg });
     }
   });
 
