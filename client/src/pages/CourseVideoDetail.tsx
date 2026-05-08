@@ -151,8 +151,8 @@ export default function CourseVideoDetail() {
 
                   {/* 價格 + 按鈕 */}
                   <div className="flex-shrink-0" style={{ marginLeft: "100px" }}>
-                    <p className="text-gray-400 line-through text-sm">NT$ 6,000</p>
-                    <p className="text-3xl font-bold text-gray-900 mb-3">NT$ 4,000</p>
+                    <p className="text-3xl font-bold text-gray-900">NT$ 4,000</p>
+                    <p className="text-gray-400 line-through text-sm mb-3">NT$ 6,000</p>
                     <a
                       href="/enroll?course=ai-video"
                       className="px-8 font-bold rounded-full transition-colors shadow-lg text-base" style={{ backgroundColor: "#1B3A6B", color: "#FFFFFF", marginTop: "15px", display: "inline-block", paddingTop: "calc(0.75rem * 0.9)", paddingBottom: "calc(0.75rem * 0.9)" }}
@@ -188,6 +188,16 @@ export default function CourseVideoDetail() {
                     style={{ backgroundImage: "url('/零基礎也能做專業短片.jpg')" }}
                   />
                 </div>
+                <a
+                  href="https://maps.app.goo.gl/xXbkG9SETJ4N21Do7"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  style={{ width: "90%" }}
+                >
+                  <MapPin className="w-4 h-4 text-red-500 flex-shrink-0" />
+                  <span>上課地點：台中市西屯區河南路二段262號7樓3</span>
+                </a>
               </div>
             </div>
           </div>

@@ -25,20 +25,6 @@ export const defaultCoursesConfig: CoursesConfig = {
   sectionSubtitle: "選擇適合你的課程，用 AI 提升工作效率",
   courses: [
     {
-      id: 1,
-      title: "零基礎也能做專業短片",
-      description:
-        "本課程專為追求高效創作的學員設計，採用「全流程 AI 協作」模式。教學內容涵蓋從故事腳本構思、Banana AI 高質感繪圖、靜態圖片動態化，到最終的 AI 配音與剪輯合成。學員將在三小時內掌握 AI 影音創作的核心邏輯，並能獨立產出具專業水準的短影音內容。",
-      tools: "從腳本到成品一次完成",
-      originalPrice: "NT$ 6,000",
-      discountPrice: "NT$ 4,000",
-      badge: "6H特訓班",
-      badgeColor: "pink",
-      backgroundImage: "/零基礎也能做專業短片.jpg",
-      detailPath: "/course/ai-video",
-      status: "open",
-    },
-    {
       id: 2,
       title: "讓手機搞定大小事",
       description:
@@ -92,6 +78,20 @@ export const defaultCoursesConfig: CoursesConfig = {
       badgeColor: "teal",
       backgroundImage: "/提升簡報的精美度.jpg",
       detailPath: "/course/ai-presentation",
+      status: "open",
+    },
+    {
+      id: 1,
+      title: "零基礎也能做專業短片",
+      description:
+        "本課程專為追求高效創作的學員設計，採用「全流程 AI 協作」模式。教學內容涵蓋從故事腳本構思、Banana AI 高質感繪圖、靜態圖片動態化，到最終的 AI 配音與剪輯合成。學員將在三小時內掌握 AI 影音創作的核心邏輯，並能獨立產出具專業水準的短影音內容。",
+      tools: "從腳本到成品一次完成",
+      originalPrice: "NT$ 6,000",
+      discountPrice: "NT$ 4,000",
+      badge: "6H特訓班",
+      badgeColor: "pink",
+      backgroundImage: "/零基礎也能做專業短片.jpg",
+      detailPath: "/course/ai-video",
       status: "open",
     },
   ],

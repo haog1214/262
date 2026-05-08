@@ -17,8 +17,7 @@ export default function Footer() {
           <div className="flex flex-col gap-3 max-w-sm">
             <span className="text-[21.6px] font-bold" style={{ color: "#F5F0E8" }}>262 培訓學院</span>
             <p className="text-[14.4px] leading-relaxed" style={{ color: "rgba(245,240,232,0.5)" }}>
-              傳啓資訊打造的專業課程教學平台<br />
-              讓專業被看見、讓經驗被傳承
+              上課地點：台中市西屯區河南路二段262號7樓3
             </p>
           </div>
 
