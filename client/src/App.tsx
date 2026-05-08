@@ -85,70 +85,71 @@ function FloatingButtons() {
         alignItems: "center",
         gap: "10px",
       }}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
     >
-      {/* Social buttons — expand upward on hover */}
+      {/* Gear group: hover on this area toggles social buttons */}
       <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "10px",
-          overflow: "hidden",
-          maxHeight: open ? "200px" : "0",
-          opacity: open ? 1 : 0,
-          transition: "max-height 0.35s ease, opacity 0.25s ease",
-        }}
+        style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
       >
-        {/* Facebook */}
-        <a
-          href="https://www.facebook.com/262academy"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Facebook"
-          style={btnStyle("#1877F2")}
-          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.transform = "scale(1.12)")}
-          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.transform = "scale(1)")}
+        {/* Social buttons — expand upward on gear hover */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "10px",
+            overflow: "hidden",
+            maxHeight: open ? "200px" : "0",
+            opacity: open ? 1 : 0,
+            transition: "max-height 0.35s ease, opacity 0.25s ease",
+          }}
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-            <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
-          </svg>
-        </a>
+          {/* Facebook */}
+          <a
+            href="https://www.facebook.com/262academy"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Facebook"
+            style={btnStyle("#1877F2")}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+              <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
+            </svg>
+          </a>
 
-        {/* Messenger */}
-        <a
-          href="https://m.me/262academy"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Messenger"
-          style={btnStyle("#0084FF")}
-          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.transform = "scale(1.12)")}
-          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.transform = "scale(1)")}
+          {/* Messenger */}
+          <a
+            href="https://m.me/1122858144238118"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Messenger"
+            style={btnStyle("#0084FF")}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+              <path d="M12 0C5.373 0 0 4.975 0 11.111c0 3.498 1.744 6.614 4.469 8.652V24l4.088-2.242c1.092.3 2.246.464 3.443.464 6.627 0 12-4.975 12-11.111C24 4.975 18.627 0 12 0zm1.191 14.963l-3.055-3.26-5.963 3.26 6.559-6.963 3.13 3.26 5.889-3.26-6.56 6.963z"/>
+            </svg>
+          </a>
+        </div>
+
+        {/* Gear trigger */}
+        <button
+          aria-label="社群連結"
+          style={{
+            ...btnStyle("#6B7280"),
+            boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
+            transition: "transform 0.3s",
+            transform: open ? "rotate(90deg)" : "rotate(0deg)",
+          }}
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-            <path d="M12 0C5.373 0 0 4.975 0 11.111c0 3.498 1.744 6.614 4.469 8.652V24l4.088-2.242c1.092.3 2.246.464 3.443.464 6.627 0 12-4.975 12-11.111C24 4.975 18.627 0 12 0zm1.191 14.963l-3.055-3.26-5.963 3.26 6.559-6.963 3.13 3.26 5.889-3.26-6.56 6.963z"/>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
           </svg>
-        </a>
+        </button>
       </div>
 
-      {/* Gear trigger */}
-      <button
-        aria-label="社群連結"
-        style={{
-          ...btnStyle("#6B7280"),
-          boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
-          transition: "transform 0.3s, box-shadow 0.2s",
-          transform: open ? "rotate(90deg)" : "rotate(0deg)",
-        }}
-      >
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
-      </button>
-
-      {/* Scroll to top */}
+      {/* Scroll to top — separate from gear hover zone */}
       <button
         aria-label="回到頂部"
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -156,8 +157,6 @@ function FloatingButtons() {
           ...btnStyle("#374151"),
           boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
         }}
-        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.transform = "scale(1.1)")}
-        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.transform = "scale(1)")}
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="18 15 12 9 6 15"/>
