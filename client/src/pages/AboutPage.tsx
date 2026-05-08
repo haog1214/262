@@ -1,6 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { MapPin, Monitor, TrendingUp, Briefcase, Users, Mic, Building2, BookOpen, Award, Lightbulb } from "lucide-react";
+import { MapPin, Monitor, TrendingUp, Briefcase, Users, Mic, Building2 } from "lucide-react";
 
 const directions = [
   { icon: <Monitor className="w-5 h-5" />, title: "AI工具應用與企業導入", desc: "協助企業與個人學會運用 AI 提升工作效率、內容產出與營運決策能力。" },
@@ -10,26 +10,6 @@ const directions = [
   { icon: <Mic className="w-5 h-5" />, title: "跨領域專業講座與工作坊", desc: "邀請不同產業的專家分享實務經驗，讓學員接觸更多市場觀點與創新方法。" },
 ];
 
-const values = [
-  {
-    icon: <BookOpen className="w-6 h-6" />,
-    label: "企業",
-    en: "Enterprise",
-    desc: "對企業而言，262培訓學院是一個能協助團隊升級的培訓場域，規劃客製化課程，提升數位素養與市場競爭力。",
-  },
-  {
-    icon: <Award className="w-6 h-6" />,
-    label: "講師",
-    en: "Instructor",
-    desc: "對講師而言，這裡是一個能穩定開課、建立品牌、連結學員的專業平台，讓教學價值被更多人看見。",
-  },
-  {
-    icon: <Lightbulb className="w-6 h-6" />,
-    label: "學員",
-    en: "Learner",
-    desc: "對學員而言，這裡是一個能持續學習新技能、拓展視野、提升職場競爭力的長期學習據點。",
-  },
-];
 
 export default function AboutPage() {
   return (
@@ -258,50 +238,6 @@ export default function AboutPage() {
             <p className="text-sm" style={{ color: "#1B3A6B50" }}>學院全景 / 課程現場照片（全幅）</p>
           </div>
         </div>
-
-        {/* ── VALUES ── */}
-        <section className="relative overflow-hidden bg-white py-24">
-          <div className="container max-w-5xl">
-            {/* Header row */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-16">
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-5 h-5 rounded-full border-2 flex-shrink-0" style={{ borderColor: "#1B3A6B" }} />
-                  <span className="text-[11px] font-bold tracking-[0.3em] uppercase" style={{ color: "#1B3A6B" }}>Value</span>
-                </div>
-                <h2 className="text-[24px] font-black" style={{ color: "#1B3A6B" }}>這裡，適合誰</h2>
-              </div>
-              <p className="text-[18px] text-gray-400 md:mb-1">三種角色，一個共同成長的空間</p>
-            </div>
-
-            {/* Value list — Image 1 style with dividers */}
-            <div className="divide-y" style={{ borderColor: "#E2E8F0" }}>
-              {values.map((v, i) => (
-                <div key={v.label} className="flex flex-col md:flex-row gap-8 py-10 group">
-                  {/* Number */}
-                  <div className="md:w-16 flex-shrink-0">
-                    <span className="text-4xl font-black" style={{ color: "#1B3A6B10" }}>0{i + 1}</span>
-                  </div>
-                  {/* Icon + label */}
-                  <div className="md:w-48 flex-shrink-0">
-                    <div
-                      className="w-12 h-12 rounded-sm flex items-center justify-center mb-3"
-                      style={{ backgroundColor: "#E8EEF7" }}
-                    >
-                      <span style={{ color: "#1B3A6B" }}>{v.icon}</span>
-                    </div>
-                    <h3 className="text-[20px] font-black mb-0.5" style={{ color: "#1B3A6B" }}>{v.label}</h3>
-                    <span className="text-[11px] tracking-widest uppercase" style={{ color: "#D4AF37" }}>{v.en}</span>
-                  </div>
-                  {/* Description */}
-                  <div className="flex-1 flex items-center">
-                    <p className="text-[18px] leading-relaxed text-gray-600">{v.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* ── DIRECTIONS ── Image 2 style: bold left header + right list ── */}
         <section className="py-24" style={{ backgroundColor: "#F5F0E8" }}>
