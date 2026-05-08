@@ -473,6 +473,12 @@ function EnrollmentView({
     setSchedDraft(null);
   };
 
+  const toggleSchedStatus = async (id: string, newStatus: "open" | "full") => {
+    const updated = schedules.map(s => s.id === id ? { ...s, status: newStatus } : s);
+    setSchedules(updated);
+    await persistSchedules(updated);
+  };
+
   const deleteSched = async (id: string) => {
     if (!confirm("確定要刪除此梯次？相關報名資料也將一併刪除。")) return;
     const updatedScheds = schedules.filter(s => s.id !== id);
@@ -602,13 +608,14 @@ function EnrollmentView({
               <th style={s.th}>時間</th>
               <th style={s.th}>人數上限</th>
               <th style={s.th}>已報名</th>
-              <th style={{ ...s.th, width: "100px" }}>操作</th>
+              <th style={{ ...s.th, width: "110px" }}>狀態</th>
+              <th style={{ ...s.th, width: "80px" }}>操作</th>
             </tr>
           </thead>
           <tbody>
             {schedules.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ ...s.td, textAlign: "center", color: "#9CA3AF", padding: "24px" }}>
+                <td colSpan={6} style={{ ...s.td, textAlign: "center", color: "#9CA3AF", padding: "24px" }}>
                   尚無梯次，點擊「新增梯次」建立
                 </td>
               </tr>
@@ -616,8 +623,9 @@ function EnrollmentView({
             {schedules.map(sched => {
               const isEditing = editingSchedId === sched.id;
               const d = isEditing ? schedDraft! : sched;
+              const isFull = sched.status === "full";
               return (
-                <tr key={sched.id}>
+                <tr key={sched.id} style={{ backgroundColor: isFull ? "#FFF7F7" : "transparent" }}>
                   <td style={s.td}>
                     {isEditing ? (
                       <input
@@ -650,6 +658,27 @@ function EnrollmentView({
                   </td>
                   <td style={s.td}>
                     {enrollCountFor(sched.id)} / {sched.maxCapacity}
+                  </td>
+                  {/* 狀態切換 */}
+                  <td style={s.td}>
+                    <button
+                      style={{
+                        backgroundColor: isFull ? "#FEE2E2" : "#D1FAE5",
+                        color: isFull ? "#DC2626" : "#065F46",
+                        border: "none",
+                        borderRadius: "14px",
+                        padding: "5px 12px",
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        whiteSpace: "nowrap" as const,
+                      }}
+                      onClick={() => toggleSchedStatus(sched.id, isFull ? "open" : "full")}
+                      disabled={savingSched}
+                      title={isFull ? "點擊切換為開放" : "點擊切換為額滿"}
+                    >
+                      {isFull ? "🚫 額滿" : "✅ 開放中"}
+                    </button>
                   </td>
                   <td style={s.td}>
                     {isEditing ? (

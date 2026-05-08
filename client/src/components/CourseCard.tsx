@@ -10,6 +10,7 @@ import { Link } from "wouter";
 interface CourseSchedule {
   date: string;
   time: string;
+  status?: string;
 }
 
 interface CourseCardProps {
@@ -101,13 +102,23 @@ export default function CourseCard({
         {schedules && schedules.length > 0 && (
           <div className="mb-3 rounded-lg bg-gray-50 border border-gray-100 px-3 py-2">
             <p className="text-[12px] font-semibold text-gray-500 mb-1">📅 開課時間</p>
-            <ul className="space-y-0.5">
-              {schedules.map((s, i) => (
-                <li key={i} className="text-[13px] text-gray-700 flex gap-2">
-                  <span className="font-medium">{s.date}</span>
-                  {s.time && <span className="text-gray-500">{s.time}</span>}
-                </li>
-              ))}
+            <ul className="space-y-1">
+              {schedules.map((s, i) => {
+                const isFull = s.status === "full";
+                return (
+                  <li key={i} className="text-[13px] flex items-center justify-between gap-2">
+                    <span className={isFull ? "text-gray-400 line-through" : "text-gray-700"}>
+                      <span className="font-medium">{s.date}</span>
+                      {s.time && <span className="ml-2 text-gray-500">{s.time}</span>}
+                    </span>
+                    {isFull && (
+                      <span className="text-[11px] font-bold text-red-500 bg-red-50 border border-red-200 rounded-full px-2 py-0.5 shrink-0">
+                        額滿
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
