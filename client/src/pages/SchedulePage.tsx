@@ -19,6 +19,7 @@ interface ScheduleItem {
   tagText: string;
   detailPath: string;
   enrollPath: string;
+  isFull?: boolean;
 }
 
 const schedules: ScheduleItem[] = [
@@ -31,7 +32,8 @@ const schedules: ScheduleItem[] = [
     date: "2026 / 05 / 11",
     weekday: "一",
     time: "13:30–16:30",
-    location: "台北（地點待定）",
+    location: "台中西屯分校",
+    isFull: true,
     originalPrice: "NT$ 4,000",
     discountPrice: "NT$ 2,000",
     accentColor: "#facc15",
@@ -48,7 +50,8 @@ const schedules: ScheduleItem[] = [
     date: "2026 / 05 / 12",
     weekday: "二",
     time: "13:30–16:30",
-    location: "台北（地點待定）",
+    location: "台中西屯分校",
+    isFull: true,
     originalPrice: "NT$ 4,000",
     discountPrice: "NT$ 2,000",
     accentColor: "#a78bfa",
@@ -65,7 +68,8 @@ const schedules: ScheduleItem[] = [
     date: "2026 / 05 / 13",
     weekday: "三",
     time: "9:00–16:30",
-    location: "台北（地點待定）",
+    location: "台中西屯分校",
+    isFull: true,
     originalPrice: "NT$ 4,000",
     discountPrice: "NT$ 2,000",
     accentColor: "#fb923c",
@@ -82,7 +86,8 @@ const schedules: ScheduleItem[] = [
     date: "2026 / 05 / 14",
     weekday: "四",
     time: "13:30–16:30",
-    location: "台北（地點待定）",
+    location: "台中西屯分校",
+    isFull: true,
     originalPrice: "NT$ 4,000",
     discountPrice: "NT$ 2,000",
     accentColor: "#4ade80",
@@ -99,7 +104,8 @@ const schedules: ScheduleItem[] = [
     date: "2026 / 05 / 15",
     weekday: "五",
     time: "13:30–16:30",
-    location: "台北（地點待定）",
+    location: "台中西屯分校",
+    isFull: true,
     originalPrice: "NT$ 4,000",
     discountPrice: "NT$ 2,000",
     accentColor: "#2dd4bf",
@@ -117,7 +123,8 @@ const schedules: ScheduleItem[] = [
     date: "2026 / 05 / 18",
     weekday: "一",
     time: "13:30–16:30",
-    location: "台北（地點待定）",
+    location: "台中西屯分校",
+    isFull: true,
     originalPrice: "NT$ 4,000",
     discountPrice: "NT$ 2,000",
     accentColor: "#facc15",
@@ -134,7 +141,8 @@ const schedules: ScheduleItem[] = [
     date: "2026 / 05 / 19",
     weekday: "二",
     time: "13:30–16:30",
-    location: "台北（地點待定）",
+    location: "台中西屯分校",
+    isFull: true,
     originalPrice: "NT$ 4,000",
     discountPrice: "NT$ 2,000",
     accentColor: "#a78bfa",
@@ -151,7 +159,8 @@ const schedules: ScheduleItem[] = [
     date: "2026 / 05 / 20",
     weekday: "三",
     time: "9:00–16:30",
-    location: "台北（地點待定）",
+    location: "台中西屯分校",
+    isFull: true,
     originalPrice: "NT$ 4,000",
     discountPrice: "NT$ 2,000",
     accentColor: "#fb923c",
@@ -168,7 +177,8 @@ const schedules: ScheduleItem[] = [
     date: "2026 / 05 / 21",
     weekday: "四",
     time: "13:30–16:30",
-    location: "台北（地點待定）",
+    location: "台中西屯分校",
+    isFull: true,
     originalPrice: "NT$ 4,000",
     discountPrice: "NT$ 2,000",
     accentColor: "#4ade80",
@@ -185,7 +195,8 @@ const schedules: ScheduleItem[] = [
     date: "2026 / 05 / 22",
     weekday: "五",
     time: "13:30–16:30",
-    location: "台北（地點待定）",
+    location: "台中西屯分校",
+    isFull: true,
     originalPrice: "NT$ 4,000",
     discountPrice: "NT$ 2,000",
     accentColor: "#2dd4bf",
@@ -203,7 +214,8 @@ const schedules: ScheduleItem[] = [
     date: "2026 / 05 / 25",
     weekday: "一",
     time: "13:30–16:30",
-    location: "台北（地點待定）",
+    location: "台中西屯分校",
+    isFull: true,
     originalPrice: "NT$ 4,000",
     discountPrice: "NT$ 2,000",
     accentColor: "#facc15",
@@ -220,7 +232,8 @@ const schedules: ScheduleItem[] = [
     date: "2026 / 05 / 26",
     weekday: "二",
     time: "13:30–16:30",
-    location: "台北（地點待定）",
+    location: "台中西屯分校",
+    isFull: true,
     originalPrice: "NT$ 4,000",
     discountPrice: "NT$ 2,000",
     accentColor: "#a78bfa",
@@ -237,7 +250,8 @@ const schedules: ScheduleItem[] = [
     date: "2026 / 05 / 27",
     weekday: "三",
     time: "9:00–16:30",
-    location: "台北（地點待定）",
+    location: "台中西屯分校",
+    isFull: true,
     originalPrice: "NT$ 4,000",
     discountPrice: "NT$ 2,000",
     accentColor: "#fb923c",
@@ -254,7 +268,8 @@ const schedules: ScheduleItem[] = [
     date: "2026 / 05 / 28",
     weekday: "四",
     time: "13:30–16:30",
-    location: "台北（地點待定）",
+    location: "台中西屯分校",
+    isFull: true,
     originalPrice: "NT$ 4,000",
     discountPrice: "NT$ 2,000",
     accentColor: "#4ade80",
@@ -271,7 +286,8 @@ const schedules: ScheduleItem[] = [
     date: "2026 / 05 / 29",
     weekday: "五",
     time: "13:30–16:30",
-    location: "台北（地點待定）",
+    location: "台中西屯分校",
+    isFull: true,
     originalPrice: "NT$ 4,000",
     discountPrice: "NT$ 2,000",
     accentColor: "#2dd4bf",
@@ -308,8 +324,8 @@ export default function SchedulePage() {
             {upcoming.map((s, idx) => (
               <div
                 key={s.id}
-                className="bg-white rounded-2xl overflow-hidden flex flex-col md:flex-row md:items-center transition-shadow hover:shadow-lg"
-                style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
+                className="rounded-2xl overflow-hidden flex flex-col md:flex-row md:items-center transition-shadow hover:shadow-lg"
+                style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)", background: s.isFull ? "#f5f5f5" : "#fff", opacity: s.isFull ? 0.85 : 1 }}
               >
                 {/* Color accent bar */}
                 <div
@@ -348,13 +364,18 @@ export default function SchedulePage() {
                   </p>
 
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <h3 className="text-base font-bold text-gray-900">{s.course}</h3>
+                    <h3 className="text-base font-bold" style={{ color: s.isFull ? "#9ca3af" : "#111827" }}>{s.course}</h3>
                     <span
                       className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                       style={{ background: s.tagBg, color: s.tagText }}
                     >
                       {s.badge}
                     </span>
+                    {s.isFull && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#fee2e2", color: "#dc2626" }}>
+                        額滿
+                      </span>
+                    )}
                   </div>
                   <p className="text-sm text-gray-400 mb-2">{s.subtitle}</p>
 
@@ -378,14 +399,20 @@ export default function SchedulePage() {
                     <p className="text-xs text-gray-300 line-through">{s.originalPrice}</p>
                     <p className="text-base font-black" style={{ color: "#1B3A6B" }}>{s.discountPrice}</p>
                   </div>
-                  <Link href={s.enrollPath}>
-                    <a
-                      className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full text-white transition-opacity hover:opacity-80 whitespace-nowrap"
-                      style={{ background: "#1B3A6B" }}
-                    >
-                      立即報名 <ArrowRight className="w-3 h-3" />
-                    </a>
-                  </Link>
+                  {s.isFull ? (
+                    <span className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap" style={{ background: "#e5e7eb", color: "#9ca3af" }}>
+                      已額滿
+                    </span>
+                  ) : (
+                    <Link href={s.enrollPath}>
+                      <a
+                        className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full text-white transition-opacity hover:opacity-80 whitespace-nowrap"
+                        style={{ background: "#1B3A6B" }}
+                      >
+                        立即報名 <ArrowRight className="w-3 h-3" />
+                      </a>
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}

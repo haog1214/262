@@ -92,6 +92,9 @@ export default function CourseGeminiDetail() {
                 </p>
                 <div className="flex flex-wrap gap-4 text-sm">
                   <span className="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 text-gray-600 border border-gray-200">
+                    <MapPin className="w-4 h-4 text-red-500" /> 台中市西屯區河南路二段262號7樓3
+                  </span>
+                  <span className="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 text-gray-600 border border-gray-200">
                     <Clock className="w-4 h-4" /> 課程時數：3 小時
                   </span>
                   <span className="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 text-gray-600 border border-gray-200">
