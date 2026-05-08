@@ -299,7 +299,54 @@ const schedules: ScheduleItem[] = [
 ];
 
 export default function SchedulePage() {
-  const upcoming = schedules;
+  const available = schedules.filter((s) => !s.isFull);
+  const fullSessions = schedules.filter((s) => s.isFull);
+
+  const renderRow = (s: ScheduleItem, idx: number) => (
+    <div
+      key={s.id}
+      className="rounded-2xl overflow-hidden flex flex-col md:flex-row md:items-center transition-shadow hover:shadow-lg"
+      style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)", background: s.isFull ? "#f5f5f5" : "#fff", opacity: s.isFull ? 0.75 : 1 }}
+    >
+      <div className="w-full md:w-1.5 h-1.5 md:h-auto md:self-stretch flex-shrink-0 rounded-t-2xl md:rounded-t-none md:rounded-l-2xl" style={{ background: s.accentColor }} />
+      <div className="hidden md:flex items-center justify-center w-14 flex-shrink-0 px-3">
+        <span className="text-2xl font-black" style={{ color: "#e8e8e8" }}>{String(idx + 1).padStart(2, "0")}</span>
+      </div>
+      <div className="flex-shrink-0 flex flex-col items-center justify-center w-20 py-4 mx-4 md:mx-0 rounded-xl md:rounded-none hidden md:flex" style={{ background: s.tagBg }}>
+        <span className="text-2xl font-black leading-none" style={{ color: s.accentColor }}>{s.date?.split(" / ")[2]}</span>
+        <span className="text-[10px] font-semibold mt-1" style={{ color: s.tagText }}>{s.date?.split(" / ")[0]}/{s.date?.split(" / ")[1]}</span>
+        <span className="text-xs font-bold mt-0.5" style={{ color: s.tagText }}>（{s.weekday}）</span>
+      </div>
+      <div className="flex-1 px-5 py-4 min-w-0">
+        <p className="text-xs font-semibold text-gray-400 mb-1 md:hidden">{s.date}（{s.weekday}）</p>
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
+          <h3 className="text-base font-bold" style={{ color: s.isFull ? "#9ca3af" : "#111827" }}>{s.course}</h3>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: s.tagBg, color: s.tagText }}>{s.badge}</span>
+          {s.isFull && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#fee2e2", color: "#dc2626" }}>額滿</span>}
+        </div>
+        <p className="text-sm text-gray-400 mb-2">{s.subtitle}</p>
+        <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400">
+          {s.time && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{s.time}</span>}
+          {s.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{s.location}</span>}
+        </div>
+      </div>
+      <div className="flex md:flex-col items-center md:items-end justify-between px-5 py-4 gap-3 md:gap-2 flex-shrink-0 border-t md:border-t-0 md:border-l border-gray-100">
+        <div className="text-right">
+          <p className="text-xs text-gray-300 line-through">{s.originalPrice}</p>
+          <p className="text-base font-black" style={{ color: "#1B3A6B" }}>{s.discountPrice}</p>
+        </div>
+        {s.isFull ? (
+          <span className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap" style={{ background: "#e5e7eb", color: "#9ca3af" }}>已額滿</span>
+        ) : (
+          <Link href={s.enrollPath}>
+            <a className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full text-white transition-opacity hover:opacity-80 whitespace-nowrap" style={{ background: "#1B3A6B" }}>
+              立即報名 <ArrowRight className="w-3 h-3" />
+            </a>
+          </Link>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "#f2f2f2" }}>
@@ -310,113 +357,32 @@ export default function SchedulePage() {
 
           {/* Heading */}
           <div className="mb-12">
-            <p className="text-xs font-semibold tracking-[0.3em] uppercase mb-2" style={{ color: "#1B3A6B" }}>
-              Course Schedule
-            </p>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              近期開課場次
-            </h1>
+            <p className="text-xs font-semibold tracking-[0.3em] uppercase mb-2" style={{ color: "#1B3A6B" }}>Course Schedule</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">近期開課場次</h1>
             <p className="text-sm text-gray-400">點擊課程可查看詳情，立即報名鎖定席位</p>
           </div>
 
-          {/* Upcoming courses */}
-          <div className="space-y-3 mb-12">
-            {upcoming.map((s, idx) => (
-              <div
-                key={s.id}
-                className="rounded-2xl overflow-hidden flex flex-col md:flex-row md:items-center transition-shadow hover:shadow-lg"
-                style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)", background: s.isFull ? "#f5f5f5" : "#fff", opacity: s.isFull ? 0.85 : 1 }}
-              >
-                {/* Color accent bar */}
-                <div
-                  className="w-full md:w-1.5 h-1.5 md:h-auto md:self-stretch flex-shrink-0 rounded-t-2xl md:rounded-t-none md:rounded-l-2xl"
-                  style={{ background: s.accentColor }}
-                />
-
-                {/* Index */}
-                <div className="hidden md:flex items-center justify-center w-14 flex-shrink-0 px-3">
-                  <span className="text-2xl font-black" style={{ color: "#e8e8e8" }}>
-                    {String(idx + 1).padStart(2, "0")}
-                  </span>
-                </div>
-
-                {/* Date block */}
-                <div
-                  className="flex-shrink-0 flex flex-col items-center justify-center w-20 py-4 mx-4 md:mx-0 rounded-xl md:rounded-none hidden md:flex"
-                  style={{ background: s.tagBg }}
-                >
-                  <span className="text-2xl font-black leading-none" style={{ color: s.accentColor }}>
-                    {s.date?.split(" / ")[2]}
-                  </span>
-                  <span className="text-[10px] font-semibold mt-1" style={{ color: s.tagText }}>
-                    {s.date?.split(" / ")[0]}/{s.date?.split(" / ")[1]}
-                  </span>
-                  <span className="text-xs font-bold mt-0.5" style={{ color: s.tagText }}>
-                    （{s.weekday}）
-                  </span>
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 px-5 py-4 min-w-0">
-                  {/* Mobile date */}
-                  <p className="text-xs font-semibold text-gray-400 mb-1 md:hidden">
-                    {s.date}（{s.weekday}）
-                  </p>
-
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <h3 className="text-base font-bold" style={{ color: s.isFull ? "#9ca3af" : "#111827" }}>{s.course}</h3>
-                    <span
-                      className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style={{ background: s.tagBg, color: s.tagText }}
-                    >
-                      {s.badge}
-                    </span>
-                    {s.isFull && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#fee2e2", color: "#dc2626" }}>
-                        額滿
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-400 mb-2">{s.subtitle}</p>
-
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400">
-                    {s.time && (
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />{s.time}
-                      </span>
-                    )}
-                    {s.location && (
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />{s.location}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Price + CTA */}
-                <div className="flex md:flex-col items-center md:items-end justify-between px-5 py-4 gap-3 md:gap-2 flex-shrink-0 border-t md:border-t-0 md:border-l border-gray-100">
-                  <div className="text-right">
-                    <p className="text-xs text-gray-300 line-through">{s.originalPrice}</p>
-                    <p className="text-base font-black" style={{ color: "#1B3A6B" }}>{s.discountPrice}</p>
-                  </div>
-                  {s.isFull ? (
-                    <span className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap" style={{ background: "#e5e7eb", color: "#9ca3af" }}>
-                      已額滿
-                    </span>
-                  ) : (
-                    <Link href={s.enrollPath}>
-                      <a
-                        className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full text-white transition-opacity hover:opacity-80 whitespace-nowrap"
-                        style={{ background: "#1B3A6B" }}
-                      >
-                        立即報名 <ArrowRight className="w-3 h-3" />
-                      </a>
-                    </Link>
-                  )}
-                </div>
+          {/* Available sessions */}
+          {available.length > 0 && (
+            <div className="mb-10">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-sm font-bold px-3 py-1 rounded-full" style={{ background: "#E8EEF7", color: "#1B3A6B" }}>可報名場次</span>
+                <span className="text-xs text-gray-400">{available.length} 個場次開放中</span>
               </div>
-            ))}
-          </div>
+              <div className="space-y-3">{available.map((s, idx) => renderRow(s, idx))}</div>
+            </div>
+          )}
+
+          {/* Full sessions */}
+          {fullSessions.length > 0 && (
+            <div className="mb-12">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-sm font-bold px-3 py-1 rounded-full" style={{ background: "#fee2e2", color: "#dc2626" }}>已額滿場次</span>
+                <span className="text-xs text-gray-400">以下場次已無名額</span>
+              </div>
+              <div className="space-y-3">{fullSessions.map((s, idx) => renderRow(s, idx))}</div>
+            </div>
+          )}
 
         </div>
       </main>
