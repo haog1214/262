@@ -4,7 +4,7 @@ import { ArrowLeft, ChevronDown } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-const enterpriseSession = { id: 99, date: "", weekday: "", time: "", remaining: 0, enterprise: true };
+const enterpriseSession = { id: 99, date: "", weekday: "", time: "", remaining: 0, enterprise: true, isFull: false };
 
 const courses = [
   {
@@ -12,9 +12,9 @@ const courses = [
     label: "Gemini讓工作快一倍（3H 特訓班）",
     image: "/讓你的Gemini再進化.jpg",
     sessions: [
-      { id: 1, date: "2026/5/11", weekday: "一", time: "13:30–16:30", remaining: 15, enterprise: false },
-      { id: 2, date: "2026/5/18", weekday: "一", time: "13:30–16:30", remaining: 15, enterprise: false },
-      { id: 3, date: "2026/5/25", weekday: "一", time: "13:30–16:30", remaining: 15, enterprise: false },
+      { id: 1, date: "2026/5/11", weekday: "一", time: "13:30–16:30", remaining: 0, isFull: true, enterprise: false },
+      { id: 2, date: "2026/5/18", weekday: "一", time: "13:30–16:30", remaining: 15, isFull: false, enterprise: false },
+      { id: 3, date: "2026/5/25", weekday: "一", time: "13:30–16:30", remaining: 15, isFull: false, enterprise: false },
       enterpriseSession,
     ],
   },
@@ -23,9 +23,9 @@ const courses = [
     label: "資料太多卻用不起來（3H 特訓班）",
     image: "/資料太多都用不起來.jpg",
     sessions: [
-      { id: 1, date: "2026/5/12", weekday: "二", time: "13:30–16:30", remaining: 15, enterprise: false },
-      { id: 2, date: "2026/5/19", weekday: "二", time: "13:30–16:30", remaining: 15, enterprise: false },
-      { id: 3, date: "2026/5/26", weekday: "二", time: "13:30–16:30", remaining: 15, enterprise: false },
+      { id: 1, date: "2026/5/12", weekday: "二", time: "13:30–16:30", remaining: 0, isFull: true, enterprise: false },
+      { id: 2, date: "2026/5/19", weekday: "二", time: "13:30–16:30", remaining: 15, isFull: false, enterprise: false },
+      { id: 3, date: "2026/5/26", weekday: "二", time: "13:30–16:30", remaining: 15, isFull: false, enterprise: false },
       enterpriseSession,
     ],
   },
@@ -34,9 +34,9 @@ const courses = [
     label: "AI短影音即戰班（3H 特訓班）",
     image: "/零基礎也能做專業短片.jpg",
     sessions: [
-      { id: 1, date: "2026/5/13", weekday: "三", time: "9:00–16:30", remaining: 15, enterprise: false },
-      { id: 2, date: "2026/5/20", weekday: "三", time: "9:00–16:30", remaining: 15, enterprise: false },
-      { id: 3, date: "2026/5/27", weekday: "三", time: "9:00–16:30", remaining: 15, enterprise: false },
+      { id: 1, date: "2026/5/13", weekday: "三", time: "9:00–16:30", remaining: 0, isFull: true, enterprise: false },
+      { id: 2, date: "2026/5/20", weekday: "三", time: "9:00–16:30", remaining: 15, isFull: false, enterprise: false },
+      { id: 3, date: "2026/5/27", weekday: "三", time: "9:00–16:30", remaining: 15, isFull: false, enterprise: false },
       enterpriseSession,
     ],
   },
@@ -45,9 +45,9 @@ const courses = [
     label: "讓手機搞定大小事（3H 特訓班）",
     image: "/讓手機搞定大小事-2.jpg",
     sessions: [
-      { id: 1, date: "2026/5/14", weekday: "四", time: "13:30–16:30", remaining: 15, enterprise: false },
-      { id: 2, date: "2026/5/21", weekday: "四", time: "13:30–16:30", remaining: 15, enterprise: false },
-      { id: 3, date: "2026/5/28", weekday: "四", time: "13:30–16:30", remaining: 15, enterprise: false },
+      { id: 1, date: "2026/5/14", weekday: "四", time: "13:30–16:30", remaining: 0, isFull: true, enterprise: false },
+      { id: 2, date: "2026/5/21", weekday: "四", time: "13:30–16:30", remaining: 15, isFull: false, enterprise: false },
+      { id: 3, date: "2026/5/28", weekday: "四", time: "13:30–16:30", remaining: 15, isFull: false, enterprise: false },
       enterpriseSession,
     ],
   },
@@ -56,9 +56,9 @@ const courses = [
     label: "簡報不用做到半夜（3H 特訓班）",
     image: "/提升簡報的精美度.jpg",
     sessions: [
-      { id: 1, date: "2026/5/15", weekday: "五", time: "13:30–16:30", remaining: 15, enterprise: false },
-      { id: 2, date: "2026/5/22", weekday: "五", time: "13:30–16:30", remaining: 15, enterprise: false },
-      { id: 3, date: "2026/5/29", weekday: "五", time: "13:30–16:30", remaining: 15, enterprise: false },
+      { id: 1, date: "2026/5/15", weekday: "五", time: "13:30–16:30", remaining: 0, isFull: true, enterprise: false },
+      { id: 2, date: "2026/5/22", weekday: "五", time: "13:30–16:30", remaining: 15, isFull: false, enterprise: false },
+      { id: 3, date: "2026/5/29", weekday: "五", time: "13:30–16:30", remaining: 15, isFull: false, enterprise: false },
       enterpriseSession,
     ],
   },
@@ -72,12 +72,17 @@ const referralOptions = [
   "其他",
 ];
 
+function firstOpenSession(c: typeof courses[0]) {
+  return c.sessions.find((s) => !s.isFull) ?? c.sessions[0];
+}
+
 function getInitialParams() {
   const params = new URLSearchParams(window.location.search);
   const courseId = params.get("course") ?? "";
   const sessionId = Number(params.get("session") ?? 0);
   const validCourse = courses.find((c) => c.id === courseId) ?? courses[0];
-  const validSession = validCourse.sessions.find((s) => s.id === sessionId) ?? validCourse.sessions[0];
+  const found = validCourse.sessions.find((s) => s.id === sessionId);
+  const validSession = (found && !found.isFull) ? found : firstOpenSession(validCourse);
   return { courseId: validCourse.id, sessionId: validSession.id };
 }
 
@@ -96,7 +101,7 @@ export default function EnrollPage() {
   const handleCourseChange = (id: string) => {
     setSelectedCourseId(id);
     const next = courses.find((c) => c.id === id)!;
-    setSelectedSessionId(next.sessions[0].id);
+    setSelectedSessionId(firstOpenSession(next).id);
   };
 
   const handleChange = (field: string, value: string) => {
@@ -229,11 +234,13 @@ export default function EnrollPage() {
                         <button
                           type="button"
                           key={s.id}
-                          onClick={() => setSelectedSessionId(s.id)}
+                          onClick={() => { if (!s.isFull) setSelectedSessionId(s.id); }}
                           className="w-full text-left rounded-xl px-4 py-3.5 border-2 transition-all"
                           style={{
-                            backgroundColor: isSelected ? "#EEF3FB" : "#fafafa",
-                            borderColor: isSelected ? "#1B3A6B" : "#e5e7eb",
+                            backgroundColor: s.isFull ? "#f9fafb" : (isSelected ? "#EEF3FB" : "#fafafa"),
+                            borderColor: s.isFull ? "#e5e7eb" : (isSelected ? "#1B3A6B" : "#e5e7eb"),
+                            cursor: s.isFull ? "not-allowed" : "pointer",
+                            opacity: s.isFull ? 0.75 : 1,
                           }}
                         >
                           <div className="flex items-center justify-between">
@@ -241,8 +248,8 @@ export default function EnrollPage() {
                               <span
                                 className="w-3 h-3 rounded-full flex-shrink-0 border-2 transition-colors"
                                 style={{
-                                  backgroundColor: isSelected ? "#1B3A6B" : "transparent",
-                                  borderColor: isSelected ? "#1B3A6B" : "#9ca3af",
+                                  backgroundColor: s.isFull ? "transparent" : (isSelected ? "#1B3A6B" : "transparent"),
+                                  borderColor: s.isFull ? "#d1d5db" : (isSelected ? "#1B3A6B" : "#9ca3af"),
                                 }}
                               />
                               <div>
@@ -253,7 +260,7 @@ export default function EnrollPage() {
                                   </>
                                 ) : (
                                   <>
-                                    <p className="font-semibold text-[15px] text-gray-900">{s.date}（{s.weekday}）</p>
+                                    <p className={`font-semibold text-[15px] ${s.isFull ? "text-gray-400 line-through" : "text-gray-900"}`}>{s.date}（{s.weekday}）</p>
                                     <p className="text-[13px] text-gray-500">{s.time}</p>
                                   </>
                                 )}
@@ -261,6 +268,8 @@ export default function EnrollPage() {
                             </div>
                             {s.enterprise ? (
                               <span className="text-[12px] text-gray-400">滿 10 人以上</span>
+                            ) : s.isFull ? (
+                              <span className="text-[12px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#fee2e2", color: "#dc2626" }}>額滿</span>
                             ) : (
                               <span
                                 className="text-[12px] px-2 py-0.5 rounded-full transition-colors"

@@ -163,7 +163,7 @@ export default function CourseVideoDetail() {
                     <p className="text-3xl font-bold text-gray-900">NT$ 4,000</p>
                     <p className="text-gray-400 line-through text-sm mb-3">NT$ 6,000</p>
                     <a
-                      href="/enroll?course=ai-video"
+                      href={`/enroll?course=ai-video&session=${selectedSession}`}
                       className="px-8 font-bold rounded-full transition-colors shadow-lg text-base" style={{ backgroundColor: "#1B3A6B", color: "#FFFFFF", marginTop: "15px", display: "inline-block", paddingTop: "calc(0.75rem * 0.9)", paddingBottom: "calc(0.75rem * 0.9)" }}
                     >
                       立即報名
@@ -279,7 +279,7 @@ export default function CourseVideoDetail() {
             <p style={{ color: "rgba(245,240,232,0.8)" }}>只需 6 小時，帶走一部屬於你的 AI 短影音作品</p>
             <div>
               <a
-                href="/enroll?course=ai-video"
+                href={`/enroll?course=ai-video&session=${selectedSession}`}
                 className="inline-block font-bold rounded-full transition-colors shadow-xl" style={{ backgroundColor: "#D4AF37", color: "#1B3A6B", padding: "calc(1rem * 0.8) calc(2.5rem * 0.8)", fontSize: "calc(1.125rem * 0.8)" }}
               >
                 立即報名

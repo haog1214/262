@@ -152,7 +152,7 @@ export default function CourseKnowledgeDetail() {
                   <div className="flex-shrink-0" style={{ marginLeft: "100px" }}>
                     <p className="text-3xl font-bold text-gray-900">NT$ 2,000</p>
                     <p className="text-gray-400 line-through text-sm mb-3">NT$ 4,000</p>
-                    <a href="/enroll?course=ai-knowledge" className="px-8 font-bold rounded-full transition-colors shadow-lg text-base"
+                    <a href={`/enroll?course=ai-knowledge&session=${selectedSession}`} className="px-8 font-bold rounded-full transition-colors shadow-lg text-base"
                       style={{ backgroundColor: "#1B3A6B", color: "#FFFFFF", marginTop: "15px", display: "inline-block", paddingTop: "calc(0.75rem * 0.9)", paddingBottom: "calc(0.75rem * 0.9)" }}>
                       立即報名
                     </a>
@@ -261,7 +261,7 @@ export default function CourseKnowledgeDetail() {
             <h2 className="text-3xl font-bold">準備好開始了嗎？</h2>
             <p style={{ color: "rgba(245,240,232,0.8)" }}>只需 3 小時，打造你的專屬 AI 知識庫</p>
             <div>
-              <a href="/enroll?course=ai-knowledge" className="inline-block font-bold rounded-full transition-colors shadow-xl"
+              <a href={`/enroll?course=ai-knowledge&session=${selectedSession}`} className="inline-block font-bold rounded-full transition-colors shadow-xl"
                 style={{ backgroundColor: "#D4AF37", color: "#1B3A6B", padding: "calc(1rem * 0.8) calc(2.5rem * 0.8)", fontSize: "calc(1.125rem * 0.8)" }}>
                 立即報名
               </a>
