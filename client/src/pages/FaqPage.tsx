@@ -2,6 +2,7 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Plus, Minus } from "lucide-react";
+import SEO from "@/components/SEO";
 
 interface FaqItem {
   q: string;
@@ -207,6 +208,21 @@ function FaqCard({ item, isOpen, onToggle, index }: {
   );
 }
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: categories.flatMap((cat) =>
+    cat.items.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: Array.isArray(item.a) ? item.a.join("；") : item.a,
+      },
+    }))
+  ),
+};
+
 export default function FaqPage() {
   const [activeCategory, setActiveCategory] = useState("preparation");
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -225,6 +241,12 @@ export default function FaqPage() {
         background: "linear-gradient(160deg, #f0f2f7 0%, #f2f2f2 50%, #eef0f5 100%)",
       }}
     >
+      <SEO
+        title="常見問題 FAQ"
+        description="262學習基地常見問題解答：上課設備需求、課程內容、報名流程、付款方式、退費政策、企業包班等，一次查清楚。"
+        url="https://www.262.yc311.com.tw/faq"
+        schema={faqSchema}
+      />
       <Header />
 
       <main className="flex-1 py-14 px-4 md:px-8">

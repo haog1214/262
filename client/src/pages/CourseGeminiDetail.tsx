@@ -3,6 +3,24 @@ import { Link } from "wouter";
 import { ArrowLeft, ChevronRight, Clock, Users, CheckCircle2, MapPin } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
+
+const courseSchema = {
+  "@context": "https://schema.org",
+  "@type": "Course",
+  name: "讓你的 Gemini 再進化｜Google AI 全方位實戰應用",
+  description: "從 Gemini 基礎到進階應用，整合 Google 生態系、多媒體創作、NotebookLM 深度閱讀，打造個人 AI 工作流程。",
+  provider: {
+    "@type": "EducationalOrganization",
+    name: "262學習基地",
+    url: "https://www.262.yc311.com.tw",
+  },
+  url: "https://www.262.yc311.com.tw/course/gemini",
+  image: "https://www.262.yc311.com.tw/讓你的Gemini再進化.jpg",
+  courseLanguage: "zh-TW",
+  educationalLevel: "beginner",
+  teaches: "Google Gemini AI工具應用、Google生態系整合、NotebookLM",
+};
 
 const sessions = [
   { id: 1, date: "2026/5/11", weekday: "一", time: "13:30–16:30", remaining: 0, isFull: true, enterprise: false },
@@ -70,6 +88,13 @@ export default function CourseGeminiDetail() {
   const [selectedSession, setSelectedSession] = useState(sessions[1].id);
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      <SEO
+        title="讓你的 Gemini 再進化｜Google AI 全方位實戰應用"
+        description="從 Gemini 基礎到進階應用，整合 Google 生態系、多媒體創作、NotebookLM 深度閱讀，打造個人 AI 工作流程。台中 AI 課程，立即報名。"
+        url="https://www.262.yc311.com.tw/course/gemini"
+        image="https://www.262.yc311.com.tw/讓你的Gemini再進化.jpg"
+        schema={courseSchema}
+      />
       <Header />
 
       <main className="flex-1">

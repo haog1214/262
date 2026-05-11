@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { ArrowLeft, ChevronRight, Clock, Users, CheckCircle2, MapPin } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
 
 const sessions = [
   { id: 1, date: "2026/5/13", weekday: "三", time: "9:00–16:30", location: "台中西屯分校", remaining: 0, isFull: true, enterprise: false },
@@ -75,6 +76,12 @@ export default function CourseVideoDetail() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      <SEO
+        title="零基礎也能做專業短片｜AI 短影音製作課"
+        description="不需要拍攝設備，用 AI 工具製作吸睛短影音。學習腳本生成、AI 配音、字幕、剪輯一條龍，快速產出高品質內容。台中 AI 課程。"
+        url="https://www.262.yc311.com.tw/course/ai-video"
+        image="https://www.262.yc311.com.tw/零基礎也能做專業短片.jpg"
+      />
       <Header />
 
       <main className="flex-1">

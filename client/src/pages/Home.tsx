@@ -4,15 +4,62 @@ import CoursesSection from "@/components/CoursesSection";
 import InstructorSection from "@/components/InstructorSection";
 import PreparationSection from "@/components/PreparationSection";
 import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
 
-/**
- * Home Page - 262學院
- * 設計系統：現代漸層活力風格
- * 特點：完整課程展示、清晰信息流、視覺吸引力
- */
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  name: "262學習基地",
+  alternateName: "262Academy",
+  url: "https://www.262.yc311.com.tw",
+  logo: "https://www.262.yc311.com.tw/logo.png",
+  description: "台中 AI 實戰課程平台，提供 Gemini、AI 知識管理、AI 短影音、AI 生活應用、AI 簡報等課程。",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "河南路二段262號7樓3",
+    addressLocality: "西屯區",
+    addressRegion: "台中市",
+    addressCountry: "TW",
+  },
+  sameAs: ["https://www.facebook.com/262academy"],
+};
+
+const localBusinessSchema = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: "262學習基地",
+  image: "https://www.262.yc311.com.tw/logo.png",
+  url: "https://www.262.yc311.com.tw",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "河南路二段262號7樓3",
+    addressLocality: "西屯區",
+    addressRegion: "台中市",
+    postalCode: "407",
+    addressCountry: "TW",
+  },
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: 24.1625,
+    longitude: 120.6491,
+  },
+  openingHoursSpecification: [
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      opens: "09:00",
+      closes: "18:00",
+    },
+  ],
+};
+
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      <SEO
+        url="https://www.262.yc311.com.tw/"
+        schema={[organizationSchema, localBusinessSchema]}
+      />
       <Header />
       <main className="flex-1">
         <HeroSection />

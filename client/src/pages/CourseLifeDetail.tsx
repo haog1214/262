@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { ArrowLeft, ChevronRight, Clock, Users, CheckCircle2, MapPin } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
 
 const sessions = [
   { id: 1, date: "2026/5/14", weekday: "四", time: "13:30–16:30", remaining: 0, isFull: true, enterprise: false },
@@ -75,6 +76,12 @@ export default function CourseLifeDetail() {
   const [selectedSession, setSelectedSession] = useState(sessions[1].id);
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      <SEO
+        title="讓手機搞定大小事｜AI 生活應用實戰課"
+        description="用 AI 讓手機成為你的萬能助手，學會語音指令、行程管理、智慧搜尋、自動化任務，讓 AI 幫你省時省力。台中 AI 課程。"
+        url="https://www.262.yc311.com.tw/course/ai-life"
+        image="https://www.262.yc311.com.tw/讓手機搞定大小事-2.jpg"
+      />
       <Header />
 
       <main className="flex-1">

@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { MapPin, Monitor, TrendingUp, Briefcase, Users, Mic, Building2 } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const directions = [
   { icon: <Monitor className="w-5 h-5" />, title: "AI工具應用與企業導入", desc: "協助企業與個人學會運用 AI 提升工作效率、內容產出與營運決策能力。" },
@@ -14,6 +15,11 @@ const directions = [
 export default function AboutPage() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#fff" }}>
+      <SEO
+        title="關於我們"
+        description="262學習基地由傳啓資訊支持，致力於 AI 工具應用、數位行銷、企業內訓等培訓。台中西屯區，小班制實體課程。"
+        url="https://www.262.yc311.com.tw/about"
+      />
       <Header />
 
       <main className="flex-1">

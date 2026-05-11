@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { ArrowLeft, ChevronRight, Clock, Users, CheckCircle2, MapPin } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
 
 const sessions = [
   { id: 1, date: "2026/5/12", weekday: "二", time: "13:30–16:30", remaining: 0, isFull: true, enterprise: false },
@@ -80,6 +81,12 @@ export default function CourseKnowledgeDetail() {
   const [selectedSession, setSelectedSession] = useState(sessions[1].id);
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      <SEO
+        title="資料太多都用不起來？AI 知識管理實戰課"
+        description="用 AI 整理海量資料、建立知識庫、提升資訊處理效率。學會 NotebookLM、AI 摘要、知識圖譜等實戰技巧。台中 AI 課程，立即報名。"
+        url="https://www.262.yc311.com.tw/course/ai-knowledge"
+        image="https://www.262.yc311.com.tw/資料太多都用不起來.jpg"
+      />
       <Header />
 
       <main className="flex-1">

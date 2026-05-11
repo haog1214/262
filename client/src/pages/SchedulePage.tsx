@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Clock, MapPin, ArrowRight } from "lucide-react";
+import SEO from "@/components/SEO";
 
 interface ScheduleItem {
   id: number;
@@ -350,6 +351,11 @@ export default function SchedulePage() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "#f2f2f2" }}>
+      <SEO
+        title="開課日期"
+        description="262學習基地最新開課時間表，包含 Gemini、AI 知識管理、AI 短影音、AI 生活應用、AI 簡報等課程場次，台中西屯區實體小班教學。"
+        url="https://www.262.yc311.com.tw/schedule"
+      />
       <Header />
 
       <main className="flex-1 py-14 px-4 md:px-8">

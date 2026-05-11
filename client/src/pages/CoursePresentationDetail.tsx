@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { ArrowLeft, ChevronRight, Clock, Users, CheckCircle2, MapPin } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEO from "@/components/SEO";
 
 const sessions = [
   { id: 1, date: "2026/5/15", weekday: "五", time: "13:30–16:30", remaining: 0, isFull: true, enterprise: false },
@@ -65,6 +66,12 @@ export default function CoursePresentationDetail() {
   const [selectedSession, setSelectedSession] = useState(sessions[1].id);
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      <SEO
+        title="提升簡報的精美度｜AI 簡報製作實戰課"
+        description="用 AI 打造高質感簡報，學習 AI 自動生成大綱、設計排版、配色建議，讓你的簡報脫穎而出。台中 AI 課程，立即報名。"
+        url="https://www.262.yc311.com.tw/course/ai-presentation"
+        image="https://www.262.yc311.com.tw/提升簡報的精美度.jpg"
+      />
       <Header />
 
       <main className="flex-1">
