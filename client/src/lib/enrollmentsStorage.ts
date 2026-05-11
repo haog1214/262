@@ -63,6 +63,29 @@ export async function fetchEnrollments(): Promise<Enrollment[]> {
   }
 }
 
+export interface Registration {
+  timestamp: string;
+  course: string;
+  sessionDate: string;
+  name: string;
+  phone: string;
+  email: string;
+  company: string;
+  taxId: string;
+  referral: string;
+  notes: string;
+}
+
+export async function fetchRegistrations(): Promise<Registration[]> {
+  try {
+    const res = await fetch("/api/registrations");
+    if (!res.ok) return [];
+    return (await res.json()) as Registration[];
+  } catch {
+    return [];
+  }
+}
+
 export async function saveEnrollments(
   enrollments: Enrollment[]
 ): Promise<{ ok: boolean; error?: string }> {

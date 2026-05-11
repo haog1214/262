@@ -217,6 +217,53 @@ export async function readEnrollmentsFromSheet(): Promise<Enrollment[]> {
   }
 }
 
+export interface Registration {
+  timestamp: string;
+  course: string;
+  sessionDate: string;
+  name: string;
+  phone: string;
+  email: string;
+  company: string;
+  taxId: string;
+  referral: string;
+  notes: string;
+}
+
+export async function readRegistrationsFromSheet(): Promise<Registration[]> {
+  const { sheets, sheetId: defaultSheetId } = getSheets();
+  // Support a separate Google Sheet for Apps Script registrations
+  const sheetId = process.env.REGISTRATION_SHEET_ID ?? defaultSheetId;
+  const tab = process.env.REGISTRATION_SHEET_TAB ?? "工作表1";
+  try {
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: sheetId,
+      range: `${tab}!A:J`,
+    });
+    const rows = res.data.values ?? [];
+    // Find the header row by looking for "姓名" or "課程名稱"
+    let headerIdx = rows.findIndex(r => r.some((c: string) => c === "姓名" || c === "課程名稱"));
+    if (headerIdx === -1) headerIdx = 0;
+    const dataRows = rows.slice(headerIdx + 1);
+    return dataRows
+      .filter(row => row.some(Boolean))
+      .map(row => ({
+        timestamp:   row[0] ?? "",
+        course:      row[1] ?? "",
+        sessionDate: row[2] ?? "",
+        name:        row[3] ?? "",
+        phone:       row[4] ?? "",
+        email:       row[5] ?? "",
+        company:     row[6] ?? "",
+        taxId:       row[7] ?? "",
+        referral:    row[8] ?? "",
+        notes:       row[9] ?? "",
+      }));
+  } catch {
+    return [];
+  }
+}
+
 export async function writeEnrollmentsToSheet(enrollments: Enrollment[]): Promise<void> {
   const { sheets, sheetId } = getSheets();
   await ensureTab(sheets, sheetId, "enrollments");

@@ -3,64 +3,48 @@ import { Link } from "wouter";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { courseSessionsMap } from "@/data/courseSessions";
 
-const enterpriseSession = { id: 99, date: "", weekday: "", time: "", remaining: 0, enterprise: true, isFull: false };
+const toSession = (s: { id: string; date: string; weekday: string; time: string; isFull: boolean; enterprise: boolean; remaining: number }) => ({
+  id: s.id,
+  date: s.date,
+  weekday: s.weekday,
+  time: s.time,
+  remaining: s.remaining,
+  isFull: s.isFull,
+  enterprise: s.enterprise,
+});
 
 const courses = [
   {
     id: "gemini",
     label: "Gemini讓工作快一倍（3H 特訓班）",
     image: "/讓你的Gemini再進化.jpg",
-    sessions: [
-      { id: 1, date: "2026/5/11", weekday: "一", time: "13:30–16:30", remaining: 0, isFull: true, enterprise: false },
-      { id: 2, date: "2026/5/18", weekday: "一", time: "13:30–16:30", remaining: 15, isFull: false, enterprise: false },
-      { id: 3, date: "2026/5/25", weekday: "一", time: "13:30–16:30", remaining: 15, isFull: false, enterprise: false },
-      enterpriseSession,
-    ],
+    sessions: courseSessionsMap["gemini"].map(toSession),
   },
   {
     id: "ai-knowledge",
     label: "資料太多卻用不起來（3H 特訓班）",
     image: "/資料太多都用不起來.jpg",
-    sessions: [
-      { id: 1, date: "2026/5/12", weekday: "二", time: "13:30–16:30", remaining: 0, isFull: true, enterprise: false },
-      { id: 2, date: "2026/5/19", weekday: "二", time: "13:30–16:30", remaining: 15, isFull: false, enterprise: false },
-      { id: 3, date: "2026/5/26", weekday: "二", time: "13:30–16:30", remaining: 15, isFull: false, enterprise: false },
-      enterpriseSession,
-    ],
+    sessions: courseSessionsMap["ai-knowledge"].map(toSession),
   },
   {
     id: "ai-video",
     label: "AI短影音即戰班（3H 特訓班）",
     image: "/零基礎也能做專業短片.jpg",
-    sessions: [
-      { id: 1, date: "2026/5/13", weekday: "三", time: "9:00–16:30", remaining: 0, isFull: true, enterprise: false },
-      { id: 2, date: "2026/5/20", weekday: "三", time: "9:00–16:30", remaining: 15, isFull: false, enterprise: false },
-      { id: 3, date: "2026/5/27", weekday: "三", time: "9:00–16:30", remaining: 15, isFull: false, enterprise: false },
-      enterpriseSession,
-    ],
+    sessions: courseSessionsMap["ai-video"].map(toSession),
   },
   {
     id: "ai-life",
     label: "讓手機搞定大小事（3H 特訓班）",
     image: "/讓手機搞定大小事-2.jpg",
-    sessions: [
-      { id: 1, date: "2026/5/14", weekday: "四", time: "13:30–16:30", remaining: 0, isFull: true, enterprise: false },
-      { id: 2, date: "2026/5/21", weekday: "四", time: "13:30–16:30", remaining: 15, isFull: false, enterprise: false },
-      { id: 3, date: "2026/5/28", weekday: "四", time: "13:30–16:30", remaining: 15, isFull: false, enterprise: false },
-      enterpriseSession,
-    ],
+    sessions: courseSessionsMap["ai-life"].map(toSession),
   },
   {
     id: "ai-presentation",
     label: "簡報不用做到半夜（3H 特訓班）",
     image: "/提升簡報的精美度.jpg",
-    sessions: [
-      { id: 1, date: "2026/5/15", weekday: "五", time: "13:30–16:30", remaining: 0, isFull: true, enterprise: false },
-      { id: 2, date: "2026/5/22", weekday: "五", time: "13:30–16:30", remaining: 15, isFull: false, enterprise: false },
-      { id: 3, date: "2026/5/29", weekday: "五", time: "13:30–16:30", remaining: 15, isFull: false, enterprise: false },
-      enterpriseSession,
-    ],
+    sessions: courseSessionsMap["ai-presentation"].map(toSession),
   },
 ];
 
@@ -130,23 +114,29 @@ export default function EnrollPage() {
       : `${session.date}（${session.weekday}）${session.time}`;
 
     setSubmitting(true);
+    const payload = {
+      course: currentCourse.label,
+      session: sessionLabel,
+      name: form.name,
+      phone: form.phone,
+      email: form.email,
+      company: form.company,
+      taxId: form.taxId,
+      referral: form.referral,
+      note: form.note,
+    };
     try {
       await fetch(SHEET_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          course: currentCourse.label,
-          session: sessionLabel,
-          name: form.name,
-          phone: form.phone,
-          email: form.email,
-          company: form.company,
-          taxId: form.taxId,
-          referral: form.referral,
-          note: form.note,
-        }),
+        body: JSON.stringify(payload),
       });
+      fetch("/api/notify-enrollment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }).catch(() => {});
       setSubmitted(true);
     } catch {
       alert("送出失敗，請稍後再試或直接來信聯絡我們。");

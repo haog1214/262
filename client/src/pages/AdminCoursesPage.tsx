@@ -12,8 +12,10 @@ import {
   saveSchedules,
   fetchEnrollments,
   saveEnrollments,
+  fetchRegistrations,
   type Schedule,
   type Enrollment,
+  type Registration,
 } from "@/lib/enrollmentsStorage";
 import {
   defaultCoursesConfig,
@@ -21,6 +23,7 @@ import {
   type CoursesConfig,
   type BadgeColor,
 } from "@/data/defaultCourses";
+import { getSessionsByDetailPath } from "@/data/courseSessions";
 
 const ADMIN_PASSWORD = "262@Admin";
 const BADGE_COLORS: BadgeColor[] = ["pink", "purple", "green", "gold", "teal"];
@@ -375,6 +378,7 @@ function EnrollmentView({
   course,
   allSchedules,
   allEnrollments,
+  allRegistrations,
   onBack,
   onToggleStatus,
   showToast,
@@ -384,6 +388,7 @@ function EnrollmentView({
   course: Course;
   allSchedules: Schedule[];
   allEnrollments: Enrollment[];
+  allRegistrations: Registration[];
   onBack: () => void;
   onToggleStatus: (status: "open" | "full") => Promise<void>;
   showToast: (msg: string) => void;
@@ -391,9 +396,25 @@ function EnrollmentView({
   onEnrollmentsChange: (all: Enrollment[]) => void;
 }) {
   const cid = String(course.id);
-  const [schedules, setSchedules] = useState<Schedule[]>(
-    allSchedules.filter(s => s.courseId === cid)
-  );
+
+  // Seed from frontend sessions if no schedules exist for this course
+  const initSchedules = (): Schedule[] => {
+    const existing = allSchedules.filter(s => s.courseId === cid);
+    if (existing.length > 0) return existing;
+    const frontendSessions = getSessionsByDetailPath(course.detailPath);
+    return frontendSessions
+      .filter(s => !s.enterprise)
+      .map(s => ({
+        id: s.id,
+        courseId: cid,
+        date: s.date,
+        time: s.time,
+        maxCapacity: "20",
+        status: s.isFull ? "full" : "open",
+      }));
+  };
+
+  const [schedules, setSchedules] = useState<Schedule[]>(initSchedules);
   const [enrollments, setEnrollments] = useState<Enrollment[]>(
     allEnrollments.filter(e => e.courseId === cid)
   );
@@ -407,6 +428,35 @@ function EnrollmentView({
   const [savingSched, setSavingSched] = useState(false);
   const [savingEnroll, setSavingEnroll] = useState(false);
   const [togglingStatus, setTogglingStatus] = useState(false);
+
+  const hasUnsaved = !!editingSchedId || !!editingEnrollId;
+
+  // Warn before leaving when editing
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (hasUnsaved) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [hasUnsaved]);
+
+  // Auto-seed schedules to Google Sheets on first open
+  useEffect(() => {
+    const existing = allSchedules.filter(s => s.courseId === cid);
+    if (existing.length === 0) {
+      const seeded = initSchedules();
+      if (seeded.length > 0) {
+        const others = allSchedules.filter(s => s.courseId !== cid);
+        saveSchedules([...others, ...seeded]).then(result => {
+          if (result.ok) onSchedulesChange([...others, ...seeded]);
+        });
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const persistSchedules = async (updated: Schedule[]) => {
     setSavingSched(true);
@@ -546,11 +596,50 @@ function EnrollmentView({
     setTogglingStatus(false);
   };
 
+  const saveCurrentEdit = async () => {
+    if (editingSchedId) await saveSchedRow();
+    if (editingEnrollId) await saveEnrollRow();
+  };
+
   return (
     <div>
+      {/* Unsaved warning bar */}
+      {hasUnsaved && (
+        <div style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+          backgroundColor: "#FEF3C7",
+          border: "1px solid #F59E0B",
+          borderRadius: "10px",
+          padding: "12px 20px",
+          marginBottom: "16px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "12px",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#92400E", fontWeight: 600 }}>
+            ⚠️ 有未儲存的變更，請記得儲存
+          </div>
+          <button
+            style={{ ...s.btnPrimary, backgroundColor: "#D97706", padding: "8px 20px", fontSize: "14px" }}
+            onClick={saveCurrentEdit}
+          >
+            💾 儲存
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-        <button style={s.btnGhost} onClick={onBack}>← 返回課程列表</button>
+        <button
+          style={s.btnGhost}
+          onClick={() => {
+            if (hasUnsaved && !confirm("有未儲存的變更，確定要離開嗎？")) return;
+            onBack();
+          }}
+        >← 返回課程列表</button>
         <div>
           <div style={{ fontWeight: 700, fontSize: "18px", color: "#1B3A6B" }}>{course.title}</div>
           <div style={{ fontSize: "12px", color: "#9CA3AF" }}>報名管理</div>
@@ -841,6 +930,251 @@ function EnrollmentView({
           </tbody>
         </table>
       </div>
+
+      {/* Google Sheets registrations for this course */}
+      {(() => {
+        const courseRegs = allRegistrations.filter(r =>
+          r.course.includes(course.title.slice(0, 6))
+        );
+        return courseRegs.length > 0 ? (
+          <div style={s.card}>
+            <h3 style={{ fontWeight: 700, fontSize: "15px", color: "#1B3A6B", margin: "0 0 16px" }}>
+              Google Sheets 報名資料（{courseRegs.length} 筆）
+            </h3>
+            <table style={s.table}>
+              <thead>
+                <tr>
+                  <th style={{ ...s.th, width: "28px" }}>#</th>
+                  <th style={s.th}>姓名</th>
+                  <th style={s.th}>上課時間</th>
+                  <th style={s.th}>電話</th>
+                  <th style={s.th}>Email</th>
+                  <th style={s.th}>公司</th>
+                  <th style={s.th}>得知管道</th>
+                  <th style={s.th}>報名時間</th>
+                </tr>
+              </thead>
+              <tbody>
+                {courseRegs.map((reg, idx) => (
+                  <tr key={idx}>
+                    <td style={{ ...s.td, color: "#9CA3AF", fontSize: "12px" }}>{idx + 1}</td>
+                    <td style={{ ...s.td, fontWeight: 600 }}>{reg.name || "—"}</td>
+                    <td style={{ ...s.td, fontSize: "12px" }}>{reg.sessionDate || "—"}</td>
+                    <td style={{ ...s.td, fontSize: "12px" }}>{reg.phone || "—"}</td>
+                    <td style={{ ...s.td, fontSize: "12px" }}>{reg.email || "—"}</td>
+                    <td style={{ ...s.td, fontSize: "12px" }}>{reg.company || "—"}</td>
+                    <td style={{ ...s.td, fontSize: "12px" }}>{reg.referral || "—"}</td>
+                    <td style={{ ...s.td, fontSize: "11px", color: "#9CA3AF" }}>{reg.timestamp || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null;
+      })()}
+    </div>
+  );
+}
+
+// ── Reorder Modal ─────────────────────────────────────────────────────────────
+function ReorderModal({
+  courses,
+  onSave,
+  onClose,
+}: {
+  courses: Course[];
+  onSave: (ordered: Course[]) => void;
+  onClose: () => void;
+}) {
+  const [list, setList] = useState([...courses]);
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
+  const move = (from: number, to: number) => {
+    if (to < 0 || to >= list.length) return;
+    const arr = [...list];
+    const [item] = arr.splice(from, 1);
+    arr.splice(to, 0, item);
+    setList(arr);
+  };
+
+  const onDragStart = (e: React.DragEvent, idx: number) => {
+    setDragIdx(idx);
+    e.dataTransfer.effectAllowed = "move";
+  };
+  const onDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (idx !== dragOverIdx) setDragOverIdx(idx);
+  };
+  const onDrop = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (dragIdx !== null && dragIdx !== idx) move(dragIdx, idx);
+    setDragIdx(null);
+    setDragOverIdx(null);
+  };
+  const onDragEnd = () => {
+    setDragIdx(null);
+    setDragOverIdx(null);
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 1000,
+        backgroundColor: "rgba(0,0,0,0.45)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "16px",
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{
+        backgroundColor: "#fff",
+        borderRadius: "16px",
+        width: "100%",
+        maxWidth: "500px",
+        maxHeight: "90vh",
+        display: "flex",
+        flexDirection: "column",
+        boxShadow: "0 8px 40px rgba(0,0,0,0.2)",
+        overflow: "hidden",
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: "20px 24px",
+          borderBottom: "1px solid #E5E7EB",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: "16px", color: "#1B3A6B" }}>調整課程順序</div>
+            <div style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "2px" }}>拖曳或點選 ↑↓ 調整，完成後儲存</div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#9CA3AF", padding: "4px" }}
+          >✕</button>
+        </div>
+
+        {/* List */}
+        <div style={{ overflowY: "auto", flex: 1, padding: "16px 24px" }}>
+          {list.map((course, idx) => (
+            <div
+              key={course.id}
+              draggable
+              onDragStart={e => onDragStart(e, idx)}
+              onDragOver={e => onDragOver(e, idx)}
+              onDrop={e => onDrop(e, idx)}
+              onDragEnd={onDragEnd}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "10px 12px",
+                marginBottom: "6px",
+                borderRadius: "10px",
+                border: dragOverIdx === idx && dragIdx !== idx
+                  ? "2px solid #1B3A6B"
+                  : "1px solid #E5E7EB",
+                backgroundColor: dragIdx === idx ? "#F0F4FF" : "#FAFAFA",
+                opacity: dragIdx === idx ? 0.5 : 1,
+                cursor: "grab",
+                transition: "all 0.12s",
+              }}
+            >
+              {/* Drag handle */}
+              <div style={{ color: "#CBD5E1", fontSize: "18px", flexShrink: 0, userSelect: "none" }}>⠿</div>
+
+              {/* Number */}
+              <div style={{
+                width: "24px", height: "24px",
+                borderRadius: "50%",
+                backgroundColor: "#1B3A6B",
+                color: "#fff",
+                fontSize: "12px",
+                fontWeight: 700,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                {idx + 1}
+              </div>
+
+              {/* Thumbnail */}
+              <div style={{
+                width: "44px", height: "44px",
+                borderRadius: "6px",
+                overflow: "hidden",
+                backgroundColor: "#E5E7EB",
+                flexShrink: 0,
+              }}>
+                {course.backgroundImage && (
+                  <img
+                    src={course.backgroundImage}
+                    alt=""
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    onError={e => ((e.target as HTMLImageElement).style.display = "none")}
+                  />
+                )}
+              </div>
+
+              {/* Title */}
+              <div style={{ flex: 1, fontWeight: 600, fontSize: "14px", color: "#111827", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {course.title || "（無標題）"}
+              </div>
+
+              {/* Up/Down buttons */}
+              <div style={{ display: "flex", gap: "4px", flexShrink: 0 }}>
+                <button
+                  onClick={() => move(idx, idx - 1)}
+                  disabled={idx === 0}
+                  style={{
+                    border: "1px solid #D1D5DB",
+                    borderRadius: "6px",
+                    background: "#fff",
+                    width: "30px", height: "30px",
+                    cursor: idx === 0 ? "default" : "pointer",
+                    opacity: idx === 0 ? 0.3 : 1,
+                    fontSize: "14px",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}
+                >↑</button>
+                <button
+                  onClick={() => move(idx, idx + 1)}
+                  disabled={idx === list.length - 1}
+                  style={{
+                    border: "1px solid #D1D5DB",
+                    borderRadius: "6px",
+                    background: "#fff",
+                    width: "30px", height: "30px",
+                    cursor: idx === list.length - 1 ? "default" : "pointer",
+                    opacity: idx === list.length - 1 ? 0.3 : 1,
+                    fontSize: "14px",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}
+                >↓</button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          padding: "16px 24px",
+          borderTop: "1px solid #E5E7EB",
+          display: "flex",
+          gap: "10px",
+          flexShrink: 0,
+        }}>
+          <button
+            style={{ ...s.btnPrimary, flex: 1, padding: "12px" }}
+            onClick={() => onSave(list)}
+          >
+            💾 儲存順序並同步前台
+          </button>
+          <button style={s.btnGhost} onClick={onClose}>取消</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -854,15 +1188,34 @@ export default function AdminCoursesPage() {
   const [enrollCourseId, setEnrollCourseId] = useState<number | null>(null);
   const [allSchedules, setAllSchedules] = useState<Schedule[]>([]);
   const [allEnrollments, setAllEnrollments] = useState<Enrollment[]>([]);
+  const [enrollCountMap, setEnrollCountMap] = useState<Record<string, number>>({});
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [regLoading, setRegLoading] = useState(false);
+  const [regDetail, setRegDetail] = useState<Registration | null>(null);
   const [toast, setToast] = useState("");
   const [saving, setSaving] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const importRef = useRef<HTMLTextAreaElement>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [showReorder, setShowReorder] = useState(false);
 
   useEffect(() => {
     getCoursesConfig().then(setConfig);
+    fetchEnrollments().then(enrolls => {
+      const map: Record<string, number> = {};
+      for (const e of enrolls) {
+        map[e.courseId] = (map[e.courseId] ?? 0) + 1;
+      }
+      setEnrollCountMap(map);
+      setAllEnrollments(enrolls);
+    });
+    // Load registrations from Apps Script sheet
+    setRegLoading(true);
+    fetchRegistrations().then(regs => {
+      setRegistrations(regs);
+      setRegLoading(false);
+    });
   }, []);
 
   const showToast = (msg: string) => {
@@ -1026,6 +1379,7 @@ export default function AdminCoursesPage() {
             course={enrollCourse}
             allSchedules={allSchedules}
             allEnrollments={allEnrollments}
+            allRegistrations={registrations}
             onBack={() => setView("list")}
             onToggleStatus={async (status) => {
               const updated = {
@@ -1045,10 +1399,23 @@ export default function AdminCoursesPage() {
     );
   }
 
+  const handleReorderSave = (ordered: Course[]) => {
+    setShowReorder(false);
+    persist({ ...config, courses: ordered });
+    showToast("✅ 課程順序已儲存並同步前台");
+  };
+
   // ── List view (default) ──
   return (
     <div style={s.page}>
       <Toast msg={toast} />
+      {showReorder && (
+        <ReorderModal
+          courses={config.courses}
+          onSave={handleReorderSave}
+          onClose={() => setShowReorder(false)}
+        />
+      )}
 
       {/* Header */}
       <div style={s.header}>
@@ -1061,9 +1428,6 @@ export default function AdminCoursesPage() {
         <div style={{ display: "flex", gap: "10px" }}>
           <button style={s.btnGhost} onClick={handleExport}>📥 匯出備份</button>
           <button style={s.btnGhost} onClick={() => setShowImport(v => !v)}>📤 匯入</button>
-          <button style={{ ...s.btnDanger, padding: "8px 14px", fontSize: "13px" }} onClick={handleReset}>
-            🔄 還原預設
-          </button>
         </div>
       </div>
 
@@ -1086,43 +1450,21 @@ export default function AdminCoursesPage() {
           </div>
         )}
 
-        {/* Section meta */}
-        <div style={s.card}>
-          <h2 style={{ fontWeight: 700, fontSize: "16px", color: "#1B3A6B", marginBottom: "16px" }}>
-            區塊標題設定
-          </h2>
-          <div style={s.grid2}>
-            <div>
-              <label style={s.label}>大標題</label>
-              <input
-                style={s.input}
-                value={config.sectionTitle}
-                onChange={e => saveSectionMeta("sectionTitle", e.target.value)}
-                onBlur={() => persist(config)}
-              />
-            </div>
-            <div>
-              <label style={s.label}>副標語</label>
-              <input
-                style={s.input}
-                value={config.sectionSubtitle}
-                onChange={e => saveSectionMeta("sectionSubtitle", e.target.value)}
-                onBlur={() => persist(config)}
-              />
-            </div>
-          </div>
-          <p style={{ fontSize: "12px", color: "#9CA3AF" }}>
-            輸入完成後點擊其他地方即自動儲存至 Google Sheets
-          </p>
-        </div>
-
         {/* Course list */}
         <div style={s.card}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
             <h2 style={{ fontWeight: 700, fontSize: "16px", color: "#1B3A6B" }}>
               課程列表（共 {config.courses.length} 門）
             </h2>
-            <button style={s.btnGreen} onClick={() => openEditView("new")}>＋ 新增課程</button>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                style={{ ...s.btnGhost, fontSize: "13px", display: "flex", alignItems: "center", gap: "4px" }}
+                onClick={() => setShowReorder(true)}
+              >
+                ⇅ 調整順序
+              </button>
+              <button style={s.btnGreen} onClick={() => openEditView("new")}>＋ 新增課程</button>
+            </div>
           </div>
 
           {config.courses.map((course, idx) => (
@@ -1198,8 +1540,18 @@ export default function AdminCoursesPage() {
                 <div style={{ fontWeight: 700, fontSize: "14px", color: "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {course.title || "（無標題）"}
                 </div>
-                <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "2px" }}>
-                  {course.discountPrice} · {course.badge}
+                <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "2px", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span>{course.discountPrice} · {course.badge}</span>
+                  <span style={{
+                    backgroundColor: "#EFF6FF",
+                    color: "#1D4ED8",
+                    borderRadius: "10px",
+                    padding: "1px 8px",
+                    fontWeight: 600,
+                    fontSize: "11px",
+                  }}>
+                    已報名 {enrollCountMap[String(course.id)] ?? 0} 人
+                  </span>
                 </div>
               </div>
 
@@ -1249,6 +1601,106 @@ export default function AdminCoursesPage() {
             </div>
           )}
         </div>
+
+        {/* Registration stats table */}
+        <div style={s.card}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+            <div>
+              <h2 style={{ fontWeight: 700, fontSize: "16px", color: "#1B3A6B", margin: 0 }}>
+                報名統計表
+              </h2>
+              <p style={{ fontSize: "12px", color: "#9CA3AF", margin: "4px 0 0" }}>
+                來自 Google Sheets 表單報名資料，共 {registrations.length} 筆
+              </p>
+            </div>
+            <button
+              style={{ ...s.btnGhost, fontSize: "13px" }}
+              onClick={() => { setRegLoading(true); fetchRegistrations().then(r => { setRegistrations(r); setRegLoading(false); }); }}
+            >
+              🔄 重新整理
+            </button>
+          </div>
+
+          {regLoading ? (
+            <div style={{ textAlign: "center", padding: "32px", color: "#9CA3AF", fontSize: "14px" }}>
+              載入中...
+            </div>
+          ) : registrations.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "32px", color: "#9CA3AF", fontSize: "14px" }}>
+              尚無報名資料（請確認 Google Sheets 設定正確）
+            </div>
+          ) : (
+            <table style={s.table}>
+              <thead>
+                <tr>
+                  <th style={{ ...s.th, width: "32px" }}>#</th>
+                  <th style={s.th}>姓名</th>
+                  <th style={s.th}>課程</th>
+                  <th style={s.th}>上課時間</th>
+                  <th style={s.th}>時間戳記</th>
+                  <th style={{ ...s.th, width: "70px" }}>詳情</th>
+                </tr>
+              </thead>
+              <tbody>
+                {registrations.map((reg, idx) => (
+                  <tr key={idx}>
+                    <td style={{ ...s.td, color: "#9CA3AF", fontSize: "12px" }}>{idx + 1}</td>
+                    <td style={{ ...s.td, fontWeight: 600 }}>{reg.name || "—"}</td>
+                    <td style={{ ...s.td, fontSize: "13px", maxWidth: "200px" }}>
+                      <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {reg.course || "—"}
+                      </span>
+                    </td>
+                    <td style={{ ...s.td, fontSize: "13px", color: "#4B5563" }}>{reg.sessionDate || "—"}</td>
+                    <td style={{ ...s.td, fontSize: "11px", color: "#9CA3AF" }}>{reg.timestamp || "—"}</td>
+                    <td style={s.td}>
+                      <button
+                        style={{ ...s.btnIcon, fontSize: "13px", padding: "4px 10px", color: "#1D4ED8", borderColor: "#BFDBFE" }}
+                        onClick={() => setRegDetail(reg)}
+                      >
+                        詳情
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Registration detail modal */}
+        {regDetail && (
+          <div
+            style={{ position: "fixed", inset: 0, zIndex: 1000, backgroundColor: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}
+            onClick={e => { if (e.target === e.currentTarget) setRegDetail(null); }}
+          >
+            <div style={{ backgroundColor: "#fff", borderRadius: "16px", width: "100%", maxWidth: "480px", boxShadow: "0 8px 40px rgba(0,0,0,0.2)", overflow: "hidden" }}>
+              <div style={{ backgroundColor: "#1B3A6B", padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ color: "#fff", fontWeight: 700, fontSize: "16px" }}>報名詳情</div>
+                <button onClick={() => setRegDetail(null)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", fontSize: "20px", cursor: "pointer" }}>✕</button>
+              </div>
+              <div style={{ padding: "20px 24px" }}>
+                {[
+                  ["姓名", regDetail.name],
+                  ["課程", regDetail.course],
+                  ["上課時間", regDetail.sessionDate],
+                  ["手機號碼", regDetail.phone],
+                  ["Email", regDetail.email],
+                  ["公司/職稱", regDetail.company],
+                  ["統一編號", regDetail.taxId],
+                  ["得知管道", regDetail.referral],
+                  ["備註", regDetail.notes],
+                  ["報名時間", regDetail.timestamp],
+                ].map(([label, value]) => (
+                  <div key={label} style={{ display: "flex", gap: "12px", padding: "8px 0", borderBottom: "1px solid #F3F4F6" }}>
+                    <div style={{ width: "90px", fontSize: "12px", color: "#6B7280", fontWeight: 600, flexShrink: 0 }}>{label}</div>
+                    <div style={{ fontSize: "13px", color: "#111827", wordBreak: "break-all" }}>{value || "—"}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         <p style={{ textAlign: "center", fontSize: "12px", color: "#D1D5DB", marginTop: "32px" }}>
           262學院後台管理系統 · 資料儲存於 Google Sheets

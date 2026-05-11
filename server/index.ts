@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import path from "path";
@@ -9,7 +10,9 @@ import {
   writeSchedulesToSheet,
   readEnrollmentsFromSheet,
   writeEnrollmentsToSheet,
+  readRegistrationsFromSheet,
 } from "./sheets.js";
+import { sendEnrollmentNotification } from "./email.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -98,6 +101,29 @@ async function startServer() {
     }
   });
 
+  // ── Registrations (from Apps Script sheet) ───────────────────────────────
+  app.get("/api/registrations", async (_req, res) => {
+    try {
+      const data = await readRegistrationsFromSheet();
+      res.json(data);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("GET /api/registrations error:", err);
+      res.status(500).json({ error: "Failed to read registrations", detail: msg });
+    }
+  });
+
+  // ── Enrollment Notification ───────────────────────────────────────────────
+  app.post("/api/notify-enrollment", async (req, res) => {
+    try {
+      await sendEnrollmentNotification(req.body);
+      res.json({ ok: true });
+    } catch (err) {
+      console.error("POST /api/notify-enrollment error:", err);
+      res.status(500).json({ error: "Failed to send notification" });
+    }
+  });
+
   // ── Static files ─────────────────────────────────────────────────────────
   const staticPath =
     process.env.NODE_ENV === "production"
@@ -110,7 +136,7 @@ async function startServer() {
     res.sendFile(path.join(staticPath, "index.html"));
   });
 
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || (process.env.NODE_ENV === "production" ? 3000 : 3001);
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
   });
