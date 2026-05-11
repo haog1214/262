@@ -1200,6 +1200,28 @@ export default function AdminCoursesPage() {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [showReorder, setShowReorder] = useState(false);
 
+  // Sync view with browser history
+  useEffect(() => {
+    // On mount, set initial history state
+    window.history.replaceState({ view: "list" }, "");
+
+    const handlePop = (e: PopStateEvent) => {
+      const state = e.state as { view?: string; editingId?: number | "new"; enrollCourseId?: number } | null;
+      if (!state) { setView("list"); return; }
+      if (state.view === "edit") {
+        setEditingId(state.editingId ?? null);
+        setView("edit");
+      } else if (state.view === "enrollment") {
+        setEnrollCourseId(state.enrollCourseId ?? null);
+        setView("enrollment");
+      } else {
+        setView("list");
+      }
+    };
+    window.addEventListener("popstate", handlePop);
+    return () => window.removeEventListener("popstate", handlePop);
+  }, []);
+
   useEffect(() => {
     getCoursesConfig().then(setConfig);
     fetchEnrollments().then(enrolls => {
@@ -1236,8 +1258,14 @@ export default function AdminCoursesPage() {
     }
   };
 
+  const goToList = () => {
+    window.history.pushState({ view: "list" }, "");
+    setView("list");
+  };
+
   const openEditView = (id: number | "new") => {
     setEditingId(id);
+    window.history.pushState({ view: "edit", editingId: id }, "");
     setView("edit");
   };
 
@@ -1249,6 +1277,7 @@ export default function AdminCoursesPage() {
     ]);
     setAllSchedules(schedData);
     setAllEnrollments(enrollData);
+    window.history.pushState({ view: "enrollment", enrollCourseId: courseId }, "");
     setView("enrollment");
   };
 
@@ -1284,7 +1313,7 @@ export default function AdminCoursesPage() {
       const newCourse: Course = { ...(draft as Omit<Course, "id">), id: maxId + 1 };
       updated = { ...config, courses: [...config.courses, newCourse] };
     }
-    setView("list");
+    goToList();
     setEditingId(null);
     persist(updated);
   };
@@ -1354,7 +1383,7 @@ export default function AdminCoursesPage() {
           <CourseForm
             initial={initial}
             onSave={saveCourseDraft}
-            onCancel={() => setView("list")}
+            onCancel={goToList}
           />
         </div>
       </div>
@@ -1380,7 +1409,7 @@ export default function AdminCoursesPage() {
             allSchedules={allSchedules}
             allEnrollments={allEnrollments}
             allRegistrations={registrations}
-            onBack={() => setView("list")}
+            onBack={goToList}
             onToggleStatus={async (status) => {
               const updated = {
                 ...config,
