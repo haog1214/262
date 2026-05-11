@@ -1200,26 +1200,33 @@ export default function AdminCoursesPage() {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [showReorder, setShowReorder] = useState(false);
 
-  // Sync view with browser history
+  // Sync view with browser hash navigation
   useEffect(() => {
-    // On mount, set initial history state
-    window.history.replaceState({ view: "list" }, "");
+    // Clear any leftover hash on mount, set to #list
+    window.history.replaceState(null, "", window.location.pathname + "#list");
 
-    const handlePop = (e: PopStateEvent) => {
-      const state = e.state as { view?: string; editingId?: number | "new"; enrollCourseId?: number } | null;
-      if (!state) { setView("list"); return; }
-      if (state.view === "edit") {
-        setEditingId(state.editingId ?? null);
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash.startsWith("#edit-")) {
+        const raw = hash.replace("#edit-", "");
+        const id = raw === "new" ? "new" : Number(raw);
+        setEditingId(id as number | "new");
         setView("edit");
-      } else if (state.view === "enrollment") {
-        setEnrollCourseId(state.enrollCourseId ?? null);
+      } else if (hash.startsWith("#enrollment-")) {
+        const id = Number(hash.replace("#enrollment-", ""));
+        setEnrollCourseId(id);
         setView("enrollment");
       } else {
         setView("list");
       }
     };
-    window.addEventListener("popstate", handlePop);
-    return () => window.removeEventListener("popstate", handlePop);
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+      // Clean up hash when leaving admin
+      window.history.replaceState(null, "", window.location.pathname);
+    };
   }, []);
 
   useEffect(() => {
@@ -1259,26 +1266,26 @@ export default function AdminCoursesPage() {
   };
 
   const goToList = () => {
-    window.history.pushState({ view: "list" }, "");
-    setView("list");
+    window.location.hash = "#list";
+    // hashchange will call setView("list")
   };
 
   const openEditView = (id: number | "new") => {
     setEditingId(id);
-    window.history.pushState({ view: "edit", editingId: id }, "");
-    setView("edit");
+    window.location.hash = `#edit-${id}`;
+    // hashchange will call setView("edit")
   };
 
   const openEnrollmentView = async (courseId: number) => {
-    setEnrollCourseId(courseId);
     const [schedData, enrollData] = await Promise.all([
       fetchSchedules(),
       fetchEnrollments(),
     ]);
+    setEnrollCourseId(courseId);
     setAllSchedules(schedData);
     setAllEnrollments(enrollData);
-    window.history.pushState({ view: "enrollment", enrollCourseId: courseId }, "");
-    setView("enrollment");
+    window.location.hash = `#enrollment-${courseId}`;
+    // hashchange will call setView("enrollment")
   };
 
   const onDragStart = (e: React.DragEvent, idx: number) => {
