@@ -13,6 +13,7 @@ import {
   readRegistrationsFromSheet,
 } from "./sheets.js";
 import { sendEnrollmentNotification } from "./email.js";
+import { isBot, getBotHtml } from "./botRenderer.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -143,7 +144,11 @@ async function startServer() {
 
   app.use(express.static(staticPath));
 
-  app.get("*", (_req, res) => {
+  app.get("*", (req, res) => {
+    const ua = req.headers["user-agent"] ?? "";
+    if (isBot(ua)) {
+      return res.send(getBotHtml(req.path));
+    }
     res.sendFile(path.join(staticPath, "index.html"));
   });
 
