@@ -148,7 +148,7 @@ export default function CourseKnowledgeDetail() {
                             ) : s.isFull ? (
                               <span className="text-[13px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#fee2e2", color: "#dc2626" }}>額滿</span>
                             ) : (
-                              <span className="text-[14px] text-gray-400">剩餘 {s.remaining} 個名額</span>
+                              <span className="text-[14px] text-gray-400">{s.remaining}位</span>
                             )}
                           </div>
                           {s.enterprise && <p className="text-[13px] text-gray-400 pl-[18px] mt-0.5">日期 / 時間：專員洽談</p>}
