@@ -113,6 +113,17 @@ async function startServer() {
     }
   });
 
+  app.get("/api/registrations/debug", async (_req, res) => {
+    const sheetId = process.env.REGISTRATION_SHEET_ID ?? process.env.GOOGLE_SHEETS_ID ?? "(not set)";
+    const tab = process.env.REGISTRATION_SHEET_TAB ?? "工作表1";
+    try {
+      const data = await readRegistrationsFromSheet();
+      res.json({ ok: true, sheetId, tab, count: data.length, sample: data.slice(0, 2) });
+    } catch (err) {
+      res.json({ ok: false, sheetId, tab, error: err instanceof Error ? err.message : String(err) });
+    }
+  });
+
   // ── Enrollment Notification ───────────────────────────────────────────────
   app.post("/api/notify-enrollment", async (req, res) => {
     try {
