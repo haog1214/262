@@ -249,96 +249,165 @@ export default function InstructorPage() {
             </span>
           </div>
 
-          {/* ── Main photo + tagline ── */}
-          <div className="relative z-10 flex flex-col md:flex-row items-start gap-0" style={{ paddingLeft: "calc(2rem + 220px)", paddingRight: "2rem" }}>
-
+          {/* ── Main photo + tagline + right content ── */}
+          <div
+            className="relative z-10 flex flex-col md:flex-row items-start gap-0"
+            style={{ paddingLeft: "calc(2rem + 220px)", paddingRight: "2rem" }}
+          >
             {/* Photo wrapper */}
-            <div
-              className="relative flex-shrink-0"
-              style={{ width: "min(47.6vw, 544px)" }}
-            >
+            <div className="relative flex-shrink-0" style={{ width: "min(47.6vw, 544px)" }}>
               <img
                 src="/instructor-hao.jpg"
                 alt="HAO 老師"
                 className="w-full object-cover object-top block"
                 style={{ aspectRatio: "4/5" }}
               />
-
-              {/* Subtle inner shadow on photo */}
               <div
                 className="absolute inset-0 pointer-events-none"
-                style={{
-                  boxShadow: "inset 0 0 60px rgba(0,0,0,0.08)",
-                }}
+                style={{ boxShadow: "inset 0 0 60px rgba(0,0,0,0.08)" }}
               />
             </div>
 
-            {/* Tagline block — floats to the right, anchored to bottom of photo */}
+            {/* Tagline — absolute bottom-left of photo area */}
             <div
               className="relative md:absolute md:bottom-0"
-              style={{
-                left: "min(47.6vw, 544px)",
-                width: "max-content",
-              }}
+              style={{ left: "min(47.6vw, 544px)", width: "max-content" }}
             >
-              {/* Tagline — each line has CI blue background */}
               <div className="px-8 py-8 md:py-10 flex flex-col gap-2">
                 <span
                   className="inline-block text-white font-black leading-snug tracking-wide px-3 py-1"
-                  style={{
-                    fontSize: "clamp(20px, 2.2vw, 32px)",
-                    background: "#1B3A6B",
-                    alignSelf: "flex-start",
-                  }}
+                  style={{ fontSize: "clamp(20px, 2.2vw, 32px)", background: "#1B3A6B", alignSelf: "flex-start" }}
                 >
                   從技術邏輯到商業實踐，
                 </span>
                 <span
                   className="text-white font-black leading-snug tracking-wide px-3 py-1 whitespace-nowrap"
-                  style={{
-                    fontSize: "clamp(20px, 2.2vw, 32px)",
-                    background: "#1B3A6B",
-                    display: "inline-block",
-                    width: "max-content",
-                  }}
+                  style={{ fontSize: "clamp(20px, 2.2vw, 32px)", background: "#1B3A6B", display: "inline-block", width: "max-content" }}
                 >
                   建立企業可持續進化的 AI 競爭力。
                 </span>
               </div>
-
-              {/* Tags row */}
-              <div
-                className="flex flex-wrap gap-x-4 gap-y-2 px-8 py-5"
-                style={{ background: "#e8e8e6" }}
-              >
+              <div className="flex flex-wrap gap-x-4 gap-y-2 px-8 py-5" style={{ background: "#e8e8e6" }}>
                 {tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="text-[11px] font-medium text-gray-600 tracking-wide"
-                  >
-                    {tag}
-                  </span>
+                  <span key={tag} className="text-[11px] font-medium text-gray-600 tracking-wide">{tag}</span>
                 ))}
+              </div>
+            </div>
+
+            {/* Right column — identity + profile content */}
+            <div className="hidden md:block flex-1 pl-10 pt-8 pb-20" style={{ maxWidth: "800px" }}>
+              {/* Identity */}
+              <div className="flex items-start gap-4 mb-10">
+                <div className="w-[3px] self-stretch bg-black flex-shrink-0" style={{ minHeight: "64px" }} />
+                <div>
+                  <p className="text-gray-500 font-medium tracking-widest mb-3" style={{ fontSize: "11px" }}>
+                    AI 商業應用培訓｜企業顧問講師
+                  </p>
+                  <h1 className="font-black text-gray-900 tracking-tight leading-none" style={{ fontSize: "clamp(32px, 4vw, 52px)" }}>
+                    HAO 老師
+                  </h1>
+                </div>
+              </div>
+
+              {/* Profile */}
+              <h3 className="font-bold text-gray-900 mb-6 tracking-wide" style={{ fontSize: "18px" }}>
+                授課經歷與產業實績
+              </h3>
+              <p className="text-gray-600 leading-[2] mb-10" style={{ fontSize: "16px" }}>
+                長期投入數位專案整合與企業應用實務，累積超過 14 年跨產業經驗，近年聚焦 AI 教學、數位轉型與企業輔導。已為 26 家企業提供 AI 應用培訓，累計培訓近千位學員，具備將 AI 工具導入企業營運、行銷與知識管理流程的實務能力。
+              </p>
+
+              <div className="mb-8">
+                <p className="font-semibold text-gray-800 mb-4 tracking-wide" style={{ fontSize: "18px" }}>
+                  曾任授課與受邀單位
+                </p>
+                <ul className="space-y-2">
+                  {[
+                    "HAPPYHAIR 快樂髮型集團 指定內訓講師",
+                    "各企業 AI 數位轉型內訓講師",
+                    "企業 AI 應用導入顧問",
+                    "數位整合與品牌專案培訓講師",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="mt-[9px] w-[5px] h-[5px] rounded-full bg-gray-400 flex-shrink-0" />
+                      <span className="text-gray-600 leading-relaxed" style={{ fontSize: "16px" }}>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="mb-8">
+                <p className="font-semibold text-gray-800 mb-4 tracking-wide" style={{ fontSize: "18px" }}>
+                  AI 數位轉型授課與輔導產業
+                </p>
+                {[
+                  { industry: "餐飲服務業", companies: "阿根廷牛排餐酒館" },
+                  { industry: "零售通路業", companies: "優群貿易股份有限公司" },
+                  { industry: "製造產業", companies: "商司大企業有限公司" },
+                  { industry: "服務產業", companies: "莉凱傢俱" },
+                  { industry: "品牌行銷與內容應用產業", companies: "利豐管理顧問有限公司" },
+                ].map((row) => (
+                  <div key={row.industry} className="flex gap-4 mb-3">
+                    <span className="flex-shrink-0 font-medium text-gray-500 tracking-wide" style={{ fontSize: "16px", minWidth: "120px" }}>
+                      {row.industry}
+                    </span>
+                    <span className="text-gray-700 leading-relaxed" style={{ fontSize: "16px" }}>
+                      {row.companies}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mb-8">
+                <p className="font-semibold text-gray-800 mb-4 tracking-wide" style={{ fontSize: "18px" }}>
+                  專業領域
+                </p>
+                <ul className="space-y-2">
+                  {[
+                    "AI 辦公應用、AI 知識管理、AI 數位內容創作",
+                    "數位行銷策略",
+                    "網站與電商整合規劃",
+                    "專案需求分析與執行管理",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="mt-[9px] w-[5px] h-[5px] rounded-full bg-gray-400 flex-shrink-0" />
+                      <span className="text-gray-600 leading-relaxed" style={{ fontSize: "16px" }}>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <p className="font-semibold text-gray-800 mb-4 tracking-wide" style={{ fontSize: "18px" }}>
+                  專業認證
+                </p>
+                <ul className="space-y-2">
+                  {[
+                    "經濟部商業發展署 iPAS AI 應用規劃師初級能力培訓班證書",
+                    "Google for Education Gemini Certified Faculty",
+                    "Google for Education Gemini Certified Educator",
+                    "Canva Certified: Teacher Essentials 數位教學與視覺教案專業認證",
+                    "視覺傳達設計技術士",
+                    "Adobe Certified Professional（ACP）國際視覺設計認證",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="mt-[9px] w-[5px] h-[5px] rounded-full bg-gray-400 flex-shrink-0" />
+                      <span className="text-gray-600 leading-relaxed" style={{ fontSize: "16px" }}>{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
 
-          {/* ── Identity block ── */}
-          <div className="relative z-10 pt-10 pb-16 flex items-start gap-6" style={{ paddingLeft: "calc(2rem + 220px)", paddingRight: "2rem" }}>
-            {/* Vertical accent line */}
+          {/* Mobile identity block */}
+          <div className="md:hidden relative z-10 pt-10 pb-16 flex items-start gap-6" style={{ paddingLeft: "calc(2rem + 220px)", paddingRight: "2rem" }}>
             <div className="w-[3px] self-stretch bg-black flex-shrink-0" style={{ minHeight: "64px" }} />
-
             <div>
-              <p
-                className="text-gray-500 font-medium tracking-widest mb-3"
-                style={{ fontSize: "11px" }}
-              >
+              <p className="text-gray-500 font-medium tracking-widest mb-3" style={{ fontSize: "11px" }}>
                 AI 商業應用培訓｜企業顧問講師
               </p>
-              <h1
-                className="font-black text-gray-900 tracking-tight leading-none"
-                style={{ fontSize: "clamp(32px, 4vw, 52px)" }}
-              >
+              <h1 className="font-black text-gray-900 tracking-tight leading-none" style={{ fontSize: "clamp(32px, 4vw, 52px)" }}>
                 HAO 老師
               </h1>
             </div>
@@ -346,73 +415,6 @@ export default function InstructorPage() {
 
           {/* Bottom decorative line */}
           <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-black opacity-10" aria-hidden />
-        </section>
-
-        {/* ── Profile detail section ── */}
-        <section
-          className="px-8 md:px-16 py-20"
-          style={{ background: "#ffffff" }}
-        >
-          <div className="max-w-3xl mx-auto text-center">
-            {/* Section marker */}
-            <div className="flex items-center justify-center gap-4 mb-10">
-              <div className="w-12 h-px bg-black" />
-              <span className="text-[10px] font-semibold tracking-[0.25em] text-gray-400 uppercase">
-                Profile
-              </span>
-              <div className="w-12 h-px bg-black" />
-            </div>
-
-            <p
-              className="text-gray-600 leading-[2] mb-16"
-              style={{ fontSize: "15px" }}
-            >
-              專注於協助企業將 AI 工具系統性地融入工作流程，從技術理解到策略落地，提供完整的培訓路徑。課程設計以「可立即應用」為核心原則，帶領學員在每一堂課中完成真實可用的成果。不只是傳授工具操作，而是從商業邏輯出發，建立可複製、可延伸的 AI 工作方法論。
-            </p>
-
-            {/* Expertise grid */}
-            <div className="flex items-center justify-center gap-4 mb-10">
-              <div className="w-12 h-px bg-black" />
-              <span className="text-[10px] font-semibold tracking-[0.25em] text-gray-400 uppercase">
-                Expertise
-              </span>
-              <div className="w-12 h-px bg-black" />
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {[
-                {
-                  num: "01",
-                  title: "AI 工具實戰",
-                  desc: "Gemini、ChatGPT、Copilot 等主流工具的企業導入與員工培訓，從零到可用。",
-                },
-                {
-                  num: "02",
-                  title: "商業邏輯整合",
-                  desc: "將 AI 能力對應到銷售、行銷、營運等具體業務場景，產生可量化的效益。",
-                },
-                {
-                  num: "03",
-                  title: "組織能力建設",
-                  desc: "設計可複製的 AI 工作流，幫助團隊建立持續自我升級的長期能力。",
-                },
-              ].map((item) => (
-                <div key={item.num} className="group flex flex-col items-center">
-                  <p
-                    className="font-black text-gray-200 mb-3 leading-none"
-                    style={{ fontSize: "36px" }}
-                  >
-                    {item.num}
-                  </p>
-                  <h3 className="font-bold text-gray-900 mb-3 text-base tracking-wide">
-                    {item.title}
-                  </h3>
-                  <div className="w-8 h-[2px] bg-black mb-4" />
-                  <p className="text-gray-500 leading-7 text-sm">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
         </section>
       </main>
 
