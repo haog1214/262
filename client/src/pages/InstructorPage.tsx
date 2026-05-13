@@ -121,9 +121,9 @@ export default function InstructorPage() {
           <div
             className="relative z-10 flex items-start gap-6 pb-4"
             style={{
-              paddingLeft: "2rem",
-              paddingRight: "calc(2rem + 220px)",
-              marginTop: "-550px",
+              paddingLeft: "calc(2rem + 80px)",
+              paddingRight: "calc(2rem + 220px + min(47.6vw, 544px))",
+              marginTop: "-630px",
             }}
           >
             <div className="w-[3px] self-stretch bg-black flex-shrink-0" style={{ minHeight: "64px" }} />
@@ -146,7 +146,10 @@ export default function InstructorPage() {
           {/* Alan Profile — 授課經歷與產業實績 */}
           <div
             className="relative z-10 pt-10 pb-20"
-            style={{ paddingLeft: "2rem", paddingRight: "calc(2rem + 220px)" }}
+            style={{
+              paddingLeft: "calc(2rem + 80px)",
+              paddingRight: "calc(2rem + 220px + min(47.6vw, 544px))",
+            }}
           >
             <div style={{ paddingLeft: "calc(3px + 1.5rem)" }}>
               <h3
