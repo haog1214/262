@@ -117,10 +117,14 @@ export default function InstructorPage() {
             </div>
           </div>
 
-          {/* Identity block — LEFT side */}
+          {/* Identity block — LEFT side, pulled up */}
           <div
-            className="relative z-10 pt-10 pb-16 flex items-start gap-6"
-            style={{ paddingLeft: "2rem", paddingRight: "calc(2rem + 220px)" }}
+            className="relative z-10 flex items-start gap-6 pb-4"
+            style={{
+              paddingLeft: "2rem",
+              paddingRight: "calc(2rem + 220px)",
+              marginTop: "-550px",
+            }}
           >
             <div className="w-[3px] self-stretch bg-black flex-shrink-0" style={{ minHeight: "64px" }} />
             <div>
@@ -136,6 +140,68 @@ export default function InstructorPage() {
               >
                 黃長華 (Alan) 老師
               </h2>
+            </div>
+          </div>
+
+          {/* Alan Profile — 授課經歷與產業實績 */}
+          <div
+            className="relative z-10 pt-10 pb-20"
+            style={{ paddingLeft: "2rem", paddingRight: "calc(2rem + 220px)" }}
+          >
+            <div style={{ paddingLeft: "calc(3px + 1.5rem)" }}>
+              <h3
+                className="font-bold text-gray-900 mb-6 tracking-wide"
+                style={{ fontSize: "18px" }}
+              >
+                授課經歷與產業實績
+              </h3>
+              <p className="text-gray-600 leading-[2] mb-10" style={{ fontSize: "15px" }}>
+                長期受邀於專業組織、產業機構及企業單位擔任講師，專注於 AI 應用、商業資訊化服務與數位轉型實務推動，協助不同產業建立可落地的智慧應用能力。
+              </p>
+
+              <div className="mb-8">
+                <p className="font-semibold text-gray-800 mb-4 tracking-wide" style={{ fontSize: "13px" }}>
+                  曾任授課與受邀單位
+                </p>
+                <ul className="space-y-2">
+                  {[
+                    "中華民國資訊軟體協會 商業資訊化服務團講師",
+                    "台南畜產試驗所 特聘講師",
+                    "中華民國職工福利發展協會 特聘講師",
+                    "國際獅子會 MD300C 獅子大學多元學習「AI運用」特聘講師",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="mt-[7px] w-[5px] h-[5px] rounded-full bg-gray-400 flex-shrink-0" />
+                      <span className="text-gray-600 leading-relaxed" style={{ fontSize: "14px" }}>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <p className="font-semibold text-gray-800 mb-4 tracking-wide" style={{ fontSize: "13px" }}>
+                  AI 數位轉型授課與輔導產業
+                </p>
+                {[
+                  { industry: "建設業", companies: "誠真建設、開務建設、漢宇建設、惠宇建設、喬立建設、僑泰建設" },
+                  { industry: "餐飲服務業", companies: "布娜飛餐酒館" },
+                  { industry: "資訊科技業", companies: "中程資訊" },
+                  { industry: "設計創意產業", companies: "安頡設計" },
+                  { industry: "綜合發展產業", companies: "黃金帝國" },
+                ].map((row) => (
+                  <div key={row.industry} className="flex gap-4 mb-3">
+                    <span
+                      className="flex-shrink-0 font-medium text-gray-500 tracking-wide"
+                      style={{ fontSize: "13px", minWidth: "90px" }}
+                    >
+                      {row.industry}
+                    </span>
+                    <span className="text-gray-700 leading-relaxed" style={{ fontSize: "14px" }}>
+                      {row.companies}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
