@@ -23,7 +23,7 @@ export default function InstructorPage() {
       <main className="flex-1">
 
         {/* ══ Alan Hero Section ══ */}
-        <section className="relative w-full overflow-hidden">
+        <section className="relative w-full">
 
           <div className="absolute inset-0 pointer-events-none z-0" aria-hidden>
             <svg className="absolute top-0 left-0 opacity-[0.06]" width="420" height="420" viewBox="0 0 420 420">
@@ -47,16 +47,21 @@ export default function InstructorPage() {
               className="relative z-10 flex flex-row items-start gap-0"
               style={{ paddingLeft: "2rem", paddingRight: "calc(2rem + 220px)" }}
             >
-              {/* Photo — right via ml-auto */}
-              <div className="relative flex-shrink-0 ml-auto" style={{ width: "min(47.6vw, 544px)" }}>
+              {/* Photo — right via ml-auto, behind tagline */}
+              <div className="relative flex-shrink-0 ml-auto" style={{ width: "min(47.6vw, 544px)", zIndex: 1 }}>
                 <img src="/alan.jpg" alt="黃長華 Alan 老師" className="w-full object-cover object-top block" style={{ aspectRatio: "4/5" }} />
                 <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 60px rgba(0,0,0,0.08)" }} />
               </div>
 
-              {/* Tagline — absolute bottom, right edge flush with photo left edge */}
+              {/* Tagline — absolute, left edge aligns with photo left edge, photo behind */}
               <div
-                className="absolute bottom-0"
-                style={{ right: "calc(2rem + 220px + min(47.6vw, 544px))", width: "max-content" }}
+                className="absolute"
+                style={{
+                  left: "calc(100% - 2rem - 220px - min(47.6vw, 544px))",
+                  bottom: "-50px",
+                  width: "max-content",
+                  zIndex: 10,
+                }}
               >
                 <div className="pl-8 pr-0 py-10 flex flex-col gap-2">
                   <span className="inline-block text-white font-black leading-snug tracking-wide px-3 py-1"
@@ -229,8 +234,8 @@ export default function InstructorPage() {
                   <img src="/instructor-hao.jpg" alt="梁家豪 HAO 老師" className="w-full object-cover object-top block" style={{ aspectRatio: "4/5" }} />
                   <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 60px rgba(0,0,0,0.08)" }} />
                 </div>
-                {/* Tagline — left-aligned with photo, overlapping bottom */}
-                <div className="flex flex-col gap-2 pr-8 pb-4" style={{ marginTop: "-100px" }}>
+                {/* Tagline — left-aligned with photo, overlapping bottom, on top */}
+                <div className="flex flex-col gap-2 pr-8 pb-4" style={{ marginTop: "-100px", position: "relative", zIndex: 10 }}>
                   <span className="inline-block text-white font-black leading-snug tracking-wide px-3 py-1"
                     style={{ fontSize: "clamp(20px, 2.2vw, 32px)", background: "#1B3A6B", alignSelf: "flex-start" }}>
                     從技術邏輯到商業實踐，
@@ -240,7 +245,7 @@ export default function InstructorPage() {
                     建立企業可持續進化的 AI 競爭力。
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-x-4 gap-y-2 pr-8 py-5" style={{ background: "#e8e8e6" }}>
+                <div className="flex flex-wrap gap-x-4 gap-y-2 pr-8 py-5" style={{ background: "#e8e8e6", position: "relative", zIndex: 10 }}>
                   {tags.map((tag) => (
                     <span key={tag} className="text-[11px] font-medium text-gray-600 tracking-wide">{tag}</span>
                   ))}
