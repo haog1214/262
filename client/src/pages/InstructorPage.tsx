@@ -54,81 +54,65 @@ export default function InstructorPage() {
             </span>
           </div>
 
-          {/* Main photo + tagline — photo RIGHT, tagline LEFT */}
+          {/* Main photo + tagline — photo RIGHT, tagline absolute LEFT of photo */}
           <div
-            className="relative z-10"
+            className="relative z-10 flex flex-col md:flex-row items-start gap-0"
             style={{ paddingLeft: "2rem", paddingRight: "calc(2rem + 220px)" }}
           >
-            <div className="relative flex flex-col md:flex-row gap-0">
-
-              {/* Left side — tagline pushed to bottom */}
-              <div className="hidden md:flex flex-1 flex-col justify-end" style={{ paddingLeft: "600px" }}>
-                <div className="px-8 py-8 md:py-10 flex flex-col gap-2">
-                  <span
-                    className="inline-block text-white font-black leading-snug tracking-wide px-3 py-1"
-                    style={{
-                      fontSize: "clamp(20px, 2.2vw, 32px)",
-                      background: "#1B3A6B",
-                      alignSelf: "flex-start",
-                    }}
-                  >
-                    以系統思維解析 AI，
-                  </span>
-                  <span
-                    className="text-white font-black leading-snug tracking-wide px-3 py-1 whitespace-nowrap"
-                    style={{
-                      fontSize: "clamp(20px, 2.2vw, 32px)",
-                      background: "#1B3A6B",
-                      display: "inline-block",
-                      width: "max-content",
-                    }}
-                  >
-                    讓技術真正落地於企業實務。
-                  </span>
-                </div>
-                <div
-                  className="flex flex-wrap gap-x-4 gap-y-2 px-8 py-5"
-                  style={{ background: "#e8e8e6" }}
-                >
-                  {alanTags.map((tag) => (
-                    <span key={tag} className="text-[11px] font-medium text-gray-600 tracking-wide">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Photo wrapper — right side */}
+            {/* Photo wrapper — pushed to right via ml-auto */}
+            <div
+              className="relative flex-shrink-0 md:ml-auto"
+              style={{ width: "min(47.6vw, 544px)" }}
+            >
+              <img
+                src="/alan.jpg"
+                alt="黃長華 Alan 老師"
+                className="w-full object-cover object-top block"
+                style={{ aspectRatio: "4/5" }}
+              />
               <div
-                className="relative flex-shrink-0"
-                style={{ width: "min(47.6vw, 544px)" }}
-              >
-                <img
-                  src="/alan.jpg"
-                  alt="黃長華 Alan 老師"
-                  className="w-full object-cover object-top block"
-                  style={{ aspectRatio: "4/5" }}
-                />
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{ boxShadow: "inset 0 0 60px rgba(0,0,0,0.08)" }}
-                />
-              </div>
+                className="absolute inset-0 pointer-events-none"
+                style={{ boxShadow: "inset 0 0 60px rgba(0,0,0,0.08)" }}
+              />
+            </div>
 
-              {/* Mobile tagline */}
-              <div className="md:hidden px-8 py-8 flex flex-col gap-2">
+            {/* Tagline — absolute, anchored bottom, just left of photo (mirrors HAO) */}
+            <div
+              className="relative md:absolute md:bottom-0"
+              style={{ right: "min(47.6vw, 544px)", width: "max-content" }}
+            >
+              <div className="px-8 py-8 md:py-10 flex flex-col gap-2">
                 <span
                   className="inline-block text-white font-black leading-snug tracking-wide px-3 py-1"
-                  style={{ fontSize: "clamp(18px, 5vw, 32px)", background: "#1B3A6B" }}
+                  style={{
+                    fontSize: "clamp(20px, 2.2vw, 32px)",
+                    background: "#1B3A6B",
+                    alignSelf: "flex-start",
+                  }}
                 >
                   以系統思維解析 AI，
                 </span>
                 <span
-                  className="text-white font-black leading-snug tracking-wide px-3 py-1"
-                  style={{ fontSize: "clamp(16px, 4vw, 32px)", background: "#1B3A6B", display: "inline-block" }}
+                  className="text-white font-black leading-snug tracking-wide px-3 py-1 whitespace-nowrap"
+                  style={{
+                    fontSize: "clamp(20px, 2.2vw, 32px)",
+                    background: "#1B3A6B",
+                    display: "inline-block",
+                    width: "max-content",
+                  }}
                 >
                   讓技術真正落地於企業實務。
                 </span>
+              </div>
+              <div
+                className="flex flex-wrap gap-x-4 gap-y-2 px-8 py-5"
+                style={{ background: "#e8e8e6" }}
+              >
+                {alanTags.map((tag) => (
+                  <span key={tag} className="text-[11px] font-medium text-gray-600 tracking-wide">
+                    {tag}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
@@ -136,7 +120,7 @@ export default function InstructorPage() {
           {/* Identity block — LEFT side */}
           <div
             className="relative z-10 pt-10 pb-16 flex items-start gap-6"
-            style={{ paddingLeft: "calc(2rem + 600px)", paddingRight: "calc(2rem + 220px)" }}
+            style={{ paddingLeft: "2rem", paddingRight: "calc(2rem + 220px)" }}
           >
             <div className="w-[3px] self-stretch bg-black flex-shrink-0" style={{ minHeight: "64px" }} />
             <div>
