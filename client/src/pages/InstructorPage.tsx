@@ -151,19 +151,19 @@ export default function InstructorPage() {
               paddingRight: "calc(2rem + 220px + min(47.6vw, 544px))",
             }}
           >
-            <div style={{ paddingLeft: "calc(3px + 1.5rem)" }}>
+            <div style={{ paddingLeft: "calc(3px + 1.5rem)", maxWidth: "800px" }}>
               <h3
                 className="font-bold text-gray-900 mb-6 tracking-wide"
                 style={{ fontSize: "18px" }}
               >
                 授課經歷與產業實績
               </h3>
-              <p className="text-gray-600 leading-[2] mb-10" style={{ fontSize: "15px" }}>
+              <p className="text-gray-600 leading-[2] mb-10" style={{ fontSize: "16px" }}>
                 長期受邀於專業組織、產業機構及企業單位擔任講師，專注於 AI 應用、商業資訊化服務與數位轉型實務推動，協助不同產業建立可落地的智慧應用能力。
               </p>
 
               <div className="mb-8">
-                <p className="font-semibold text-gray-800 mb-4 tracking-wide" style={{ fontSize: "13px" }}>
+                <p className="font-semibold text-gray-800 mb-4 tracking-wide" style={{ fontSize: "18px" }}>
                   曾任授課與受邀單位
                 </p>
                 <ul className="space-y-2">
@@ -174,15 +174,15 @@ export default function InstructorPage() {
                     "國際獅子會 MD300C 獅子大學多元學習「AI運用」特聘講師",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
-                      <span className="mt-[7px] w-[5px] h-[5px] rounded-full bg-gray-400 flex-shrink-0" />
-                      <span className="text-gray-600 leading-relaxed" style={{ fontSize: "14px" }}>{item}</span>
+                      <span className="mt-[9px] w-[5px] h-[5px] rounded-full bg-gray-400 flex-shrink-0" />
+                      <span className="text-gray-600 leading-relaxed" style={{ fontSize: "16px" }}>{item}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               <div>
-                <p className="font-semibold text-gray-800 mb-4 tracking-wide" style={{ fontSize: "13px" }}>
+                <p className="font-semibold text-gray-800 mb-4 tracking-wide" style={{ fontSize: "18px" }}>
                   AI 數位轉型授課與輔導產業
                 </p>
                 {[
@@ -195,11 +195,11 @@ export default function InstructorPage() {
                   <div key={row.industry} className="flex gap-4 mb-3">
                     <span
                       className="flex-shrink-0 font-medium text-gray-500 tracking-wide"
-                      style={{ fontSize: "13px", minWidth: "90px" }}
+                      style={{ fontSize: "16px", minWidth: "100px" }}
                     >
                       {row.industry}
                     </span>
-                    <span className="text-gray-700 leading-relaxed" style={{ fontSize: "14px" }}>
+                    <span className="text-gray-700 leading-relaxed" style={{ fontSize: "16px" }}>
                       {row.companies}
                     </span>
                   </div>
