@@ -62,7 +62,7 @@ export default function InstructorPage() {
             <div className="relative flex flex-col md:flex-row gap-0">
 
               {/* Left side — tagline pushed to bottom */}
-              <div className="hidden md:flex flex-1 flex-col justify-end">
+              <div className="hidden md:flex flex-1 flex-col justify-end" style={{ paddingLeft: "600px" }}>
                 <div className="px-8 py-8 md:py-10 flex flex-col gap-2">
                   <span
                     className="inline-block text-white font-black leading-snug tracking-wide px-3 py-1"
@@ -136,7 +136,7 @@ export default function InstructorPage() {
           {/* Identity block — LEFT side */}
           <div
             className="relative z-10 pt-10 pb-16 flex items-start gap-6"
-            style={{ paddingLeft: "2rem", paddingRight: "calc(2rem + 220px)" }}
+            style={{ paddingLeft: "calc(2rem + 600px)", paddingRight: "calc(2rem + 220px)" }}
           >
             <div className="w-[3px] self-stretch bg-black flex-shrink-0" style={{ minHeight: "64px" }} />
             <div>
