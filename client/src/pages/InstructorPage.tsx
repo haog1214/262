@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
 
+const alanTags = ["#系統思維", "#AI落地實務", "#企業培訓", "#數位轉型"];
 const tags = ["#AI實戰應用", "#企業培訓", "#商業思維", "#生產力革命"];
 
 export default function InstructorPage() {
@@ -16,7 +17,148 @@ export default function InstructorPage() {
       <Header />
 
       <main className="flex-1">
-        {/* ── Hero Section ── */}
+
+        {/* ══ Alan Hero Section ══ */}
+        <section className="relative w-full overflow-hidden">
+
+          {/* Background geometric decoration - top left */}
+          <div className="absolute inset-0 pointer-events-none z-0" aria-hidden>
+            <svg
+              className="absolute top-0 left-0 opacity-[0.06]"
+              width="420" height="420"
+              viewBox="0 0 420 420"
+            >
+              {Array.from({ length: 18 }).map((_, i) => (
+                <line
+                  key={i}
+                  x1={420 - (i * 26 - 60)}
+                  y1="0"
+                  x2={420 - (i * 26 + 360)}
+                  y2="420"
+                  stroke="#000"
+                  strokeWidth="1.2"
+                />
+              ))}
+            </svg>
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-black opacity-10" />
+          </div>
+
+          {/* Section label */}
+          <div className="relative z-10 flex items-center gap-4 px-8 md:px-16 pt-10 pb-8">
+            <span className="text-[10px] font-semibold tracking-[0.25em] text-gray-400 uppercase">
+              Instructor
+            </span>
+            <div className="flex-1 h-px bg-gray-300" />
+            <span className="text-[10px] font-semibold tracking-[0.2em] text-gray-400">
+              01
+            </span>
+          </div>
+
+          {/* Main photo + tagline — photo RIGHT, tagline LEFT */}
+          <div
+            className="relative z-10"
+            style={{ paddingLeft: "2rem", paddingRight: "calc(2rem + 220px)" }}
+          >
+            <div className="relative flex flex-col md:flex-row gap-0">
+
+              {/* Left side — tagline pushed to bottom */}
+              <div className="hidden md:flex flex-1 flex-col justify-end">
+                <div className="px-8 py-8 md:py-10 flex flex-col gap-2">
+                  <span
+                    className="inline-block text-white font-black leading-snug tracking-wide px-3 py-1"
+                    style={{
+                      fontSize: "clamp(20px, 2.2vw, 32px)",
+                      background: "#1B3A6B",
+                      alignSelf: "flex-start",
+                    }}
+                  >
+                    以系統思維解析 AI，
+                  </span>
+                  <span
+                    className="text-white font-black leading-snug tracking-wide px-3 py-1 whitespace-nowrap"
+                    style={{
+                      fontSize: "clamp(20px, 2.2vw, 32px)",
+                      background: "#1B3A6B",
+                      display: "inline-block",
+                      width: "max-content",
+                    }}
+                  >
+                    讓技術真正落地於企業實務。
+                  </span>
+                </div>
+                <div
+                  className="flex flex-wrap gap-x-4 gap-y-2 px-8 py-5"
+                  style={{ background: "#e8e8e6" }}
+                >
+                  {alanTags.map((tag) => (
+                    <span key={tag} className="text-[11px] font-medium text-gray-600 tracking-wide">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Photo wrapper — right side */}
+              <div
+                className="relative flex-shrink-0"
+                style={{ width: "min(47.6vw, 544px)" }}
+              >
+                <img
+                  src="/alan.jpg"
+                  alt="黃長華 Alan 老師"
+                  className="w-full object-cover object-top block"
+                  style={{ aspectRatio: "4/5" }}
+                />
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ boxShadow: "inset 0 0 60px rgba(0,0,0,0.08)" }}
+                />
+              </div>
+
+              {/* Mobile tagline */}
+              <div className="md:hidden px-8 py-8 flex flex-col gap-2">
+                <span
+                  className="inline-block text-white font-black leading-snug tracking-wide px-3 py-1"
+                  style={{ fontSize: "clamp(18px, 5vw, 32px)", background: "#1B3A6B" }}
+                >
+                  以系統思維解析 AI，
+                </span>
+                <span
+                  className="text-white font-black leading-snug tracking-wide px-3 py-1"
+                  style={{ fontSize: "clamp(16px, 4vw, 32px)", background: "#1B3A6B", display: "inline-block" }}
+                >
+                  讓技術真正落地於企業實務。
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Identity block — LEFT side */}
+          <div
+            className="relative z-10 pt-10 pb-16 flex items-start gap-6"
+            style={{ paddingLeft: "2rem", paddingRight: "calc(2rem + 220px)" }}
+          >
+            <div className="w-[3px] self-stretch bg-black flex-shrink-0" style={{ minHeight: "64px" }} />
+            <div>
+              <p
+                className="text-gray-500 font-medium tracking-widest mb-3"
+                style={{ fontSize: "11px" }}
+              >
+                AI 系統思維｜企業顧問講師
+              </p>
+              <h2
+                className="font-black text-gray-900 tracking-tight leading-none"
+                style={{ fontSize: "clamp(32px, 4vw, 52px)" }}
+              >
+                黃長華 (Alan) 老師
+              </h2>
+            </div>
+          </div>
+
+          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-black opacity-10" aria-hidden />
+        </section>
+
+        {/* ══ HAO Hero Section ══ */}
         <section className="relative w-full overflow-hidden">
 
           {/* Background geometric decoration */}
@@ -50,7 +192,7 @@ export default function InstructorPage() {
             </span>
             <div className="flex-1 h-px bg-gray-300" />
             <span className="text-[10px] font-semibold tracking-[0.2em] text-gray-400">
-              01
+              02
             </span>
           </div>
 
