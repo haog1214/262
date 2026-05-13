@@ -254,26 +254,22 @@ export default function InstructorPage() {
             className="relative z-10 flex flex-col md:flex-row items-start gap-0"
             style={{ paddingLeft: "calc(2rem + 220px)", paddingRight: "2rem" }}
           >
-            {/* Photo wrapper */}
-            <div className="relative flex-shrink-0" style={{ width: "min(47.6vw, 544px)" }}>
-              <img
-                src="/instructor-hao.jpg"
-                alt="HAO 老師"
-                className="w-full object-cover object-top block"
-                style={{ aspectRatio: "4/5" }}
-              />
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{ boxShadow: "inset 0 0 60px rgba(0,0,0,0.08)" }}
-              />
-            </div>
-
-            {/* Tagline — absolute bottom-left of photo area */}
-            <div
-              className="relative md:absolute md:bottom-0"
-              style={{ left: "min(47.6vw, 544px)", width: "max-content" }}
-            >
-              <div className="px-8 py-8 md:py-10 flex flex-col gap-2">
+            {/* Photo column — photo + tagline stacked below */}
+            <div className="flex-shrink-0 flex flex-col" style={{ width: "min(47.6vw, 544px)" }}>
+              <div className="relative">
+                <img
+                  src="/instructor-hao.jpg"
+                  alt="HAO 老師"
+                  className="w-full object-cover object-top block"
+                  style={{ aspectRatio: "4/5" }}
+                />
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ boxShadow: "inset 0 0 60px rgba(0,0,0,0.08)" }}
+                />
+              </div>
+              {/* Tagline — directly below photo */}
+              <div className="flex flex-col gap-2 px-8 pt-8 pb-4">
                 <span
                   className="inline-block text-white font-black leading-snug tracking-wide px-3 py-1"
                   style={{ fontSize: "clamp(20px, 2.2vw, 32px)", background: "#1B3A6B", alignSelf: "flex-start" }}
@@ -294,8 +290,8 @@ export default function InstructorPage() {
               </div>
             </div>
 
-            {/* Right column — identity + profile content */}
-            <div className="hidden md:block flex-1 pl-10 pt-8 pb-20" style={{ maxWidth: "800px" }}>
+            {/* Right column — identity + profile content, shifted 80px right */}
+            <div className="hidden md:block flex-1 pb-20" style={{ paddingLeft: "120px", maxWidth: "800px" }}>
               {/* Identity */}
               <div className="flex items-start gap-4 mb-10">
                 <div className="w-[3px] self-stretch bg-black flex-shrink-0" style={{ minHeight: "64px" }} />
@@ -304,7 +300,7 @@ export default function InstructorPage() {
                     AI 商業應用培訓｜企業顧問講師
                   </p>
                   <h1 className="font-black text-gray-900 tracking-tight leading-none" style={{ fontSize: "clamp(32px, 4vw, 52px)" }}>
-                    HAO 老師
+                    梁家豪 HAO 老師
                   </h1>
                 </div>
               </div>
