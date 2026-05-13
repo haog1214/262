@@ -47,36 +47,31 @@ export default function InstructorPage() {
               className="relative z-10 flex flex-row items-start gap-0"
               style={{ paddingLeft: "2rem", paddingRight: "calc(2rem + 220px)" }}
             >
-              {/* Photo — right via ml-auto, behind tagline */}
-              <div className="relative flex-shrink-0 ml-auto" style={{ width: "min(47.6vw, 544px)", zIndex: 1 }}>
+              {/* Photo — right via ml-auto, tagline inside for perfect left-edge alignment */}
+              <div className="relative flex-shrink-0 ml-auto" style={{ width: "min(47.6vw, 544px)" }}>
                 <img src="/alan.jpg" alt="黃長華 Alan 老師" className="w-full object-cover object-top block" style={{ aspectRatio: "4/5" }} />
                 <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 60px rgba(0,0,0,0.08)" }} />
-              </div>
 
-              {/* Tagline — absolute, left edge aligns with photo left edge, photo behind */}
-              <div
-                className="absolute"
-                style={{
-                  left: "calc(100% - 2rem - 220px - min(47.6vw, 544px))",
-                  bottom: "-50px",
-                  width: "max-content",
-                  zIndex: 10,
-                }}
-              >
-                <div className="pl-8 pr-0 py-10 flex flex-col gap-2">
-                  <span className="inline-block text-white font-black leading-snug tracking-wide px-3 py-1"
-                    style={{ fontSize: "clamp(20px, 2.2vw, 32px)", background: "#1B3A6B", alignSelf: "flex-start" }}>
-                    以系統思維解析 AI，
-                  </span>
-                  <span className="text-white font-black leading-snug tracking-wide px-3 py-1 whitespace-nowrap"
-                    style={{ fontSize: "clamp(20px, 2.2vw, 32px)", background: "#1B3A6B", display: "inline-block", width: "max-content" }}>
-                    讓技術真正落地於企業實務。
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-x-4 gap-y-2 pl-8 pr-0 py-5" style={{ background: "#e8e8e6" }}>
-                  {alanTags.map((tag) => (
-                    <span key={tag} className="text-[11px] font-medium text-gray-600 tracking-wide">{tag}</span>
-                  ))}
+                {/* Tagline — left: 0 = photo left edge, bottom: -50px = below photo */}
+                <div
+                  className="absolute"
+                  style={{ left: 0, bottom: "-50px", width: "max-content", zIndex: 10 }}
+                >
+                  <div className="py-8 flex flex-col gap-2">
+                    <span className="inline-block text-white font-black leading-snug tracking-wide px-3 py-1"
+                      style={{ fontSize: "clamp(20px, 2.2vw, 32px)", background: "#1B3A6B", alignSelf: "flex-start" }}>
+                      以系統思維解析 AI，
+                    </span>
+                    <span className="text-white font-black leading-snug tracking-wide px-3 py-1 whitespace-nowrap"
+                      style={{ fontSize: "clamp(20px, 2.2vw, 32px)", background: "#1B3A6B", display: "inline-block", width: "max-content" }}>
+                      讓技術真正落地於企業實務。
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-2 py-5" style={{ background: "#e8e8e6", minWidth: "min(47.6vw, 544px)" }}>
+                    {alanTags.map((tag) => (
+                      <span key={tag} className="text-[11px] font-medium text-gray-600 tracking-wide">{tag}</span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
