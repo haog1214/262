@@ -31,10 +31,94 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- LINE WebView detection: runs before body renders -->
+    <script>
+      (function () {
+        if (/Line\//i.test(navigator.userAgent)) {
+          document.documentElement.setAttribute('data-line-webview', '1');
+        }
+      })();
+    </script>
+    <style>
+      #line-webview-notice { display: none; }
+      html[data-line-webview="1"] #line-webview-notice { display: flex; }
+    </style>
   </head>
 
   <body>
+    <!-- LINE WebView notice banner -->
+    <div id="line-webview-notice" style="
+      position: fixed; top: 0; left: 0; right: 0; z-index: 99999;
+      background: #06c755; color: #fff;
+      padding: 12px 16px; gap: 10px;
+      flex-direction: column; align-items: flex-start;
+      font-family: -apple-system, sans-serif; font-size: 14px; line-height: 1.5;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    ">
+      <p style="margin:0; font-weight:600;">您正在 LINE 內建瀏覽器中瀏覽</p>
+      <p style="margin:0; opacity:0.9; font-size:13px;">
+        點右上角「⋯」→「以瀏覽器開啟」可獲得完整網頁體驗
+      </p>
+      <div style="display:flex; gap:10px; margin-top:4px;">
+        <a href="https://www.262.yc311.com.tw/enroll" style="
+          background:#fff; color:#06c755;
+          padding:8px 18px; border-radius:6px;
+          font-weight:700; font-size:14px;
+          text-decoration:none; display:inline-block;
+        ">立即報名</a>
+        <button onclick="document.getElementById('line-webview-notice').style.display='none'" style="
+          background:rgba(255,255,255,0.2); color:#fff; border:none;
+          padding:8px 14px; border-radius:6px;
+          font-size:13px; cursor:pointer;
+        ">關閉</button>
+      </div>
+    </div>
+
     <div id="root"></div>
+
+    <!-- noscript fallback: shown when JavaScript is disabled or fails to load -->
+    <noscript>
+      <div style="font-family:-apple-system,sans-serif; max-width:600px; margin:0 auto; padding:24px 16px;">
+        <h1 style="color:#1B3A6B; font-size:24px; margin-bottom:8px;">262學習基地</h1>
+        <p style="color:#555; margin-bottom:24px;">台中 AI 實戰課程平台，提供 Gemini、AI 知識管理、AI 短影音、AI 生活應用、AI 簡報等小班課程。</p>
+        <h2 style="color:#1B3A6B; font-size:18px; margin-bottom:12px;">精選課程</h2>
+        <ul style="list-style:none; padding:0; margin:0 0 24px;">
+          <li style="padding:10px 0; border-bottom:1px solid #eee;">
+            <a href="/course/ai-life" style="color:#1B3A6B; font-weight:600;">讓手機搞定大小事</a>
+            <span style="color:#888; font-size:13px; display:block;">3H 特訓班 · NT$ 2,000</span>
+          </li>
+          <li style="padding:10px 0; border-bottom:1px solid #eee;">
+            <a href="/course/gemini" style="color:#1B3A6B; font-weight:600;">Gemini 讓工作快一倍</a>
+            <span style="color:#888; font-size:13px; display:block;">3H 特訓班 · NT$ 2,000</span>
+          </li>
+          <li style="padding:10px 0; border-bottom:1px solid #eee;">
+            <a href="/course/ai-knowledge" style="color:#1B3A6B; font-weight:600;">資料太多卻用不起來</a>
+            <span style="color:#888; font-size:13px; display:block;">3H 特訓班 · NT$ 2,000</span>
+          </li>
+          <li style="padding:10px 0; border-bottom:1px solid #eee;">
+            <a href="/course/ai-presentation" style="color:#1B3A6B; font-weight:600;">簡報不用做到半夜</a>
+            <span style="color:#888; font-size:13px; display:block;">3H 特訓班 · NT$ 2,000</span>
+          </li>
+          <li style="padding:10px 0; border-bottom:1px solid #eee;">
+            <a href="/course/ai-video" style="color:#1B3A6B; font-weight:600;">零基礎也能做專業短片</a>
+            <span style="color:#888; font-size:13px; display:block;">6H 特訓班 · NT$ 4,000</span>
+          </li>
+        </ul>
+        <a href="/enroll" style="
+          display:block; text-align:center;
+          background:#1B3A6B; color:#fff;
+          padding:14px; border-radius:8px;
+          font-weight:700; font-size:16px;
+          text-decoration:none; margin-bottom:24px;
+        ">立即報名</a>
+        <p style="color:#888; font-size:13px;">
+          上課地點：台中市西屯區河南路二段262號7樓3<br/>
+          服務電話：04-24529252
+        </p>
+      </div>
+    </noscript>
+
     <script type="module" src="/src/main.tsx"></script>
     <script
       defer

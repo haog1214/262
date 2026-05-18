@@ -71,7 +71,10 @@ const BOT_PATTERNS = [
   "whatsapp",
   "telegrambot",
   "slackbot",
-  "line/",
+  // NOTE: "line/" is intentionally NOT here — it matches LINE WebView's real user agent
+  // (e.g. "...Line/14.1.0") and would serve bot HTML to actual LINE app users.
+  // LINE link previews are handled by "facebookexternalhit" which LINE also sends for scraping.
+  "linespider",      // LINE's dedicated crawler bot
   "googlebot",
   "bingbot",
   "duckduckbot",
@@ -121,6 +124,8 @@ export function getBotHtml(pathname: string): string {
 <body>
   <h1>${meta.title}</h1>
   <p>${meta.description}</p>
+  <p><a href="${BASE_URL}/enroll">立即報名</a></p>
+  <p><a href="${BASE_URL}">回到首頁</a></p>
 </body>
 </html>`;
 }
