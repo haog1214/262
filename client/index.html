@@ -32,10 +32,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-    <!-- LINE WebView detection: runs before body renders -->
+    <!-- LINE WebView: auto-redirect to external browser via openExternalBrowser=1 -->
     <script>
       (function () {
         if (/Line\//i.test(navigator.userAgent)) {
+          // openExternalBrowser=1 is a LINE-specific param that forces the system browser to open
+          if (location.search.indexOf('openExternalBrowser') === -1) {
+            var sep = location.search ? '&' : '?';
+            location.replace(location.href + sep + 'openExternalBrowser=1');
+          }
+          // If already redirected but still in LINE WebView (fallback), show the banner
           document.documentElement.setAttribute('data-line-webview', '1');
         }
       })();
