@@ -282,14 +282,7 @@ export default function EnrollPage() {
 
               {/* ── 右欄：報名資料 ── */}
               <div className="flex-1 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <h2 className="font-bold text-[16px] text-gray-900 mb-4">填寫報名資料</h2>
-
-                {/* 匯款資訊公告 */}
-                <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 mb-6">
-                  <p className="text-[13px] font-semibold text-blue-800 mb-1">匯款資訊</p>
-                  <p className="text-[13px] text-blue-700">台新銀行 812　逢甲分行 0517</p>
-                  <p className="text-[14px] font-bold text-blue-900 tracking-wide">2051-01-0001230-8</p>
-                </div>
+                <h2 className="font-bold text-[16px] text-gray-900 mb-6">填寫報名資料</h2>
 
                 <div className="space-y-5">
                   <div>
@@ -353,19 +346,26 @@ export default function EnrollPage() {
 
                   <div>
                     <label className="block text-[14px] font-medium text-gray-700 mb-1.5">
-                      匯款後五碼 <span className="text-gray-400 font-normal">（選填）</span>
-                    </label>
-                    <input type="text" placeholder="請輸入匯款帳號後五碼" value={form.transfer}
-                      onChange={(e) => handleChange("transfer", e.target.value)} className={inputClass("transfer")} />
-                  </div>
-
-                  <div>
-                    <label className="block text-[14px] font-medium text-gray-700 mb-1.5">
                       備註 <span className="text-gray-400 font-normal">（選填）</span>
                     </label>
                     <textarea rows={3} placeholder="有任何問題或特殊需求，歡迎在此說明" value={form.note}
                       onChange={(e) => handleChange("note", e.target.value)}
                       className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-[15px] outline-none transition-colors focus:border-[#1B3A6B] resize-none" />
+                  </div>
+
+                  {/* 匯款資訊公告 */}
+                  <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
+                    <p className="text-[13px] font-semibold text-blue-800 mb-1">匯款資訊</p>
+                    <p className="text-[13px] text-blue-700">台新銀行 812　逢甲分行 0517</p>
+                    <p className="text-[14px] font-bold text-blue-900 tracking-wide">2051-01-0001230-8</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-[14px] font-medium text-gray-700 mb-1.5">
+                      匯款後五碼 <span className="text-gray-400 font-normal">（選填）</span>
+                    </label>
+                    <input type="text" placeholder="請輸入匯款帳號後五碼" value={form.transfer}
+                      onChange={(e) => handleChange("transfer", e.target.value)} className={inputClass("transfer")} />
                   </div>
 
                   {submitted ? (
