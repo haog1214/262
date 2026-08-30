@@ -22,7 +22,8 @@ export default function CoursesSection() {
     return () => window.removeEventListener("courses-updated", onUpdate);
   }, []);
 
-  const { sectionTitle, sectionSubtitle, courses } = config;
+  const { sectionTitle, sectionSubtitle, courses: allCourses } = config;
+  const courses = allCourses.filter((c) => c.published !== false);
 
   const schedulesFor = (courseId: number) =>
     schedules.filter(s => s.courseId === String(courseId));

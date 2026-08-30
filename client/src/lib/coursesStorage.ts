@@ -57,7 +57,7 @@ export async function saveCoursesToAPI(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-admin-password": "262@Admin",
+        "x-admin-password": "84204302",
       },
       body: JSON.stringify(config),
     });
@@ -67,6 +67,30 @@ export async function saveCoursesToAPI(
     }
     setLocalCoursesConfig(config);
     return { ok: true };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
+}
+
+export async function uploadCourseImage(
+  file: File
+): Promise<{ ok: boolean; url?: string; error?: string }> {
+  try {
+    const buf = await file.arrayBuffer();
+    const res = await fetch(`/api/upload-image?filename=${encodeURIComponent(file.name)}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/octet-stream",
+        "x-admin-password": "84204302",
+      },
+      body: buf,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({})) as { error?: string };
+      return { ok: false, error: body.error ?? `HTTP ${res.status}` };
+    }
+    const data = await res.json() as { url: string };
+    return { ok: true, url: data.url };
   } catch (err) {
     return { ok: false, error: String(err) };
   }

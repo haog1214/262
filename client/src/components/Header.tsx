@@ -19,14 +19,11 @@ export default function Header() {
         {/* 品牌Logo */}
         <Link href="/">
           <a className="flex items-center hover:opacity-80 transition-opacity">
-            <span className="translate-y-0 scale-[0.54] -translate-x-[31px] md:translate-y-[50px] md:scale-[1.08] md:-translate-x-[25px] inline-block">
-              <img
-                src="/logo.png"
-                alt="262學院 Logo"
-                className="block w-[135px] h-auto"
-              />
-            </span>
-            <span className="text-[22px] font-bold text-[#1B3A6B] -translate-x-[9px] translate-y-[10px] self-start pt-[6px] md:self-auto md:pt-0 md:translate-x-[5px] md:translate-y-[10px]">262 培訓學院</span>
+            <img
+              src="/logo.png"
+              alt="傳啓資訊 Logo"
+              className="block w-[243px] h-auto"
+            />
           </a>
         </Link>
 

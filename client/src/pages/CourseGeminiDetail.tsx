@@ -12,7 +12,7 @@ const courseSchema = {
   description: "從 Gemini 基礎到進階應用，整合 Google 生態系、多媒體創作、NotebookLM 深度閱讀，打造個人 AI 工作流程。",
   provider: {
     "@type": "EducationalOrganization",
-    name: "262學習基地",
+    name: "傳啓資訊",
     url: "https://www.262.yc311.com.tw",
   },
   url: "https://www.262.yc311.com.tw/course/gemini",

@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
+import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import {
@@ -18,11 +19,15 @@ import { isBot, getBotHtml } from "./botRenderer.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const ADMIN_PASSWORD = "262@Admin";
+const ADMIN_PASSWORD = "84204302";
+const UPLOADS_DIR = path.resolve(__dirname, "..", "uploads");
 
 async function startServer() {
   const app = express();
   const server = createServer(app);
+
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  app.use("/uploads", express.static(UPLOADS_DIR));
 
   app.use(express.json());
 
@@ -50,6 +55,28 @@ async function startServer() {
       res.status(500).json({ error: "Failed to write courses" });
     }
   });
+
+  // ── Image upload ─────────────────────────────────────────────────────────
+  app.post(
+    "/api/upload-image",
+    express.raw({ type: "*/*", limit: "10mb" }),
+    (req, res) => {
+      if (req.headers["x-admin-password"] !== ADMIN_PASSWORD) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      const filename = String(req.query.filename ?? "");
+      if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+        return res.status(400).json({ error: "No file data" });
+      }
+      const ext = path.extname(filename).toLowerCase() || ".jpg";
+      if (![".jpg", ".jpeg", ".png", ".webp", ".gif"].includes(ext)) {
+        return res.status(400).json({ error: "Unsupported file type" });
+      }
+      const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
+      fs.writeFileSync(path.join(UPLOADS_DIR, safeName), req.body);
+      res.json({ url: `/uploads/${safeName}` });
+    }
+  );
 
   // ── Schedules API ────────────────────────────────────────────────────────
   app.get("/api/schedules", async (_req, res) => {

@@ -1,6 +1,6 @@
 const ADMIN_HEADERS = {
   "Content-Type": "application/json",
-  "x-admin-password": "262@Admin",
+  "x-admin-password": "84204302",
 };
 
 export interface Schedule {
@@ -54,7 +54,7 @@ export async function saveSchedules(
 export async function fetchEnrollments(): Promise<Enrollment[]> {
   try {
     const res = await fetch("/api/enrollments", {
-      headers: { "x-admin-password": "262@Admin" },
+      headers: { "x-admin-password": "84204302" },
     });
     if (!res.ok) return [];
     return (await res.json()) as Enrollment[];

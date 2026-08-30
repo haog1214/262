@@ -15,7 +15,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between gap-10 mb-10">
           {/* Brand — 放大20% */}
           <div className="flex flex-col gap-3 max-w-sm">
-            <span className="text-[21.6px] font-bold" style={{ color: "#F5F0E8" }}>262 培訓學院</span>
+            <span className="text-[21.6px] font-bold" style={{ color: "#F5F0E8" }}>傳啓資訊</span>
             <p className="text-[14.4px] leading-relaxed" style={{ color: "rgba(245,240,232,0.5)" }}>
               上課地點：台中市西屯區河南路二段262號7樓3
             </p>
@@ -23,7 +23,7 @@ export default function Footer() {
 
           {/* Company info */}
           <div className="flex flex-col gap-1.5 text-xs" style={{ color: "rgba(245,240,232,0.5)" }}>
-            <p className="font-semibold text-sm" style={{ color: "rgba(245,240,232,0.75)" }}>二六二有限公司</p>
+            <p className="font-semibold text-sm" style={{ color: "rgba(245,240,232,0.75)" }}>傳啓資訊</p>
             <p>統一編號：60357703</p>
             <p>服務電話：04-24529252</p>
             <p>台中市西屯區河南路二段262號3樓之11</p>
@@ -32,7 +32,7 @@ export default function Footer() {
 
         <div className="border-t mt-2 pt-6 flex flex-col md:flex-row items-center justify-between gap-2" style={{ borderColor: "rgba(255,255,255,0.1)" }}>
           <p className="text-xs" style={{ color: "rgba(245,240,232,0.35)" }}>
-            © 2026 262培訓學院 · 二六二有限公司. All rights reserved.
+            © 2026 傳啓資訊. All rights reserved.
           </p>
           <p className="text-xs" style={{ color: "rgba(245,240,232,0.3)" }}>
             由傳啓資訊股份有限公司提供技術支援

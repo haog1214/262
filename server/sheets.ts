@@ -12,6 +12,7 @@ export interface Course {
   backgroundImage: string;
   detailPath: string;
   status: string;
+  published: boolean;
 }
 
 export interface CoursesConfig {
@@ -42,7 +43,7 @@ export interface Enrollment {
 const COURSE_HEADERS: (keyof Course)[] = [
   "id", "title", "description", "tools",
   "originalPrice", "discountPrice", "badge", "badgeColor",
-  "backgroundImage", "detailPath", "status",
+  "backgroundImage", "detailPath", "status", "published",
 ];
 
 const SCHEDULE_HEADERS: (keyof Schedule)[] = [
@@ -92,7 +93,7 @@ export async function readCoursesFromSheet(): Promise<CoursesConfig> {
 
   const [metaRes, coursesRes] = await Promise.all([
     sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: "meta!A:B" }),
-    sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: "courses!A:K" }),
+    sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: "courses!A:L" }),
   ]);
 
   const meta: Record<string, string> = {};
@@ -112,6 +113,7 @@ export async function readCoursesFromSheet(): Promise<CoursesConfig> {
         ...obj,
         id: Number(obj.id),
         status: (obj.status as "open" | "full") || "open",
+        published: obj.published === "true",
       } as unknown as Course;
     });
 

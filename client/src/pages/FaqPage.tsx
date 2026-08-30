@@ -243,7 +243,7 @@ export default function FaqPage() {
     >
       <SEO
         title="常見問題 FAQ"
-        description="262學習基地常見問題解答：上課設備需求、課程內容、報名流程、付款方式、退費政策、企業包班等，一次查清楚。"
+        description="傳啓資訊常見問題解答：上課設備需求、課程內容、報名流程、付款方式、退費政策、企業包班等，一次查清楚。"
         url="https://www.262.yc311.com.tw/faq"
         schema={faqSchema}
       />

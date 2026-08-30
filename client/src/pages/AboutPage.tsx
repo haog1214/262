@@ -17,7 +17,7 @@ export default function AboutPage() {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#fff" }}>
       <SEO
         title="關於我們"
-        description="262學習基地由傳啓資訊支持，致力於 AI 工具應用、數位行銷、企業內訓等培訓。台中西屯區，小班制實體課程。"
+        description="傳啓資訊致力於 AI 工具應用、數位行銷、企業內訓等培訓。台中西屯區，小班制實體課程。"
         url="https://www.262.yc311.com.tw/about"
       />
       <Header />
@@ -44,7 +44,7 @@ export default function AboutPage() {
             </div>
             <div className="max-w-3xl">
               <h1 className="text-5xl md:text-7xl font-black leading-[1.05] mb-6 tracking-tight whitespace-nowrap" style={{ color: "#F5F0E8" }}>
-                262培訓學院
+                傳啓資訊
               </h1>
               <p className="text-base md:text-lg leading-relaxed mb-14" style={{ color: "rgba(245,240,232,0.65)" }}>
                 台中西屯專業課程教室，鄰近逢甲大學，交通便利、好停車。<br />
@@ -138,10 +138,10 @@ export default function AboutPage() {
                 </p>
                 <div className="space-y-4 text-[18px] leading-relaxed" style={{ color: "#334155" }}>
                   <p>
-                    262培訓學院是由深耕資訊服務領域近<strong>30年</strong>的傳啓資訊股份有限公司和有椿有限公司共同打造的專業課程教學平台。長期協助企業進行網站建置、系統開發、電商平台規劃、數位行銷整合與企業數位轉型，累積了豐富的跨產業實戰經驗。
+                    傳啓資訊深耕資訊服務領域近<strong>30年</strong>，長期協助企業進行網站建置、系統開發、電商平台規劃、數位行銷整合與企業數位轉型，累積了豐富的跨產業實戰經驗。
                   </p>
                   <p>
-                    因此，262培訓學院不只是單純提供上課空間，更希望成為一個結合專業知識、實務經驗、產業應用與人才培育的學習基地。
+                    因此，傳啓資訊不只是單純提供上課空間，更希望成為一個結合專業知識、實務經驗、產業應用與人才培育的學習基地。
                   </p>
                   <p>
                     我們相信，好的課程不應該只是知識輸出，而是要協助學員完成「從聽懂、會用，到真正落地」的轉換。
@@ -220,7 +220,7 @@ export default function AboutPage() {
                 </p>
                 <div className="space-y-4 text-[18px] leading-relaxed text-gray-700">
                   <p>
-                    262培訓學院定位為台中地區兼具交通便利、產業實務與專業課程資源的培訓平台。我們希望整合傳啓資訊近30年的資訊服務經驗，結合多元師資與不同產業的專業課程，打造一個適合企業、講師與學員共同成長的知識交流空間。
+                    傳啓資訊定位為台中地區兼具交通便利、產業實務與專業課程資源的培訓平台。我們希望整合近30年的資訊服務經驗，結合多元師資與不同產業的專業課程，打造一個適合企業、講師與學員共同成長的知識交流空間。
                   </p>
                   <p>
                     學院鄰近逢甲大學商圈，鄰近台中國際展覽館、高速公路與快速道路，不論是台中在地學員、外縣市講師，或企業團隊前來參與課程與培訓，都能快速抵達。
@@ -259,7 +259,7 @@ export default function AboutPage() {
                   未來<br />課程方向
                 </h2>
                 <p className="text-[18px] leading-relaxed text-gray-600">
-                  262培訓學院重視「實戰型教學」與「產業型師資」，持續發展多元課程領域，讓每一堂課都更貼近真實工作現場。
+                  傳啓資訊重視「實戰型教學」與「產業型師資」，持續發展多元課程領域，讓每一堂課都更貼近真實工作現場。
                 </p>
               </div>
 
@@ -300,7 +300,7 @@ export default function AboutPage() {
             </h2>
             <div className="w-10 h-0.5 mx-auto mb-10" style={{ backgroundColor: "#D4AF37" }} />
             <p className="text-[18px] leading-relaxed mb-6" style={{ color: "rgba(245,240,232,0.65)" }}>
-              262培訓學院，不只是教室，而是一個讓專業被看見、讓經驗被傳承、讓技能被實踐的學習平台。我們以近30年的資訊產業經驗為基礎，結合專業師資、便利場地與實務課程，協助企業與個人在快速變動的數位時代中，持續學習、快速應用、穩健成長。
+              傳啓資訊，不只是教室，而是一個讓專業被看見、讓經驗被傳承、讓技能被實踐的學習平台。我們以近30年的資訊產業經驗為基礎，結合專業師資、便利場地與實務課程，協助企業與個人在快速變動的數位時代中，持續學習、快速應用、穩健成長。
             </p>
             <p
               className="font-light italic"
@@ -317,7 +317,7 @@ export default function AboutPage() {
           {/* Full-width Google Map */}
           <div className="w-full" style={{ height: "420px" }}>
             <iframe
-              title="262培訓學院地圖"
+              title="傳啓資訊地圖"
               src="https://maps.google.com/maps?q=台中市西屯區河南路二段262號3樓之11&output=embed&hl=zh-TW&z=16"
               width="100%"
               height="100%"

@@ -56,8 +56,8 @@ function buildEmailHtml(data: EnrollmentData): string {
         <!-- Header -->
         <tr>
           <td style="background:linear-gradient(135deg,#1B3A6B 0%,#2557a7 100%);padding:32px 40px;text-align:center;">
-            <img src="${logoUrl}" alt="262學習基地" height="56" style="display:inline-block;max-width:180px;object-fit:contain;" onerror="this.style.display='none'">
-            <p style="margin:12px 0 0;color:rgba(255,255,255,0.85);font-size:13px;letter-spacing:1px;">262學習基地</p>
+            <img src="${logoUrl}" alt="傳啓資訊" height="56" style="display:inline-block;max-width:180px;object-fit:contain;" onerror="this.style.display='none'">
+            <p style="margin:12px 0 0;color:rgba(255,255,255,0.85);font-size:13px;letter-spacing:1px;">傳啓資訊</p>
           </td>
         </tr>
 
@@ -81,7 +81,7 @@ function buildEmailHtml(data: EnrollmentData): string {
         <!-- Footer -->
         <tr>
           <td style="background:#f8f9fc;padding:20px 40px;text-align:center;border-top:1px solid #e8ecf4;">
-            <p style="margin:0;font-size:12px;color:#aaa;">262學習基地 · 台中西屯</p>
+            <p style="margin:0;font-size:12px;color:#aaa;">傳啓資訊 · 台中西屯</p>
             <p style="margin:4px 0 0;font-size:12px;color:#aaa;">此信件由系統自動發送，請勿直接回覆。</p>
           </td>
         </tr>
@@ -109,7 +109,7 @@ export async function sendEnrollmentNotification(data: EnrollmentData): Promise<
   });
 
   await transporter.sendMail({
-    from: `"262學習基地報名系統" <${user}>`,
+    from: `"傳啓資訊報名系統" <${user}>`,
     to,
     subject: `【新報名】${data.name} 報名 ${data.course}`,
     html: buildEmailHtml(data),

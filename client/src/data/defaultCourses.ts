@@ -12,6 +12,7 @@ export interface Course {
   backgroundImage: string;
   detailPath: string;
   status: "open" | "full";
+  published: boolean;
 }
 
 export interface CoursesConfig {
@@ -37,6 +38,7 @@ export const defaultCoursesConfig: CoursesConfig = {
       backgroundImage: "/讓手機搞定大小事-2.jpg",
       detailPath: "/course/ai-life",
       status: "open",
+      published: true,
     },
     {
       id: 3,
@@ -51,6 +53,7 @@ export const defaultCoursesConfig: CoursesConfig = {
       backgroundImage: "/讓你的Gemini再進化.jpg",
       detailPath: "/course/gemini",
       status: "open",
+      published: true,
     },
     {
       id: 4,
@@ -65,6 +68,7 @@ export const defaultCoursesConfig: CoursesConfig = {
       backgroundImage: "/資料太多都用不起來.jpg",
       detailPath: "/course/ai-knowledge",
       status: "open",
+      published: true,
     },
     {
       id: 5,
@@ -79,6 +83,7 @@ export const defaultCoursesConfig: CoursesConfig = {
       backgroundImage: "/提升簡報的精美度.jpg",
       detailPath: "/course/ai-presentation",
       status: "open",
+      published: true,
     },
     {
       id: 1,
@@ -93,6 +98,7 @@ export const defaultCoursesConfig: CoursesConfig = {
       backgroundImage: "/零基礎也能做專業短片.jpg",
       detailPath: "/course/ai-video",
       status: "open",
+      published: true,
     },
   ],
 };

@@ -9,7 +9,7 @@ import SEO from "@/components/SEO";
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "EducationalOrganization",
-  name: "262學習基地",
+  name: "傳啓資訊",
   alternateName: "262Academy",
   url: "https://www.262.yc311.com.tw",
   logo: "https://www.262.yc311.com.tw/logo.png",
@@ -27,7 +27,7 @@ const organizationSchema = {
 const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
-  name: "262學習基地",
+  name: "傳啓資訊",
   image: "https://www.262.yc311.com.tw/logo.png",
   url: "https://www.262.yc311.com.tw",
   address: {
@@ -84,7 +84,7 @@ export default function Home() {
             </a>
           </div>
           <iframe
-            title="262培訓學院地圖"
+            title="傳啓資訊地圖"
             src="https://maps.google.com/maps?q=台中市西屯區河南路二段262號7樓3&output=embed&hl=zh-TW&z=17"
             width="100%"
             height="400"

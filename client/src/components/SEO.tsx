@@ -9,11 +9,11 @@ interface SEOProps {
   schema?: object | object[];
 }
 
-const SITE_NAME = "262學習基地";
+const SITE_NAME = "傳啓資訊";
 const BASE_URL = "https://www.262.yc311.com.tw";
 const DEFAULT_IMAGE = `${BASE_URL}/logo.png`;
 const DEFAULT_DESC =
-  "262學習基地｜台中 AI 實戰課程平台，提供 Gemini、AI 知識管理、AI 短影音、AI 生活應用、AI 簡報等課程，幫助你用 AI 提升工作效率。";
+  "傳啓資訊｜台中 AI 實戰課程平台，提供 Gemini、AI 知識管理、AI 短影音、AI 生活應用、AI 簡報等課程，幫助你用 AI 提升工作效率。";
 
 export default function SEO({
   title,

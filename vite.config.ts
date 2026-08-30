@@ -226,6 +226,7 @@ export default defineConfig({
     host: true,
     proxy: {
       "/api": "http://localhost:3001",
+      "/uploads": "http://localhost:3001",
     },
     allowedHosts: [
       ".manuspre.computer",

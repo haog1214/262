@@ -24,8 +24,9 @@ import {
   type BadgeColor,
 } from "@/data/defaultCourses";
 import { getSessionsByDetailPath } from "@/data/courseSessions";
+import CourseCard from "@/components/CourseCard";
 
-const ADMIN_PASSWORD = "262@Admin";
+const ADMIN_PASSWORD = "84204302";
 const BADGE_COLORS: BadgeColor[] = ["pink", "purple", "green", "gold", "teal"];
 const BADGE_COLOR_LABELS: Record<BadgeColor, string> = {
   pink: "粉紅",
@@ -50,6 +51,7 @@ function emptyCourseDraft(): Omit<Course, "id"> {
     backgroundImage: "",
     detailPath: "",
     status: "open",
+    published: false,
   };
 }
 
@@ -269,7 +271,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
       <div style={{ ...s.card, width: "360px", textAlign: "center" }}>
         <div style={{ fontSize: "40px", marginBottom: "8px" }}>🔒</div>
         <h1 style={{ fontSize: "20px", fontWeight: 700, color: "#1B3A6B", marginBottom: "4px" }}>
-          262學院 後台管理
+          傳啓資訊 後台管理
         </h1>
         <p style={{ fontSize: "13px", color: "#9CA3AF", marginBottom: "24px" }}>請輸入管理員密碼</p>
         <input
@@ -1179,6 +1181,57 @@ function ReorderModal({
   );
 }
 
+// ── Preview modal — 前台呈現效果 ────────────────────────────────────────────
+function PreviewModal({ course, onClose }: { course: Course; onClose: () => void }) {
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 1000,
+        backgroundColor: "rgba(0,0,0,0.45)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "16px",
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{
+        backgroundColor: "#fff",
+        borderRadius: "16px",
+        width: "100%",
+        maxWidth: "380px",
+        padding: "24px",
+        boxShadow: "0 8px 40px rgba(0,0,0,0.2)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+          <div style={{ fontWeight: 700, fontSize: "14px", color: "#1B3A6B" }}>前台呈現效果預覽</div>
+          <button
+            onClick={onClose}
+            style={{ background: "none", border: "none", fontSize: "18px", cursor: "pointer", color: "#9CA3AF" }}
+          >✕</button>
+        </div>
+        <CourseCard
+          title={course.title}
+          description={course.description}
+          tools={course.tools}
+          originalPrice={course.originalPrice}
+          discountPrice={course.discountPrice}
+          instructorImage=""
+          instructorName=""
+          badge={course.badge}
+          badgeColor={course.badgeColor}
+          backgroundImage={course.backgroundImage}
+          detailPath={course.detailPath}
+          status={course.status}
+        />
+        {!course.published && (
+          <p style={{ fontSize: "12px", color: "#DC2626", marginTop: "12px", textAlign: "center" }}>
+            此課程目前為「未顯示」狀態，不會出現在首頁
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main admin page ───────────────────────────────────────────────────────────
 export default function AdminCoursesPage() {
   const [authed, setAuthed] = useState(false);
@@ -1186,6 +1239,8 @@ export default function AdminCoursesPage() {
   const [config, setConfig] = useState<CoursesConfig>(getLocalCoursesConfig);
   const [editingId, setEditingId] = useState<number | "new" | null>(null);
   const [enrollCourseId, setEnrollCourseId] = useState<number | null>(null);
+  const [previewCourseId, setPreviewCourseId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<"courses" | "knowledge">("courses");
   const [allSchedules, setAllSchedules] = useState<Schedule[]>([]);
   const [allEnrollments, setAllEnrollments] = useState<Enrollment[]>([]);
   const [enrollCountMap, setEnrollCountMap] = useState<Record<string, number>>({});
@@ -1274,6 +1329,14 @@ export default function AdminCoursesPage() {
     setEditingId(id);
     window.location.hash = `#edit-${id}`;
     // hashchange will call setView("edit")
+  };
+
+  const togglePublished = (id: number) => {
+    const updated = {
+      ...config,
+      courses: config.courses.map(c => c.id === id ? { ...c, published: !c.published } : c),
+    };
+    persist(updated);
   };
 
   const openEnrollmentView = async (courseId: number) => {
@@ -1380,7 +1443,7 @@ export default function AdminCoursesPage() {
         <Toast msg={toast} />
         <div style={s.header}>
           <div>
-            <div style={{ fontSize: "18px", fontWeight: 700 }}>262學院 後台管理</div>
+            <div style={{ fontSize: "18px", fontWeight: 700 }}>傳啓資訊 後台管理</div>
             <div style={{ fontSize: "12px", color: "#93C5FD", marginTop: "2px" }}>
               {saving ? "⏳ 儲存中..." : "精選課程編輯 · 已連接 Google Sheets"}
             </div>
@@ -1404,7 +1467,7 @@ export default function AdminCoursesPage() {
         <Toast msg={toast} />
         <div style={s.header}>
           <div>
-            <div style={{ fontSize: "18px", fontWeight: 700 }}>262學院 後台管理</div>
+            <div style={{ fontSize: "18px", fontWeight: 700 }}>傳啓資訊 後台管理</div>
             <div style={{ fontSize: "12px", color: "#93C5FD", marginTop: "2px" }}>
               報名管理 · 已連接 Google Sheets
             </div>
@@ -1452,11 +1515,17 @@ export default function AdminCoursesPage() {
           onClose={() => setShowReorder(false)}
         />
       )}
+      {previewCourseId !== null && (() => {
+        const previewCourse = config.courses.find(c => c.id === previewCourseId);
+        return previewCourse ? (
+          <PreviewModal course={previewCourse} onClose={() => setPreviewCourseId(null)} />
+        ) : null;
+      })()}
 
       {/* Header */}
       <div style={s.header}>
         <div>
-          <div style={{ fontSize: "18px", fontWeight: 700 }}>262學院 後台管理</div>
+          <div style={{ fontSize: "18px", fontWeight: 700 }}>傳啓資訊 後台管理</div>
           <div style={{ fontSize: "12px", color: "#93C5FD", marginTop: "2px" }}>
             {saving ? "⏳ 儲存中..." : "精選課程編輯 · 已連接 Google Sheets"}
           </div>
@@ -1468,6 +1537,34 @@ export default function AdminCoursesPage() {
       </div>
 
       <div style={s.main}>
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: "4px", marginBottom: "4px" }}>
+          {([
+            { key: "courses" as const, label: "📚 課程管理" },
+            { key: "knowledge" as const, label: "🗂️ 知識庫" },
+          ]).map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              style={{
+                padding: "10px 20px",
+                borderRadius: "10px 10px 0 0",
+                border: "none",
+                borderBottom: activeTab === tab.key ? "3px solid #1B3A6B" : "3px solid transparent",
+                background: activeTab === tab.key ? "#fff" : "transparent",
+                color: activeTab === tab.key ? "#1B3A6B" : "#9CA3AF",
+                fontWeight: 700,
+                fontSize: "14px",
+                cursor: "pointer",
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === "courses" && (
+        <>
         {/* Import panel */}
         {showImport && (
           <div style={{ ...s.card, border: "2px dashed #D1D5DB" }}>
@@ -1604,8 +1701,48 @@ export default function AdminCoursesPage() {
                 {course.status === "full" ? "🚫 額滿" : "✅ 開放中"}
               </div>
 
+              {/* Published toggle */}
+              <button
+                onClick={() => togglePublished(course.id)}
+                title={course.published ? "點擊隱藏（不顯示於首頁）" : "點擊顯示於首頁"}
+                style={{
+                  display: "flex", alignItems: "center", gap: "6px",
+                  border: "none", cursor: "pointer",
+                  background: "transparent",
+                  padding: "4px 2px",
+                  flexShrink: 0,
+                }}
+              >
+                <span style={{
+                  width: "34px", height: "20px", borderRadius: "10px",
+                  backgroundColor: course.published ? "#1B3A6B" : "#D1D5DB",
+                  position: "relative",
+                  transition: "background-color 0.15s",
+                  flexShrink: 0,
+                }}>
+                  <span style={{
+                    position: "absolute", top: "2px",
+                    left: course.published ? "16px" : "2px",
+                    width: "16px", height: "16px", borderRadius: "50%",
+                    backgroundColor: "#fff",
+                    transition: "left 0.15s",
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
+                  }} />
+                </span>
+                <span style={{ fontSize: "11px", fontWeight: 600, color: course.published ? "#1B3A6B" : "#9CA3AF", width: "36px" }}>
+                  {course.published ? "顯示中" : "已隱藏"}
+                </span>
+              </button>
+
               {/* Actions */}
               <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+                <button
+                  style={{ ...s.btnIcon, fontSize: "18px", padding: "6px 12px", borderColor: "#BFDBFE", color: "#1D4ED8" }}
+                  onClick={() => setPreviewCourseId(course.id)}
+                  title="預覽前台效果"
+                >
+                  👁️
+                </button>
                 <button
                   style={{ ...s.btnIcon, fontSize: "18px", padding: "6px 12px" }}
                   onClick={() => openEditView(course.id)}
@@ -1637,8 +1774,12 @@ export default function AdminCoursesPage() {
             </div>
           )}
         </div>
+        </>
+        )}
 
-        {/* Registration stats table */}
+        {activeTab === "knowledge" && (
+        <>
+        {/* Registration stats table — 報名紀錄知識庫 */}
         <div style={s.card}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
             <div>
@@ -1703,6 +1844,8 @@ export default function AdminCoursesPage() {
             </table>
           )}
         </div>
+        </>
+        )}
 
         {/* Registration detail modal */}
         {regDetail && (
@@ -1739,7 +1882,7 @@ export default function AdminCoursesPage() {
         )}
 
         <p style={{ textAlign: "center", fontSize: "12px", color: "#D1D5DB", marginTop: "32px" }}>
-          262學院後台管理系統 · 資料儲存於 Google Sheets
+          傳啓資訊後台管理系統 · 資料儲存於 Google Sheets
         </p>
       </div>
     </div>

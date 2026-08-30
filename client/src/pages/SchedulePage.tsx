@@ -353,7 +353,7 @@ export default function SchedulePage() {
     <div className="min-h-screen flex flex-col" style={{ background: "#f2f2f2" }}>
       <SEO
         title="開課日期"
-        description="262學習基地最新開課時間表，包含 Gemini、AI 知識管理、AI 短影音、AI 生活應用、AI 簡報等課程場次，台中西屯區實體小班教學。"
+        description="傳啓資訊最新開課時間表，包含 Gemini、AI 知識管理、AI 短影音、AI 生活應用、AI 簡報等課程場次，台中西屯區實體小班教學。"
         url="https://www.262.yc311.com.tw/schedule"
       />
       <Header />

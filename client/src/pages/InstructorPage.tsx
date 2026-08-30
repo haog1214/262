@@ -14,7 +14,7 @@ export default function InstructorPage() {
     <div className="min-h-screen flex flex-col" style={{ background: "#f4f4f2" }}>
       <SEO
         title="講師介紹"
-        description="認識 262學習基地的 AI 課程講師，具備企業培訓、AI 工具應用、商業思維等豐富實戰經驗，帶你學以致用。"
+        description="認識 傳啓資訊的 AI 課程講師，具備企業培訓、AI 工具應用、商業思維等豐富實戰經驗，帶你學以致用。"
         url="https://www.262.yc311.com.tw/instructor"
         image="https://www.262.yc311.com.tw/instructor-hao.jpg"
       />

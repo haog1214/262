@@ -1,5 +1,5 @@
 const BASE_URL = "https://www.262.yc311.com.tw";
-const SITE_NAME = "262學習基地";
+const SITE_NAME = "傳啓資訊";
 const DEFAULT_DESC = "台中 AI 實戰課程平台，提供 Gemini、AI 知識管理、AI 短影音、AI 生活應用、AI 簡報等課程，幫助你用 AI 提升工作效率。";
 const DEFAULT_IMAGE = `${BASE_URL}/logo.png`;
 
@@ -42,24 +42,24 @@ const routeMeta: Record<string, PageMeta> = {
   },
   "/schedule": {
     title: `開課日期 | ${SITE_NAME}`,
-    description: "262學習基地最新開課時間表，包含 Gemini、AI 知識管理、AI 短影音、AI 生活應用、AI 簡報等課程場次，台中西屯區實體小班教學。",
+    description: "傳啓資訊最新開課時間表，包含 Gemini、AI 知識管理、AI 短影音、AI 生活應用、AI 簡報等課程場次，台中西屯區實體小班教學。",
   },
   "/instructor": {
     title: `講師介紹 | ${SITE_NAME}`,
-    description: "認識 262學習基地的 AI 課程講師，具備企業培訓、AI 工具應用、商業思維等豐富實戰經驗，帶你學以致用。",
+    description: "認識 傳啓資訊的 AI 課程講師，具備企業培訓、AI 工具應用、商業思維等豐富實戰經驗，帶你學以致用。",
     image: `${BASE_URL}/instructor-hao.jpg`,
   },
   "/faq": {
     title: `常見問題 FAQ | ${SITE_NAME}`,
-    description: "262學習基地常見問題解答：上課設備需求、課程內容、報名流程、付款方式、退費政策、企業包班等，一次查清楚。",
+    description: "傳啓資訊常見問題解答：上課設備需求、課程內容、報名流程、付款方式、退費政策、企業包班等，一次查清楚。",
   },
   "/about": {
     title: `關於我們 | ${SITE_NAME}`,
-    description: "262學習基地由傳啓資訊支持，致力於 AI 工具應用、數位行銷、企業內訓等培訓。台中西屯區，小班制實體課程。",
+    description: "傳啓資訊致力於 AI 工具應用、數位行銷、企業內訓等培訓。台中西屯區，小班制實體課程。",
   },
   "/enroll": {
     title: `立即報名 | ${SITE_NAME}`,
-    description: "立即報名 262學習基地 AI 實戰課程，Gemini、AI 短影音、AI 簡報、AI 生活應用等小班課程，台中西屯區實體上課。",
+    description: "立即報名 傳啓資訊 AI 實戰課程，Gemini、AI 短影音、AI 簡報、AI 生活應用等小班課程，台中西屯區實體上課。",
   },
 };
 
