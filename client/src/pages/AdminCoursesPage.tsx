@@ -1836,7 +1836,7 @@ export default function AdminCoursesPage() {
         <Toast msg={toast} />
         <div style={s.header}>
           <div>
-            <div style={{ fontSize: "17px", fontWeight: 600, color: ink }}>傳啓資訊 後台管理</div>
+            <div style={{ fontSize: "17px", fontWeight: 600, color: ink }}>課程後台管理系統</div>
             <div style={{ fontSize: "12px", color: inkSoft, marginTop: "2px" }}>
               {saving ? "⏳ 儲存中..." : "精選課程編輯 · 已連接 Google Sheets"}
             </div>
@@ -1860,7 +1860,7 @@ export default function AdminCoursesPage() {
         <Toast msg={toast} />
         <div style={s.header}>
           <div>
-            <div style={{ fontSize: "17px", fontWeight: 600, color: ink }}>傳啓資訊 後台管理</div>
+            <div style={{ fontSize: "17px", fontWeight: 600, color: ink }}>課程後台管理系統</div>
             <div style={{ fontSize: "12px", color: inkSoft, marginTop: "2px" }}>
               報名管理 · 已連接 Google Sheets
             </div>
@@ -1918,7 +1918,7 @@ export default function AdminCoursesPage() {
       {/* Header */}
       <div style={s.header}>
         <div>
-          <div style={{ fontSize: "17px", fontWeight: 600, color: ink }}>傳啓資訊 後台管理</div>
+          <div style={{ fontSize: "17px", fontWeight: 600, color: ink }}>課程後台管理系統</div>
           <div style={{ fontSize: "12px", color: inkSoft, marginTop: "2px" }}>
             {saving ? "⏳ 儲存中..." : "精選課程編輯 · 已連接 Google Sheets"}
           </div>

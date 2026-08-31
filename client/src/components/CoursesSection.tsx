@@ -23,10 +23,18 @@ export default function CoursesSection() {
   }, []);
 
   const { sectionTitle, sectionSubtitle, courses: allCourses } = config;
-  const courses = allCourses.filter((c) => c.published !== false);
+
+  const todayStr = new Date().toISOString().slice(0, 10);
 
   const schedulesFor = (courseId: number) =>
-    schedules.filter(s => s.courseId === String(courseId));
+    schedules.filter(s => s.courseId === String(courseId) && s.date >= todayStr);
+
+  const isExpired = (courseId: number) => {
+    const own = schedules.filter(s => s.courseId === String(courseId));
+    return own.length > 0 && own.every(s => s.date < todayStr);
+  };
+
+  const courses = allCourses.filter((c) => c.published !== false && !isExpired(c.id));
 
   return (
     <section id="courses" className="py-20 bg-white" ref={sectionRef as React.RefObject<HTMLElement>}>
