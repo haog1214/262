@@ -122,7 +122,7 @@ export default function EnrollPage() {
             id: String(c.id),
             label: `${c.title}${c.badge ? `（${c.badge}）` : ""}`,
             image: c.backgroundImage,
-            sessions: sessions.length > 0 ? sessions : [{ id: "", date: "", weekday: "", time: "洽詢開課時間", remaining: 0, isFull: true, enterprise: false }],
+            sessions: sessions.length > 0 ? sessions : [{ id: "", date: "尚未開放場次", weekday: "", time: "請洽詢我們", remaining: 0, isFull: true, enterprise: false }],
           };
         });
       setDynamicCourses(built);
@@ -165,6 +165,10 @@ export default function EnrollPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedSessionId) {
+      alert("這門課程目前尚未開放任何場次，請洽詢我們或選擇其他課程。");
+      return;
+    }
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     const session = currentCourse.sessions.find((s) => s.id === selectedSessionId)!;

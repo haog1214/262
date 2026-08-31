@@ -40,11 +40,13 @@ const BADGE_COLOR_HEX: Record<BadgeColor, string> = {
   teal: "#7CA79E",
 };
 const CSV_COLUMNS = [
+  "courseCode",
   "title",
   "tools",
   "description",
   "badge",
   "badgeColor",
+  "location",
   "originalPrice",
   "discountPrice",
   "backgroundImage",
@@ -53,11 +55,13 @@ const CSV_COLUMNS = [
 ] as const;
 
 const CSV_COLUMN_LABELS: Record<(typeof CSV_COLUMNS)[number], string> = {
+  courseCode: "課程編碼(選填,3~5碼數字)",
   title: "課程名稱",
   tools: "副標語",
   description: "課程描述",
   badge: "徽章文字",
   badgeColor: "徽章顏色(pink/purple/green/gold/teal)",
+  location: "上課地點(選填)",
   originalPrice: "原價",
   discountPrice: "特價",
   backgroundImage: "封面圖片路徑",
@@ -67,6 +71,7 @@ const CSV_COLUMN_LABELS: Record<(typeof CSV_COLUMNS)[number], string> = {
 
 function emptyDraft(): Omit<Course, "id"> {
   return {
+    courseCode: "",
     title: "",
     description: "",
     tools: "",
@@ -74,6 +79,7 @@ function emptyDraft(): Omit<Course, "id"> {
     discountPrice: "NT$ 2,000",
     badge: "",
     badgeColor: "gold",
+    location: "",
     backgroundImage: "",
     detailPath: "",
     status: "open",
@@ -93,10 +99,12 @@ interface Step {
 }
 
 const steps: Step[] = [
+  { key: "courseCode", question: "課程編碼？（選填）", hint: "3～5 碼數字，例如：262 或 26200", required: false, type: "text", placeholder: "例如：262" },
   { key: "title", question: "課程名稱是什麼？", hint: "會顯示在課程卡片標題", required: true, type: "text", placeholder: "例如：讓手機搞定大小事" },
   { key: "tools", question: "課程副標語是什麼？", hint: "顯示在標題下方的一句話說明", required: true, type: "text", placeholder: "例如：學會手機 AI 工具應用，搞定生活大小事" },
   { key: "backgroundImage", question: "課程封面圖片？", hint: "可上傳本機照片，或直接貼上圖片網址", required: true, type: "image" },
   { key: "description", question: "課程詳細描述？", hint: "顯示在卡片內文，也會用於課程頁面", required: true, type: "textarea", placeholder: "介紹課程內容、對象與學習成果…" },
+  { key: "location", question: "上課地點？（選填）", required: false, type: "text", placeholder: "例如：台中市西屯區河南路二段262號3樓之11" },
   { key: "badge", question: "課程關鍵字？", hint: "多個關鍵字請用「、」分隔，例如：3H特訓班、上班族、行銷人員", required: true, type: "text", placeholder: "例如：3H特訓班、上班族、行銷人員" },
   { key: "originalPrice", question: "原價？", required: true, type: "text", placeholder: "NT$ 4,000" },
   { key: "discountPrice", question: "特價？", required: true, type: "text", placeholder: "NT$ 2,000" },
@@ -202,11 +210,13 @@ function csvEscape(v: string): string {
 function buildTemplateCsv(): string {
   const header = CSV_COLUMNS.map((c) => csvEscape(CSV_COLUMN_LABELS[c])).join(",");
   const example = [
+    "262",
     "讓手機搞定大小事",
     "學會手機 AI 工具應用，搞定生活大小事",
     "本課程專為科技小白與長輩朋友設計，採漸進式教學…",
     "3H特訓班",
     "green",
+    "台中市西屯區河南路二段262號3樓之11",
     "NT$ 4,000",
     "NT$ 2,000",
     "/課程封面.jpg",
@@ -280,31 +290,38 @@ function rowsToDrafts(rows: string[][]): { drafts: Draft[]; errors: string[] } {
   dataRows.forEach((r, i) => {
     const lineNo = i + 2;
     const get = (idx: number) => (r[idx] ?? "").trim();
-    const title = get(0);
+    const title = get(1);
     if (!title) {
       errors.push(`第 ${lineNo} 列：缺少課程名稱，已略過`);
       return;
     }
-    let badgeColor = get(4).toLowerCase() as BadgeColor;
+    let courseCode = get(0).replace(/\D/g, "").slice(0, 5);
+    if (courseCode && courseCode.length < 3) {
+      errors.push(`第 ${lineNo} 列：課程編碼「${get(0)}」不足 3 碼，已略過此欄位`);
+      courseCode = "";
+    }
+    let badgeColor = get(5).toLowerCase() as BadgeColor;
     if (!BADGE_COLORS.includes(badgeColor)) {
-      errors.push(`第 ${lineNo} 列：徽章顏色「${get(4)}」不合法，已改用 gold`);
+      errors.push(`第 ${lineNo} 列：徽章顏色「${get(5)}」不合法，已改用 gold`);
       badgeColor = "gold";
     }
-    let status = get(9).toLowerCase();
+    let status = get(11).toLowerCase();
     if (status !== "open" && status !== "full") {
-      if (status) errors.push(`第 ${lineNo} 列：狀態「${get(9)}」不合法，已改用 open`);
+      if (status) errors.push(`第 ${lineNo} 列：狀態「${get(11)}」不合法，已改用 open`);
       status = "open";
     }
     drafts.push({
+      courseCode,
       title,
-      tools: get(1),
-      description: get(2),
-      badge: get(3),
+      tools: get(2),
+      description: get(3),
+      badge: get(4),
       badgeColor,
-      originalPrice: get(5) || "NT$ 0",
-      discountPrice: get(6) || "NT$ 0",
-      backgroundImage: get(7),
-      detailPath: get(8),
+      location: get(6),
+      originalPrice: get(7) || "NT$ 0",
+      discountPrice: get(8) || "NT$ 0",
+      backgroundImage: get(9),
+      detailPath: get(10),
       status: status as "open" | "full",
       published: false,
     });
@@ -630,8 +647,11 @@ function Wizard({ onBack }: { onBack: () => void }) {
               {step.type === "text" && (
                 <input
                   type="text"
+                  inputMode={step.key === "courseCode" ? "numeric" : undefined}
                   value={draft[step.key] as string}
-                  onChange={(e) => set(step.key, e.target.value)}
+                  onChange={(e) =>
+                    set(step.key, step.key === "courseCode" ? e.target.value.replace(/\D/g, "").slice(0, 5) : e.target.value)
+                  }
                   onKeyDown={(e) => e.key === "Enter" && goNext()}
                   placeholder={step.placeholder}
                   style={inputStyle}
