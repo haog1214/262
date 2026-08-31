@@ -4,13 +4,15 @@ import { ArrowLeft, ChevronRight, Clock, Users, CheckCircle2, MapPin } from "luc
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
+import { filterUpcomingSessions } from "@/data/courseSessions";
 
-const sessions = [
+const allSessions = [
   { id: 1, date: "2026/5/12", weekday: "二", time: "13:30–16:30", remaining: 0, isFull: true, enterprise: false },
   { id: 2, date: "2026/5/19", weekday: "二", time: "13:30–16:30", remaining: 15, enterprise: false },
   { id: 3, date: "2026/5/26", weekday: "二", time: "13:30–16:30", remaining: 15, enterprise: false },
   { id: 99, date: "", weekday: "", time: "", remaining: 0, enterprise: true },
 ];
+const sessions = filterUpcomingSessions(allSessions);
 
 const curriculum = [
   {
@@ -78,7 +80,7 @@ const highlights = [
 ];
 
 export default function CourseKnowledgeDetail() {
-  const [selectedSession, setSelectedSession] = useState(sessions[1].id);
+  const [selectedSession, setSelectedSession] = useState((sessions.find(s => !s.isFull && !s.enterprise) ?? sessions[0]).id);
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <SEO

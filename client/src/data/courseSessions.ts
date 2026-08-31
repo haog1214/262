@@ -46,3 +46,15 @@ export function getSessionsByDetailPath(detailPath: string): FrontendSession[] {
   const key = detailPath.replace(/^\/course\//, "");
   return courseSessionsMap[key] ?? [];
 }
+
+// Hides sessions whose date has already passed (keeps enterprise/no-date entries).
+export function filterUpcomingSessions<T extends { date: string; enterprise: boolean }>(sessions: T[]): T[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return sessions.filter((s) => {
+    if (s.enterprise || !s.date) return true;
+    const [y, m, d] = s.date.split("/").map(Number);
+    if (!y || !m || !d) return true;
+    return new Date(y, m - 1, d) >= today;
+  });
+}
