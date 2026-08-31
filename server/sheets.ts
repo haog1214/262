@@ -2,6 +2,7 @@ import { google } from "googleapis";
 
 export interface Course {
   id: number;
+  courseCode?: string;
   title: string;
   description: string;
   tools: string;
@@ -41,7 +42,7 @@ export interface Enrollment {
 }
 
 const COURSE_HEADERS: (keyof Course)[] = [
-  "id", "title", "description", "tools",
+  "id", "courseCode", "title", "description", "tools",
   "originalPrice", "discountPrice", "badge", "badgeColor",
   "backgroundImage", "detailPath", "status", "published",
 ];
@@ -93,7 +94,7 @@ export async function readCoursesFromSheet(): Promise<CoursesConfig> {
 
   const [metaRes, coursesRes] = await Promise.all([
     sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: "meta!A:B" }),
-    sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: "courses!A:L" }),
+    sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: "courses!A:M" }),
   ]);
 
   const meta: Record<string, string> = {};

@@ -2,6 +2,7 @@ export type BadgeColor = "pink" | "purple" | "green" | "gold" | "teal";
 
 export interface Course {
   id: number;
+  courseCode?: string;
   title: string;
   description: string;
   tools: string;

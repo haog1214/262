@@ -11,6 +11,8 @@ import {
   Plus,
   Download,
   Upload,
+  UploadCloud,
+  ImageIcon,
   X,
   Save,
 } from "lucide-react";
@@ -21,6 +23,7 @@ import {
   resetCoursesConfig,
   exportCoursesConfig,
   importCoursesConfig,
+  uploadCourseImage,
 } from "@/lib/coursesStorage";
 import {
   fetchSchedules,
@@ -36,19 +39,9 @@ import {
   defaultCoursesConfig,
   type Course,
   type CoursesConfig,
-  type BadgeColor,
 } from "@/data/defaultCourses";
 import { getSessionsByDetailPath } from "@/data/courseSessions";
 import CourseCard from "@/components/CourseCard";
-
-const BADGE_COLORS: BadgeColor[] = ["pink", "purple", "green", "gold", "teal"];
-const BADGE_COLOR_LABELS: Record<BadgeColor, string> = {
-  pink: "粉紅",
-  purple: "紫色",
-  green: "綠色",
-  gold: "金色",
-  teal: "青色",
-};
 
 const genId = () =>
   Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
@@ -329,15 +322,51 @@ function CourseForm({
 }) {
   const [draft, setDraft] = useState({ ...initial });
   const set = (k: string, v: string) => setDraft(d => ({ ...d, [k]: v }));
+  const [codeError, setCodeError] = useState("");
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+
+  const handleImagePick = async (file: File) => {
+    setUploadingImage(true);
+    setUploadError("");
+    const result = await uploadCourseImage(file);
+    setUploadingImage(false);
+    if (!result.ok || !result.url) {
+      setUploadError(result.error ?? "上傳失敗，請稍後再試");
+      return;
+    }
+    set("backgroundImage", result.url);
+  };
+
+  const handleSave = () => {
+    const code = draft.courseCode ?? "";
+    if (code && !/^\d{3,5}$/.test(code)) {
+      setCodeError("課程編碼需為 3～5 碼數字");
+      return;
+    }
+    setCodeError("");
+    onSave(draft);
+  };
 
   return (
     <div style={s.card}>
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
         <button style={s.btnGhost} onClick={onCancel}>← 返回</button>
-        <h3 style={{ fontWeight: 700, fontSize: "16px", color: "#1B3A6B", margin: 0 }}>
+        <h3 style={{ fontWeight: 700, fontSize: "16px", color: ink, margin: 0 }}>
           {"id" in draft ? `編輯課程` : "新增課程"}
         </h3>
       </div>
+
+      <label style={s.label}>課程編碼（3～5 碼數字）</label>
+      <input
+        style={s.input}
+        value={draft.courseCode ?? ""}
+        onChange={e => set("courseCode", e.target.value.replace(/\D/g, "").slice(0, 5))}
+        placeholder="例：262 或 26200"
+        inputMode="numeric"
+      />
+      {codeError && <p style={{ color: danger, fontSize: "12px", marginTop: "-10px", marginBottom: "14px" }}>{codeError}</p>}
 
       <label style={s.label}>課程標題</label>
       <input style={s.input} value={draft.title} onChange={e => set("title", e.target.value)} placeholder="課程標題" />
@@ -359,37 +388,46 @@ function CourseForm({
         </div>
       </div>
 
-      <div style={s.grid2}>
-        <div>
-          <label style={s.label}>徽章文字</label>
-          <input style={s.input} value={draft.badge} onChange={e => set("badge", e.target.value)} placeholder="例：3H特訓班" />
-        </div>
-        <div>
-          <label style={s.label}>徽章顏色</label>
-          <select style={s.select} value={draft.badgeColor} onChange={e => set("badgeColor", e.target.value as BadgeColor)}>
-            {BADGE_COLORS.map(c => (
-              <option key={c} value={c}>{BADGE_COLOR_LABELS[c]}</option>
-            ))}
-          </select>
+      <label style={s.label}>課程關鍵字</label>
+      <input style={s.input} value={draft.badge} onChange={e => set("badge", e.target.value)} placeholder="例：3H特訓班、上班族、行銷人員" />
+
+      <label style={s.label}>課程封面圖片</label>
+      <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "14px" }}>
+        <button
+          onClick={() => imageInputRef.current?.click()}
+          disabled={uploadingImage}
+          style={{ ...s.btnGhost, display: "inline-flex", alignItems: "center", gap: "8px", opacity: uploadingImage ? 0.6 : 1 }}
+        >
+          <UploadCloud size={14} strokeWidth={1.5} /> {uploadingImage ? "上傳中" : "上傳本機照片"}
+        </button>
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={e => {
+            const f = e.target.files?.[0];
+            if (f) handleImagePick(f);
+            e.target.value = "";
+          }}
+        />
+        <div style={{ width: "72px", height: "72px", border: `1px solid ${line}`, overflow: "hidden", background: paper, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {draft.backgroundImage ? (
+            <img
+              src={draft.backgroundImage}
+              alt="預覽"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              onError={e => ((e.target as HTMLImageElement).style.display = "none")}
+            />
+          ) : (
+            <ImageIcon size={22} strokeWidth={1.3} color={line} />
+          )}
         </div>
       </div>
-
-      <label style={s.label}>背景圖片路徑或網址</label>
-      <input style={s.input} value={draft.backgroundImage} onChange={e => set("backgroundImage", e.target.value)} placeholder="/課程圖.jpg 或 https://..." />
-      {draft.backgroundImage && (
-        <img
-          src={draft.backgroundImage}
-          alt="預覽"
-          style={{ width: "120px", height: "120px", objectFit: "cover", borderRadius: "8px", marginBottom: "14px", border: "1px solid #E5E7EB" }}
-          onError={e => ((e.target as HTMLImageElement).style.display = "none")}
-        />
-      )}
-
-      <label style={s.label}>課程詳情路徑</label>
-      <input style={s.input} value={draft.detailPath} onChange={e => set("detailPath", e.target.value)} placeholder="/course/ai-video" />
+      {uploadError && <p style={{ color: danger, fontSize: "12px", marginTop: "-10px", marginBottom: "14px" }}>{uploadError}</p>}
 
       <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
-        <button style={s.btnPrimary} onClick={() => onSave(draft)}>儲存課程</button>
+        <button style={s.btnPrimary} onClick={handleSave}>儲存課程</button>
         <button style={s.btnGhost} onClick={onCancel}>取消</button>
       </div>
     </div>
