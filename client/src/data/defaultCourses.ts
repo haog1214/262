@@ -11,6 +11,8 @@ export interface Course {
   badge: string;
   badgeColor: BadgeColor;
   location?: string;
+  outline?: { title: string; description: string }[];
+  targetAudience?: string;
   backgroundImage: string;
   detailPath: string;
   status: "open" | "full";

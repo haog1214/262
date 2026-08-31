@@ -11,6 +11,8 @@ export interface Course {
   badge: string;
   badgeColor: string;
   location?: string;
+  outline?: { title: string; description: string }[];
+  targetAudience?: string;
   backgroundImage: string;
   detailPath: string;
   status: string;
@@ -45,6 +47,7 @@ export interface Enrollment {
 const COURSE_HEADERS: (keyof Course)[] = [
   "id", "courseCode", "title", "description", "tools",
   "originalPrice", "discountPrice", "badge", "badgeColor", "location",
+  "outline", "targetAudience",
   "backgroundImage", "detailPath", "status", "published",
 ];
 
@@ -95,7 +98,7 @@ export async function readCoursesFromSheet(): Promise<CoursesConfig> {
 
   const [metaRes, coursesRes] = await Promise.all([
     sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: "meta!A:B" }),
-    sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: "courses!A:N" }),
+    sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: "courses!A:P" }),
   ]);
 
   const meta: Record<string, string> = {};
@@ -111,11 +114,18 @@ export async function readCoursesFromSheet(): Promise<CoursesConfig> {
       (headers ?? COURSE_HEADERS).forEach((h: string, i: number) => {
         obj[h] = row[i] ?? "";
       });
+      let outline: { title: string; description: string }[] = [];
+      try {
+        outline = obj.outline ? JSON.parse(obj.outline) : [];
+      } catch {
+        outline = [];
+      }
       return {
         ...obj,
         id: Number(obj.id),
         status: (obj.status as "open" | "full") || "open",
         published: obj.published === "true",
+        outline,
       } as unknown as Course;
     });
 
@@ -136,7 +146,9 @@ export async function writeCoursesToSheet(config: CoursesConfig): Promise<void> 
 
   const courseRows = [
     COURSE_HEADERS,
-    ...config.courses.map(c => COURSE_HEADERS.map(h => String(c[h] ?? ""))),
+    ...config.courses.map(c => COURSE_HEADERS.map(h =>
+      h === "outline" ? JSON.stringify(c.outline ?? []) : String(c[h] ?? "")
+    )),
   ];
 
   await Promise.all([

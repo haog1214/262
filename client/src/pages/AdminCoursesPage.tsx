@@ -9,6 +9,7 @@ import {
   RefreshCw,
   ArrowUpDown,
   Plus,
+  Minus,
   Download,
   Upload,
   UploadCloud,
@@ -353,6 +354,10 @@ function CourseForm({
   const [pickedDates, setPickedDates] = useState<Date[]>([]);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
+  const [outline, setOutline] = useState<{ id: string; title: string; description: string }[]>(
+    (initial.outline ?? []).map(o => ({ id: genId(), ...o }))
+  );
+
   useEffect(() => {
     if (!("id" in initial)) return;
     fetchSchedules().then(all => {
@@ -361,6 +366,18 @@ function CourseForm({
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const addOutlineItem = () => {
+    setOutline(prev => [...prev, { id: genId(), title: "", description: "" }]);
+  };
+
+  const setOutlineField = (id: string, field: "title" | "description", value: string) => {
+    setOutline(prev => prev.map(o => (o.id === id ? { ...o, [field]: value } : o)));
+  };
+
+  const removeOutlineItem = (id: string) => {
+    setOutline(prev => prev.filter(o => o.id !== id));
+  };
 
   const handleImagePick = async (file: File) => {
     setUploadingImage(true);
@@ -417,7 +434,13 @@ function CourseForm({
     }
     setCodeError("");
     const resolvedSessions = sessions.map((s, i) => ({ id: s.id, date: s.date, time: effectiveTime(i) }));
-    onSave(draft, resolvedSessions);
+    const finalDraft = {
+      ...draft,
+      outline: outline
+        .filter(o => o.title.trim() || o.description.trim())
+        .map(o => ({ title: o.title, description: o.description })),
+    };
+    onSave(finalDraft, resolvedSessions);
   };
 
   return (
@@ -605,6 +628,63 @@ function CourseForm({
           })}
         </div>
       )}
+
+      <label style={s.label}>課程大綱</label>
+      <div style={{ marginBottom: "20px" }}>
+        {outline.map((item, i) => (
+          <div key={item.id} style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "10px" }}>
+            <div style={{ flex: 1, border: `1px solid ${line}`, padding: "12px" }}>
+              <input
+                style={{ ...s.inputSm, marginBottom: "8px", fontWeight: 600 }}
+                value={item.title}
+                onChange={e => setOutlineField(item.id, "title", e.target.value)}
+                placeholder={`第 ${i + 1} 項標題`}
+              />
+              <textarea
+                style={{ ...s.inputSm, resize: "vertical" as const, minHeight: "50px", display: "block", width: "100%" }}
+                value={item.description}
+                onChange={e => setOutlineField(item.id, "description", e.target.value)}
+                placeholder="說明..."
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", flexShrink: 0 }}>
+              <button
+                type="button"
+                onClick={addOutlineItem}
+                style={{ ...s.btnGhost, padding: "4px 10px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                title="新增下一項"
+              >
+                <Plus size={14} strokeWidth={1.5} />
+              </button>
+              <button
+                type="button"
+                onClick={() => removeOutlineItem(item.id)}
+                style={{ ...s.btnGhost, padding: "4px 10px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                title="移除此項"
+              >
+                <Minus size={14} strokeWidth={1.5} />
+              </button>
+            </div>
+          </div>
+        ))}
+        {outline.length === 0 && (
+          <button
+            type="button"
+            onClick={addOutlineItem}
+            style={{ ...s.btnGhost, display: "inline-flex", alignItems: "center", gap: "8px" }}
+          >
+            <Plus size={14} strokeWidth={1.5} /> 新增大綱項目
+          </button>
+        )}
+      </div>
+
+      <label style={s.label}>適合對象</label>
+      <input
+        style={s.input}
+        value={draft.targetAudience ?? ""}
+        onChange={e => set("targetAudience", e.target.value)}
+        placeholder="例：上班族、行銷人員、創作者"
+      />
 
       <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
         <button style={s.btnPrimary} onClick={handleSave}>儲存課程</button>
