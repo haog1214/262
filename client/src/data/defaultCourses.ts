@@ -12,7 +12,7 @@ export interface Course {
   badgeColor: BadgeColor;
   location?: string;
   outline?: { title: string; description: string }[];
-  targetAudience?: string;
+  targetAudience?: { title: string; description: string }[];
   backgroundImage: string;
   detailPath: string;
   status: "open" | "full";

@@ -330,8 +330,78 @@ interface CourseSession {
 }
 
 function parseTimeRange(time: string): { start: string; end: string } {
-  const m = time.match(/^(\d{2}:\d{2})-(\d{2}:\d{2})$/);
-  return m ? { start: m[1], end: m[2] } : { start: "", end: "" };
+  const [start = "", end = ""] = time.split("-");
+  return { start, end };
+}
+
+// ── Reusable title+description repeater — 課程大綱 / 適合對象 ──────────────────
+function TitleDescList({
+  label,
+  items,
+  onAdd,
+  onChangeField,
+  onRemove,
+  addLabel,
+}: {
+  label: string;
+  items: { id: string; title: string; description: string }[];
+  onAdd: () => void;
+  onChangeField: (id: string, field: "title" | "description", value: string) => void;
+  onRemove: (id: string) => void;
+  addLabel: string;
+}) {
+  return (
+    <>
+      <label style={s.label}>{label}</label>
+      <div style={{ marginBottom: "20px" }}>
+        {items.map((item, i) => (
+          <div key={item.id} style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "10px" }}>
+            <div style={{ flex: 1, border: `1px solid ${line}`, padding: "12px" }}>
+              <input
+                style={{ ...s.inputSm, marginBottom: "8px", fontWeight: 600 }}
+                value={item.title}
+                onChange={e => onChangeField(item.id, "title", e.target.value)}
+                placeholder={`第 ${i + 1} 項標題`}
+              />
+              <textarea
+                style={{ ...s.inputSm, resize: "vertical" as const, minHeight: "50px", display: "block", width: "100%" }}
+                value={item.description}
+                onChange={e => onChangeField(item.id, "description", e.target.value)}
+                placeholder="說明..."
+              />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", flexShrink: 0 }}>
+              <button
+                type="button"
+                onClick={onAdd}
+                style={{ ...s.btnGhost, padding: "4px 10px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                title="新增下一項"
+              >
+                <Plus size={14} strokeWidth={1.5} />
+              </button>
+              <button
+                type="button"
+                onClick={() => onRemove(item.id)}
+                style={{ ...s.btnGhost, padding: "4px 10px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                title="移除此項"
+              >
+                <Minus size={14} strokeWidth={1.5} />
+              </button>
+            </div>
+          </div>
+        ))}
+        {items.length === 0 && (
+          <button
+            type="button"
+            onClick={onAdd}
+            style={{ ...s.btnGhost, display: "inline-flex", alignItems: "center", gap: "8px" }}
+          >
+            <Plus size={14} strokeWidth={1.5} /> {addLabel}
+          </button>
+        )}
+      </div>
+    </>
+  );
 }
 
 function CourseForm({
@@ -357,6 +427,9 @@ function CourseForm({
   const [outline, setOutline] = useState<{ id: string; title: string; description: string }[]>(
     (initial.outline ?? []).map(o => ({ id: genId(), ...o }))
   );
+  const [audience, setAudience] = useState<{ id: string; title: string; description: string }[]>(
+    (initial.targetAudience ?? []).map(o => ({ id: genId(), ...o }))
+  );
 
   useEffect(() => {
     if (!("id" in initial)) return;
@@ -377,6 +450,18 @@ function CourseForm({
 
   const removeOutlineItem = (id: string) => {
     setOutline(prev => prev.filter(o => o.id !== id));
+  };
+
+  const addAudienceItem = () => {
+    setAudience(prev => [...prev, { id: genId(), title: "", description: "" }]);
+  };
+
+  const setAudienceField = (id: string, field: "title" | "description", value: string) => {
+    setAudience(prev => prev.map(o => (o.id === id ? { ...o, [field]: value } : o)));
+  };
+
+  const removeAudienceItem = (id: string) => {
+    setAudience(prev => prev.filter(o => o.id !== id));
   };
 
   const handleImagePick = async (file: File) => {
@@ -407,7 +492,7 @@ function CourseForm({
       if (s.id !== id) return s;
       const { start, end } = parseTimeRange(s.time);
       const next = part === "start" ? { start: value, end } : { start, end: value };
-      return { ...s, time: next.start && next.end ? `${next.start}-${next.end}` : "" };
+      return { ...s, time: `${next.start}-${next.end}` };
     }));
   };
 
@@ -433,12 +518,16 @@ function CourseForm({
       return;
     }
     setCodeError("");
-    const resolvedSessions = sessions.map((s, i) => ({ id: s.id, date: s.date, time: effectiveTime(i) }));
+    const resolvedSessions = sessions.map((s, i) => {
+      const { start, end } = parseTimeRange(effectiveTime(i));
+      return { id: s.id, date: s.date, time: start && end ? `${start}-${end}` : "" };
+    });
+    const clean = (list: { title: string; description: string }[]) =>
+      list.filter(o => o.title.trim() || o.description.trim()).map(o => ({ title: o.title, description: o.description }));
     const finalDraft = {
       ...draft,
-      outline: outline
-        .filter(o => o.title.trim() || o.description.trim())
-        .map(o => ({ title: o.title, description: o.description })),
+      outline: clean(outline),
+      targetAudience: clean(audience),
     };
     onSave(finalDraft, resolvedSessions);
   };
@@ -629,61 +718,22 @@ function CourseForm({
         </div>
       )}
 
-      <label style={s.label}>課程大綱</label>
-      <div style={{ marginBottom: "20px" }}>
-        {outline.map((item, i) => (
-          <div key={item.id} style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "10px" }}>
-            <div style={{ flex: 1, border: `1px solid ${line}`, padding: "12px" }}>
-              <input
-                style={{ ...s.inputSm, marginBottom: "8px", fontWeight: 600 }}
-                value={item.title}
-                onChange={e => setOutlineField(item.id, "title", e.target.value)}
-                placeholder={`第 ${i + 1} 項標題`}
-              />
-              <textarea
-                style={{ ...s.inputSm, resize: "vertical" as const, minHeight: "50px", display: "block", width: "100%" }}
-                value={item.description}
-                onChange={e => setOutlineField(item.id, "description", e.target.value)}
-                placeholder="說明..."
-              />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px", flexShrink: 0 }}>
-              <button
-                type="button"
-                onClick={addOutlineItem}
-                style={{ ...s.btnGhost, padding: "4px 10px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
-                title="新增下一項"
-              >
-                <Plus size={14} strokeWidth={1.5} />
-              </button>
-              <button
-                type="button"
-                onClick={() => removeOutlineItem(item.id)}
-                style={{ ...s.btnGhost, padding: "4px 10px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
-                title="移除此項"
-              >
-                <Minus size={14} strokeWidth={1.5} />
-              </button>
-            </div>
-          </div>
-        ))}
-        {outline.length === 0 && (
-          <button
-            type="button"
-            onClick={addOutlineItem}
-            style={{ ...s.btnGhost, display: "inline-flex", alignItems: "center", gap: "8px" }}
-          >
-            <Plus size={14} strokeWidth={1.5} /> 新增大綱項目
-          </button>
-        )}
-      </div>
+      <TitleDescList
+        label="課程大綱"
+        items={outline}
+        onAdd={addOutlineItem}
+        onChangeField={setOutlineField}
+        onRemove={removeOutlineItem}
+        addLabel="新增大綱項目"
+      />
 
-      <label style={s.label}>適合對象</label>
-      <input
-        style={s.input}
-        value={draft.targetAudience ?? ""}
-        onChange={e => set("targetAudience", e.target.value)}
-        placeholder="例：上班族、行銷人員、創作者"
+      <TitleDescList
+        label="適合對象"
+        items={audience}
+        onAdd={addAudienceItem}
+        onChangeField={setAudienceField}
+        onRemove={removeAudienceItem}
+        addLabel="新增適合對象項目"
       />
 
       <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>

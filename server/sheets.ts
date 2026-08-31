@@ -12,7 +12,7 @@ export interface Course {
   badgeColor: string;
   location?: string;
   outline?: { title: string; description: string }[];
-  targetAudience?: string;
+  targetAudience?: { title: string; description: string }[];
   backgroundImage: string;
   detailPath: string;
   status: string;
@@ -114,18 +114,20 @@ export async function readCoursesFromSheet(): Promise<CoursesConfig> {
       (headers ?? COURSE_HEADERS).forEach((h: string, i: number) => {
         obj[h] = row[i] ?? "";
       });
-      let outline: { title: string; description: string }[] = [];
-      try {
-        outline = obj.outline ? JSON.parse(obj.outline) : [];
-      } catch {
-        outline = [];
-      }
+      const parseItems = (raw: string): { title: string; description: string }[] => {
+        try {
+          return raw ? JSON.parse(raw) : [];
+        } catch {
+          return [];
+        }
+      };
       return {
         ...obj,
         id: Number(obj.id),
         status: (obj.status as "open" | "full") || "open",
         published: obj.published === "true",
-        outline,
+        outline: parseItems(obj.outline),
+        targetAudience: parseItems(obj.targetAudience),
       } as unknown as Course;
     });
 
@@ -147,7 +149,9 @@ export async function writeCoursesToSheet(config: CoursesConfig): Promise<void> 
   const courseRows = [
     COURSE_HEADERS,
     ...config.courses.map(c => COURSE_HEADERS.map(h =>
-      h === "outline" ? JSON.stringify(c.outline ?? []) : String(c[h] ?? "")
+      h === "outline" ? JSON.stringify(c.outline ?? [])
+      : h === "targetAudience" ? JSON.stringify(c.targetAudience ?? [])
+      : String(c[h] ?? "")
     )),
   ];
 
