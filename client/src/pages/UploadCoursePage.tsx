@@ -718,6 +718,7 @@ function Wizard({ onBack }: { onBack: () => void }) {
 
               <div style={{ width: "260px", margin: "0 auto 28px" }}>
                 <CourseCard
+                  courseCode={draft.courseCode}
                   title={draft.title || "（未填寫課程名稱）"}
                   description={draft.description}
                   tools={draft.tools}

@@ -14,6 +14,7 @@ interface CourseSchedule {
 }
 
 interface CourseCardProps {
+  courseCode?: string;
   title: string;
   description: string;
   tools: string;
@@ -30,6 +31,7 @@ interface CourseCardProps {
 }
 
 export default function CourseCard({
+  courseCode,
   title,
   description,
   tools,
@@ -88,7 +90,10 @@ export default function CourseCard({
       {/* 文案區域 - 放在圖片下方，18級文字 */}
       <div className="flex flex-col flex-grow">
         {/* 標題 - 18級 */}
-        <h3 className="text-[18px] font-bold mb-2 text-gray-900">{title}</h3>
+        <h3 className="text-[18px] font-bold mb-2 text-gray-900">
+          {courseCode && <span className="mr-6">{courseCode}</span>}
+          {title}
+        </h3>
 
         {/* 副標語 - 16級 */}
         <p className="text-[16px] font-light mb-2 text-gray-600">{tools}</p>

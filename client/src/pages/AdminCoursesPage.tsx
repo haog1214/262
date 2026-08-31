@@ -120,27 +120,25 @@ const s = {
   } as React.CSSProperties,
   input: {
     width: "100%",
-    border: "none",
-    borderBottom: `1px solid ${line}`,
-    borderRadius: 0,
-    padding: "8px 2px",
+    border: `1px solid ${line}`,
+    borderRadius: "6px",
+    padding: "8px 12px",
     fontSize: "14px",
     boxSizing: "border-box" as const,
     outline: "none",
     marginBottom: "14px",
-    background: "transparent",
+    background: "#fff",
     color: ink,
   } as React.CSSProperties,
   inputSm: {
-    border: "none",
-    borderBottom: `1px solid ${line}`,
-    borderRadius: 0,
-    padding: "6px 2px",
+    border: `1px solid ${line}`,
+    borderRadius: "6px",
+    padding: "6px 10px",
     fontSize: "13px",
     boxSizing: "border-box" as const,
     outline: "none",
     width: "100%",
-    background: "transparent",
+    background: "#fff",
     color: ink,
   } as React.CSSProperties,
   textarea: {
@@ -1578,6 +1576,7 @@ function PreviewModal({ course, onClose }: { course: Course; onClose: () => void
           >✕</button>
         </div>
         <CourseCard
+          courseCode={course.courseCode}
           title={course.title}
           description={course.description}
           tools={course.tools}

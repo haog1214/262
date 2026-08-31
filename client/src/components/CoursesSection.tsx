@@ -42,6 +42,7 @@ export default function CoursesSection() {
           {courses.slice(0, 3).map((course, i) => (
             <div key={course.id} className="scroll-reveal" style={{ transitionDelay: `${i * 0.1}s` }}>
               <CourseCard
+                courseCode={course.courseCode}
                 title={course.title}
                 description={course.description}
                 tools={course.tools}
@@ -65,6 +66,7 @@ export default function CoursesSection() {
             {courses.slice(3).map((course, i) => (
               <div key={course.id} className="scroll-reveal" style={{ transitionDelay: `${i * 0.1}s` }}>
                 <CourseCard
+                  courseCode={course.courseCode}
                   title={course.title}
                   description={course.description}
                   tools={course.tools}
