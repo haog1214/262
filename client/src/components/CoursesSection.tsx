@@ -37,9 +37,27 @@ export default function CoursesSection() {
   const courses = allCourses.filter((c) => c.published !== false && !isExpired(c.id));
 
   return (
-    <section id="courses" className="py-20 bg-white" ref={sectionRef as React.RefObject<HTMLElement>}>
-      <div className="container">
+    <section id="courses" className="py-20 bg-white relative overflow-hidden" ref={sectionRef as React.RefObject<HTMLElement>}>
+      {/* Tech-glass ambience — soft blurred gradient blobs behind the content */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden>
+        <div
+          className="absolute rounded-full"
+          style={{ width: "480px", height: "480px", top: "-160px", left: "-140px", background: "radial-gradient(circle, rgba(27,58,107,0.10) 0%, rgba(27,58,107,0) 70%)", filter: "blur(40px)" }}
+        />
+        <div
+          className="absolute rounded-full"
+          style={{ width: "420px", height: "420px", bottom: "-140px", right: "-120px", background: "radial-gradient(circle, rgba(212,175,55,0.12) 0%, rgba(212,175,55,0) 70%)", filter: "blur(40px)" }}
+        />
+      </div>
+
+      <div className="container relative z-10">
         <div className="text-center mb-16 scroll-reveal">
+          <span
+            className="inline-block text-[11px] font-bold tracking-[0.25em] uppercase px-3 py-1 rounded-full mb-4"
+            style={{ background: "rgba(27,58,107,0.06)", color: "#1B3A6B", border: "1px solid rgba(27,58,107,0.1)" }}
+          >
+            Course Catalog
+          </span>
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
             {sectionTitle}
           </h2>

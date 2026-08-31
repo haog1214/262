@@ -67,17 +67,25 @@ export default function Home() {
         <InstructorSection />
         <PreparationSection />
         {/* Google Map */}
-        <div className="w-full">
-          <div className="flex items-center gap-3 px-6 py-4" style={{ background: "#1B3A6B" }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div className="w-full relative">
+          <div
+            className="flex items-center gap-3 px-6 py-4 relative overflow-hidden"
+            style={{ background: "linear-gradient(90deg, #1B3A6B 0%, #2C5490 100%)" }}
+          >
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: "rgba(255,255,255,0.05)", backdropFilter: "blur(6px)" }}
+              aria-hidden
+            />
+            <svg className="relative z-10" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
             </svg>
-            <span className="font-bold text-white text-sm">上課地點</span>
+            <span className="relative z-10 font-bold text-white text-sm">上課地點</span>
             <a
               href="https://maps.app.goo.gl/xXbkG9SETJ4N21Do7"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm hover:underline"
+              className="relative z-10 text-sm hover:underline"
               style={{ color: "#D4AF37" }}
             >
               台中市西屯區河南路二段262號7樓3 →

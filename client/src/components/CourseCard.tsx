@@ -49,17 +49,17 @@ export default function CourseCard({
   const getBadgeColorClass = () => {
     switch (badgeColor) {
       case "pink":
-        return "bg-pink-400 text-white";
+        return "bg-pink-400/70 text-white";
       case "purple":
-        return "bg-purple-400 text-white";
+        return "bg-purple-400/70 text-white";
       case "green":
-        return "bg-green-400 text-white";
+        return "bg-green-400/70 text-white";
       case "gold":
-        return "bg-yellow-500 text-white";
+        return "bg-yellow-500/70 text-white";
       case "teal":
-        return "bg-teal-400 text-white";
+        return "bg-teal-400/70 text-white";
       default:
-        return "bg-blue-400 text-white";
+        return "bg-blue-400/70 text-white";
     }
   };
 
@@ -71,15 +71,18 @@ export default function CourseCard({
           className="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
           style={{ backgroundImage: `url('${backgroundImage}')` }}
         />
-        {/* 徽章放在圖片上方 */}
+        {/* 徽章放在圖片上方 — 霧面玻璃效果 */}
         <div className="absolute top-3 left-3 z-10">
-          <div className={`${getBadgeColorClass()} px-3 py-1 rounded-full text-xs font-semibold`}>
+          <div
+            className={`${getBadgeColorClass()} px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-md`}
+            style={{ border: "1px solid rgba(255,255,255,0.35)" }}
+          >
             {badge}
           </div>
         </div>
         {/* 額滿覆蓋層 */}
         {status === "full" && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/55">
+          <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/45 backdrop-blur-sm">
             <span className="text-white text-2xl font-extrabold tracking-widest border-4 border-white rounded-xl px-5 py-2 rotate-[-12deg]">
               額　滿
             </span>

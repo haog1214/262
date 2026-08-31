@@ -14,7 +14,14 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-border/40 backdrop-blur-sm">
+    <header
+      className="sticky top-0 z-50 backdrop-blur-xl border-b"
+      style={{
+        backgroundColor: "rgba(255,255,255,0.65)",
+        borderColor: "rgba(27,58,107,0.08)",
+        boxShadow: "0 1px 24px rgba(27,58,107,0.06)",
+      }}
+    >
       <div className="container flex items-center justify-between h-[80px]">
         {/* 品牌Logo */}
         <Link href="/">
