@@ -15,7 +15,10 @@ import {
   ImageIcon,
   X,
   Save,
+  CalendarDays,
 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   getCoursesConfig,
   getLocalCoursesConfig,
@@ -45,6 +48,13 @@ import CourseCard from "@/components/CourseCard";
 
 const genId = () =>
   Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+
+const formatDate = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
 
 function emptyCourseDraft(): Omit<Course, "id"> {
   return {
@@ -311,13 +321,19 @@ function Toast({ msg }: { msg: string }) {
 }
 
 // ── Course edit form ──────────────────────────────────────────────────────────
+interface CourseSession {
+  id: string;
+  date: string;
+  time: string;
+}
+
 function CourseForm({
   initial,
   onSave,
   onCancel,
 }: {
   initial: Course | Omit<Course, "id">;
-  onSave: (c: Course | Omit<Course, "id">) => void;
+  onSave: (c: Course | Omit<Course, "id">, sessions: CourseSession[]) => void;
   onCancel: () => void;
 }) {
   const [draft, setDraft] = useState({ ...initial });
@@ -326,6 +342,19 @@ function CourseForm({
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState("");
+
+  const [sessions, setSessions] = useState<CourseSession[]>([]);
+  const [pickedDates, setPickedDates] = useState<Date[]>([]);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
+  useEffect(() => {
+    if (!("id" in initial)) return;
+    fetchSchedules().then(all => {
+      const existing = all.filter(sc => sc.courseId === String(initial.id));
+      setSessions(existing.map(sc => ({ id: sc.id, date: sc.date, time: sc.time })));
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleImagePick = async (file: File) => {
     setUploadingImage(true);
@@ -339,6 +368,25 @@ function CourseForm({
     set("backgroundImage", result.url);
   };
 
+  const addPickedDates = () => {
+    const existingDates = new Set(sessions.map(s => s.date));
+    const newOnes = pickedDates
+      .map(formatDate)
+      .filter(d => !existingDates.has(d))
+      .sort();
+    setSessions(prev => [...prev, ...newOnes.map(d => ({ id: genId(), date: d, time: "" }))]);
+    setPickedDates([]);
+    setCalendarOpen(false);
+  };
+
+  const setSessionTime = (id: string, time: string) => {
+    setSessions(prev => prev.map(s => (s.id === id ? { ...s, time } : s)));
+  };
+
+  const removeSession = (id: string) => {
+    setSessions(prev => prev.filter(s => s.id !== id));
+  };
+
   const handleSave = () => {
     const code = draft.courseCode ?? "";
     if (code && !/^\d{3,5}$/.test(code)) {
@@ -346,7 +394,7 @@ function CourseForm({
       return;
     }
     setCodeError("");
-    onSave(draft);
+    onSave(draft, sessions);
   };
 
   return (
@@ -358,18 +406,23 @@ function CourseForm({
         </h3>
       </div>
 
-      <label style={s.label}>課程編碼（3～5 碼數字）</label>
-      <input
-        style={s.input}
-        value={draft.courseCode ?? ""}
-        onChange={e => set("courseCode", e.target.value.replace(/\D/g, "").slice(0, 5))}
-        placeholder="例：262 或 26200"
-        inputMode="numeric"
-      />
+      <div style={s.grid2}>
+        <div>
+          <label style={s.label}>課程編碼（3～5 碼數字）</label>
+          <input
+            style={s.input}
+            value={draft.courseCode ?? ""}
+            onChange={e => set("courseCode", e.target.value.replace(/\D/g, "").slice(0, 5))}
+            placeholder="例：262 或 26200"
+            inputMode="numeric"
+          />
+        </div>
+        <div>
+          <label style={s.label}>課程標題</label>
+          <input style={s.input} value={draft.title} onChange={e => set("title", e.target.value)} placeholder="課程標題" />
+        </div>
+      </div>
       {codeError && <p style={{ color: danger, fontSize: "12px", marginTop: "-10px", marginBottom: "14px" }}>{codeError}</p>}
-
-      <label style={s.label}>課程標題</label>
-      <input style={s.input} value={draft.title} onChange={e => set("title", e.target.value)} placeholder="課程標題" />
 
       <label style={s.label}>副標語（工具/重點）</label>
       <input style={s.input} value={draft.tools} onChange={e => set("tools", e.target.value)} placeholder="例：從腳本到成品一次完成" />
@@ -388,8 +441,16 @@ function CourseForm({
         </div>
       </div>
 
-      <label style={s.label}>課程關鍵字</label>
-      <input style={s.input} value={draft.badge} onChange={e => set("badge", e.target.value)} placeholder="例：3H特訓班、上班族、行銷人員" />
+      <div style={s.grid2}>
+        <div>
+          <label style={s.label}>上課地點</label>
+          <input style={s.input} value={draft.location ?? ""} onChange={e => set("location", e.target.value)} placeholder="例：台中市西屯區河南路二段262號3樓之11" />
+        </div>
+        <div>
+          <label style={s.label}>課程關鍵字</label>
+          <input style={s.input} value={draft.badge} onChange={e => set("badge", e.target.value)} placeholder="例：3H特訓班、上班族、行銷人員" />
+        </div>
+      </div>
 
       <label style={s.label}>課程封面圖片</label>
       <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "14px" }}>
@@ -425,6 +486,72 @@ function CourseForm({
         </div>
       </div>
       {uploadError && <p style={{ color: danger, fontSize: "12px", marginTop: "-10px", marginBottom: "14px" }}>{uploadError}</p>}
+
+      <label style={s.label}>選擇上課日期</label>
+      <div style={{ marginBottom: "10px" }}>
+        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              style={{ ...s.btnGhost, display: "inline-flex", alignItems: "center", gap: "8px" }}
+              onClick={() => setCalendarOpen(true)}
+            >
+              <CalendarDays size={14} strokeWidth={1.5} /> 選擇上課日期
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="multiple"
+              selected={pickedDates}
+              onSelect={dates => setPickedDates(dates ?? [])}
+            />
+            <div style={{ display: "flex", gap: "8px", padding: "0 12px 12px" }}>
+              <button
+                type="button"
+                style={{ ...s.btnPrimary, flex: 1, padding: "8px" }}
+                onClick={addPickedDates}
+                disabled={pickedDates.length === 0}
+              >
+                加入 {pickedDates.length > 0 ? `(${pickedDates.length})` : ""}
+              </button>
+              <button type="button" style={s.btnGhost} onClick={() => { setPickedDates([]); setCalendarOpen(false); }}>
+                取消
+              </button>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      {sessions.length > 0 && (
+        <div style={{ border: `1px solid ${line}`, marginBottom: "20px" }}>
+          {sessions.map((sess, i) => (
+            <div
+              key={sess.id}
+              style={{
+                display: "flex", alignItems: "center", gap: "12px",
+                padding: "10px 14px",
+                borderBottom: i < sessions.length - 1 ? `1px solid ${line}` : "none",
+              }}
+            >
+              <span style={{ fontSize: "13px", color: ink, fontWeight: 500, width: "100px", flexShrink: 0 }}>{sess.date}</span>
+              <input
+                style={{ ...s.inputSm, flex: 1 }}
+                value={sess.time}
+                onChange={e => setSessionTime(sess.id, e.target.value)}
+                placeholder="上課時間，例：13:00-16:00"
+              />
+              <button
+                type="button"
+                onClick={() => removeSession(sess.id)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: inkSoft, padding: "4px", flexShrink: 0 }}
+                title="移除"
+              >
+                <X size={14} strokeWidth={1.5} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
         <button style={s.btnPrimary} onClick={handleSave}>儲存課程</button>
@@ -1429,21 +1556,43 @@ export default function AdminCoursesPage() {
     setDragOverIndex(null);
   };
 
-  const saveCourseDraft = (draft: Course | Omit<Course, "id">) => {
+  const saveCourseDraft = (
+    draft: Course | Omit<Course, "id">,
+    sessions: { id: string; date: string; time: string }[]
+  ) => {
+    let finalCourse: Course;
     let updated: CoursesConfig;
     if ("id" in draft) {
+      finalCourse = draft as Course;
       updated = {
         ...config,
-        courses: config.courses.map(c => (c.id === (draft as Course).id ? (draft as Course) : c)),
+        courses: config.courses.map(c => (c.id === finalCourse.id ? finalCourse : c)),
       };
     } else {
       const maxId = config.courses.reduce((m, c) => Math.max(m, c.id), 0);
-      const newCourse: Course = { ...(draft as Omit<Course, "id">), id: maxId + 1 };
-      updated = { ...config, courses: [...config.courses, newCourse] };
+      finalCourse = { ...(draft as Omit<Course, "id">), id: maxId + 1 };
+      updated = { ...config, courses: [...config.courses, finalCourse] };
     }
     goToList();
     setEditingId(null);
     persist(updated);
+
+    const cid = String(finalCourse.id);
+    fetchSchedules().then(all => {
+      const others = all.filter(sc => sc.courseId !== cid);
+      const newSchedules: Schedule[] = sessions.map(s => ({
+        id: s.id,
+        courseId: cid,
+        date: s.date,
+        time: s.time,
+        maxCapacity: "20",
+        status: "open",
+      }));
+      saveSchedules([...others, ...newSchedules]).then(result => {
+        if (!result.ok) showToast(`❌ 上課日期儲存失敗：${result.error}`);
+        setAllSchedules([...others, ...newSchedules]);
+      });
+    });
   };
 
   const deleteCourse = (id: number) => {

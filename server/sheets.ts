@@ -10,6 +10,7 @@ export interface Course {
   discountPrice: string;
   badge: string;
   badgeColor: string;
+  location?: string;
   backgroundImage: string;
   detailPath: string;
   status: string;
@@ -43,7 +44,7 @@ export interface Enrollment {
 
 const COURSE_HEADERS: (keyof Course)[] = [
   "id", "courseCode", "title", "description", "tools",
-  "originalPrice", "discountPrice", "badge", "badgeColor",
+  "originalPrice", "discountPrice", "badge", "badgeColor", "location",
   "backgroundImage", "detailPath", "status", "published",
 ];
 
@@ -94,7 +95,7 @@ export async function readCoursesFromSheet(): Promise<CoursesConfig> {
 
   const [metaRes, coursesRes] = await Promise.all([
     sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: "meta!A:B" }),
-    sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: "courses!A:M" }),
+    sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: "courses!A:N" }),
   ]);
 
   const meta: Record<string, string> = {};

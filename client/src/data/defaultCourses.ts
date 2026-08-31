@@ -10,6 +10,7 @@ export interface Course {
   discountPrice: string;
   badge: string;
   badgeColor: BadgeColor;
+  location?: string;
   backgroundImage: string;
   detailPath: string;
   status: "open" | "full";
