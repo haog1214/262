@@ -20,6 +20,7 @@ import FaqPage from "./pages/FaqPage";
 import AboutPage from "./pages/AboutPage";
 import AdminCoursesPage from "./pages/AdminCoursesPage";
 import UploadCoursePage from "./pages/UploadCoursePage";
+import CourseDetailPage from "./pages/CourseDetailPage";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -48,6 +49,7 @@ function Router() {
       <Route path={"/404"} component={NotFound} />
       <Route path={"/manage-courses-262x"} component={AdminCoursesPage} />
       <Route path={"/upload-course-262x"} component={UploadCoursePage} />
+      <Route path={"/course/:id"} component={CourseDetailPage} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>

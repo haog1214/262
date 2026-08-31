@@ -384,7 +384,10 @@ function ExcelImport({ onBack }: { onBack: () => void }) {
     try {
       const config = await getCoursesConfig();
       let nextId = config.courses.length > 0 ? Math.max(...config.courses.map((c) => c.id)) + 1 : 1;
-      const newCourses: Course[] = drafts.map((d) => ({ id: nextId++, ...d }));
+      const newCourses: Course[] = drafts.map((d) => {
+        const id = nextId++;
+        return { id, ...d, detailPath: d.detailPath || `/course/${id}` };
+      });
       const updated = { ...config, courses: [...config.courses, ...newCourses] };
       const result = await saveCoursesToAPI(updated);
       if (!result.ok) {
@@ -563,7 +566,7 @@ function Wizard({ onBack }: { onBack: () => void }) {
     try {
       const config = await getCoursesConfig();
       const nextId = config.courses.length > 0 ? Math.max(...config.courses.map((c) => c.id)) + 1 : 1;
-      const newCourse: Course = { id: nextId, ...draft };
+      const newCourse: Course = { id: nextId, ...draft, detailPath: draft.detailPath || `/course/${nextId}` };
       const updated = { ...config, courses: [...config.courses, newCourse] };
       const result = await saveCoursesToAPI(updated);
       if (!result.ok) {

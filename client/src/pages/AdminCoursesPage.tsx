@@ -1752,7 +1752,12 @@ export default function AdminCoursesPage() {
       };
     } else {
       const maxId = config.courses.reduce((m, c) => Math.max(m, c.id), 0);
-      finalCourse = { ...(draft as Omit<Course, "id">), id: maxId + 1 };
+      const newId = maxId + 1;
+      finalCourse = {
+        ...(draft as Omit<Course, "id">),
+        id: newId,
+        detailPath: draft.detailPath || `/course/${newId}`,
+      };
       updated = { ...config, courses: [...config.courses, finalCourse] };
     }
     goToList();

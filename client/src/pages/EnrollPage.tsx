@@ -1,11 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { courseSessionsMap } from "@/data/courseSessions";
+import { getCoursesConfig } from "@/lib/coursesStorage";
+import { fetchSchedules, fetchEnrollments } from "@/lib/enrollmentsStorage";
 
-const toSession = (s: { id: string; date: string; weekday: string; time: string; isFull: boolean; enterprise: boolean; remaining: number }) => ({
+interface EnrollSession {
+  id: string;
+  date: string;
+  weekday: string;
+  time: string;
+  remaining: number;
+  isFull: boolean;
+  enterprise: boolean;
+}
+
+interface EnrollCourse {
+  id: string;
+  label: string;
+  image: string;
+  sessions: EnrollSession[];
+}
+
+const toSession = (s: { id: string; date: string; weekday: string; time: string; isFull: boolean; enterprise: boolean; remaining: number }): EnrollSession => ({
   id: s.id,
   date: s.date,
   weekday: s.weekday,
@@ -15,7 +34,7 @@ const toSession = (s: { id: string; date: string; weekday: string; time: string;
   enterprise: s.enterprise,
 });
 
-const courses = [
+const staticCourses: EnrollCourse[] = [
   {
     id: "gemini",
     label: "Gemini讓工作快一倍（3H 特訓班）",
@@ -48,6 +67,12 @@ const courses = [
   },
 ];
 
+const STATIC_DETAIL_PATHS = new Set(
+  ["gemini", "ai-knowledge", "ai-video", "ai-life", "ai-presentation"].map((s) => `/course/${s}`)
+);
+
+const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
+
 const referralOptions = [
   "朋友 / 同事推薦",
   "Facebook / Instagram",
@@ -56,31 +81,65 @@ const referralOptions = [
   "其他",
 ];
 
-function firstOpenSession(c: typeof courses[0]) {
+function firstOpenSession(c: EnrollCourse) {
   return c.sessions.find((s) => !s.isFull) ?? c.sessions[0];
 }
 
-function getInitialParams() {
-  const params = new URLSearchParams(window.location.search);
-  const courseId = params.get("course") ?? "";
-  const sessionId = Number(params.get("session") ?? 0);
-  const validCourse = courses.find((c) => c.id === courseId) ?? courses[0];
-  const found = validCourse.sessions.find((s) => s.id === sessionId);
-  const validSession = (found && !found.isFull) ? found : firstOpenSession(validCourse);
-  return { courseId: validCourse.id, sessionId: validSession.id };
-}
-
 export default function EnrollPage() {
-  const { courseId: initialCourseId, sessionId: initialSessionId } = getInitialParams();
-  const initialCourse = courses.find((c) => c.id === initialCourseId)!;
-  const [selectedCourseId, setSelectedCourseId] = useState(initialCourseId);
-  const [selectedSessionId, setSelectedSessionId] = useState(initialSessionId);
+  const params = new URLSearchParams(window.location.search);
+  const [dynamicCourses, setDynamicCourses] = useState<EnrollCourse[]>([]);
+  const courses = [...staticCourses, ...dynamicCourses];
+
+  const [selectedCourseId, setSelectedCourseId] = useState(params.get("course") ?? staticCourses[0].id);
+  const [selectedSessionId, setSelectedSessionId] = useState(params.get("session") ?? "");
   const [form, setForm] = useState({ name: "", phone: "", email: "", company: "", taxId: "", referral: "", transfer: "", note: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const currentCourse = courses.find((c) => c.id === selectedCourseId)!;
+  useEffect(() => {
+    Promise.all([getCoursesConfig(), fetchSchedules(), fetchEnrollments()]).then(([config, schedules, enrollments]) => {
+      const built: EnrollCourse[] = config.courses
+        .filter((c) => c.published !== false && !STATIC_DETAIL_PATHS.has(c.detailPath))
+        .map((c) => {
+          const sessions: EnrollSession[] = schedules
+            .filter((sc) => sc.courseId === String(c.id))
+            .map((sc) => {
+              const count = enrollments.filter((e) => e.scheduleId === sc.id).length;
+              const cap = Number(sc.maxCapacity) || 0;
+              const d = /^\d{4}-\d{2}-\d{2}$/.test(sc.date) ? new Date(sc.date) : null;
+              return {
+                id: sc.id,
+                date: sc.date,
+                weekday: d ? WEEKDAYS[d.getDay()] : "",
+                time: sc.time,
+                remaining: Math.max(0, cap - count),
+                isFull: sc.status === "full" || (cap > 0 && count >= cap),
+                enterprise: false,
+              };
+            });
+          return {
+            id: String(c.id),
+            label: `${c.title}${c.badge ? `（${c.badge}）` : ""}`,
+            image: c.backgroundImage,
+            sessions: sessions.length > 0 ? sessions : [{ id: "", date: "", weekday: "", time: "洽詢開課時間", remaining: 0, isFull: true, enterprise: false }],
+          };
+        });
+      setDynamicCourses(built);
+    });
+  }, []);
+
+  useEffect(() => {
+    const current = courses.find((c) => c.id === selectedCourseId);
+    if (!current) return;
+    const validSession = current.sessions.find((s) => s.id === selectedSessionId);
+    if (!validSession || validSession.isFull) {
+      setSelectedSessionId(firstOpenSession(current).id);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCourseId, dynamicCourses]);
+
+  const currentCourse = courses.find((c) => c.id === selectedCourseId) ?? courses[0];
 
   const handleCourseChange = (id: string) => {
     setSelectedCourseId(id);
