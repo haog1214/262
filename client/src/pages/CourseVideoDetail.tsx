@@ -1,18 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, ChevronRight, Clock, Users, CheckCircle2, MapPin } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
-import { filterUpcomingSessions } from "@/data/courseSessions";
+import { useCourseSchedules } from "@/hooks/useCourseSchedules";
 
-const allSessions = [
-  { id: 1, date: "2026/5/13", weekday: "三", time: "9:00–16:30", location: "台中西屯分校", remaining: 0, isFull: true, enterprise: false },
-  { id: 2, date: "2026/5/20", weekday: "三", time: "9:00–16:30", location: "台中西屯分校", remaining: 15, enterprise: false },
-  { id: 3, date: "2026/5/27", weekday: "三", time: "9:00–16:30", location: "台中西屯分校", remaining: 15, enterprise: false },
-  { id: 99, date: "", weekday: "", time: "", location: "", remaining: 0, enterprise: true },
-];
-const sessions = filterUpcomingSessions(allSessions);
+const COURSE_ID = 1;
 
 const curriculum = [
   {
@@ -74,7 +68,13 @@ const highlights = [
 ];
 
 export default function CourseVideoDetail() {
-  const [selectedSession, setSelectedSession] = useState((sessions.find(s => !s.isFull && !s.enterprise) ?? sessions[0]).id);
+  const { sessions } = useCourseSchedules(COURSE_ID);
+  const [selectedSession, setSelectedSession] = useState("");
+  useEffect(() => {
+    if (sessions.length > 0 && !selectedSession) {
+      setSelectedSession((sessions.find(s => !s.isFull && !s.enterprise) ?? sessions[0]).id);
+    }
+  }, [sessions, selectedSession]);
 
   return (
     <div className="min-h-screen flex flex-col bg-white">

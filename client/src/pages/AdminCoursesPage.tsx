@@ -44,7 +44,6 @@ import {
   type Course,
   type CoursesConfig,
 } from "@/data/defaultCourses";
-import { getSessionsByDetailPath } from "@/data/courseSessions";
 import CourseCard from "@/components/CourseCard";
 
 const genId = () =>
@@ -766,24 +765,7 @@ function EnrollmentView({
 }) {
   const cid = String(course.id);
 
-  // Seed from frontend sessions if no schedules exist for this course
-  const initSchedules = (): Schedule[] => {
-    const existing = allSchedules.filter(s => s.courseId === cid);
-    if (existing.length > 0) return existing;
-    const frontendSessions = getSessionsByDetailPath(course.detailPath);
-    return frontendSessions
-      .filter(s => !s.enterprise)
-      .map(s => ({
-        id: s.id,
-        courseId: cid,
-        date: s.date,
-        time: s.time,
-        maxCapacity: "20",
-        status: s.isFull ? "full" : "open",
-      }));
-  };
-
-  const [schedules, setSchedules] = useState<Schedule[]>(initSchedules);
+  const [schedules, setSchedules] = useState<Schedule[]>(() => allSchedules.filter(s => s.courseId === cid));
   const [enrollments, setEnrollments] = useState<Enrollment[]>(
     allEnrollments.filter(e => e.courseId === cid)
   );
@@ -811,21 +793,6 @@ function EnrollmentView({
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [hasUnsaved]);
-
-  // Auto-seed schedules to Google Sheets on first open
-  useEffect(() => {
-    const existing = allSchedules.filter(s => s.courseId === cid);
-    if (existing.length === 0) {
-      const seeded = initSchedules();
-      if (seeded.length > 0) {
-        const others = allSchedules.filter(s => s.courseId !== cid);
-        saveSchedules([...others, ...seeded]).then(result => {
-          if (result.ok) onSchedulesChange([...others, ...seeded]);
-        });
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const persistSchedules = async (updated: Schedule[]) => {
     setSavingSched(true);
