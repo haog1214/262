@@ -1,5 +1,20 @@
 import { useState, useRef, useEffect } from "react";
 import {
+  BookOpen,
+  Archive,
+  Eye,
+  Pencil,
+  Trash2,
+  ClipboardList,
+  RefreshCw,
+  ArrowUpDown,
+  Plus,
+  Download,
+  Upload,
+  X,
+  Save,
+} from "lucide-react";
+import {
   getCoursesConfig,
   getLocalCoursesConfig,
   saveCoursesToAPI,
@@ -26,7 +41,6 @@ import {
 import { getSessionsByDetailPath } from "@/data/courseSessions";
 import CourseCard from "@/components/CourseCard";
 
-const ADMIN_PASSWORD = "84204302";
 const BADGE_COLORS: BadgeColor[] = ["pink", "purple", "green", "gold", "teal"];
 const BADGE_COLOR_LABELS: Record<BadgeColor, string> = {
   pink: "粉紅",
@@ -55,17 +69,28 @@ function emptyCourseDraft(): Omit<Course, "id"> {
   };
 }
 
+// ── Design tokens — 日式簡約科技感（與課程上架頁一致）───────────────────────
+const ink = "#2B2B28";
+const inkSoft = "#8C8577";
+const accent = "#1B3A6B";
+const paper = "#FAF9F6";
+const line = "#E3DFD5";
+const danger = "#B3564A";
+const mono = "'SF Mono', ui-monospace, Menlo, Consolas, monospace";
+
 // ── Styles ───────────────────────────────────────────────────────────────────
 const s = {
   page: {
     minHeight: "100vh",
-    backgroundColor: "#F3F4F6",
+    backgroundColor: paper,
     fontFamily: "system-ui, sans-serif",
+    color: ink,
   } as React.CSSProperties,
   header: {
-    backgroundColor: "#1B3A6B",
-    color: "#fff",
-    padding: "16px 32px",
+    backgroundColor: paper,
+    borderBottom: `1px solid ${line}`,
+    color: ink,
+    padding: "20px 32px",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
@@ -77,41 +102,47 @@ const s = {
   } as React.CSSProperties,
   card: {
     backgroundColor: "#fff",
-    borderRadius: "12px",
+    border: `1px solid ${line}`,
+    borderRadius: "2px",
     padding: "24px",
     marginBottom: "20px",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
   } as React.CSSProperties,
   label: {
     display: "block",
-    fontSize: "13px",
+    fontSize: "12px",
     fontWeight: 600,
-    color: "#374151",
+    color: inkSoft,
     marginBottom: "4px",
   } as React.CSSProperties,
   input: {
     width: "100%",
-    border: "1px solid #D1D5DB",
-    borderRadius: "8px",
-    padding: "8px 12px",
+    border: "none",
+    borderBottom: `1px solid ${line}`,
+    borderRadius: 0,
+    padding: "8px 2px",
     fontSize: "14px",
     boxSizing: "border-box" as const,
     outline: "none",
     marginBottom: "14px",
+    background: "transparent",
+    color: ink,
   } as React.CSSProperties,
   inputSm: {
-    border: "1px solid #D1D5DB",
-    borderRadius: "6px",
-    padding: "6px 8px",
+    border: "none",
+    borderBottom: `1px solid ${line}`,
+    borderRadius: 0,
+    padding: "6px 2px",
     fontSize: "13px",
     boxSizing: "border-box" as const,
     outline: "none",
     width: "100%",
+    background: "transparent",
+    color: ink,
   } as React.CSSProperties,
   textarea: {
     width: "100%",
-    border: "1px solid #D1D5DB",
-    borderRadius: "8px",
+    border: `1px solid ${line}`,
+    borderRadius: "2px",
     padding: "8px 12px",
     fontSize: "14px",
     boxSizing: "border-box" as const,
@@ -119,88 +150,97 @@ const s = {
     resize: "vertical" as const,
     minHeight: "90px",
     marginBottom: "14px",
+    background: "transparent",
+    color: ink,
   } as React.CSSProperties,
   select: {
     width: "100%",
-    border: "1px solid #D1D5DB",
-    borderRadius: "8px",
+    border: `1px solid ${line}`,
+    borderRadius: "2px",
     padding: "8px 12px",
     fontSize: "14px",
     boxSizing: "border-box" as const,
     marginBottom: "14px",
     backgroundColor: "#fff",
+    color: ink,
   } as React.CSSProperties,
   selectSm: {
-    border: "1px solid #D1D5DB",
-    borderRadius: "6px",
+    border: `1px solid ${line}`,
+    borderRadius: "2px",
     padding: "6px 8px",
     fontSize: "13px",
     backgroundColor: "#fff",
+    color: ink,
   } as React.CSSProperties,
   btnPrimary: {
-    backgroundColor: "#1B3A6B",
+    backgroundColor: accent,
     color: "#fff",
-    border: "none",
-    borderRadius: "8px",
+    border: `1px solid ${accent}`,
+    borderRadius: "2px",
     padding: "10px 20px",
-    fontSize: "14px",
-    fontWeight: 600,
+    fontSize: "13px",
+    fontWeight: 500,
+    letterSpacing: "0.06em",
     cursor: "pointer",
   } as React.CSSProperties,
   btnDanger: {
-    backgroundColor: "#EF4444",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
+    backgroundColor: "transparent",
+    color: danger,
+    border: `1px solid ${danger}`,
+    borderRadius: "2px",
     padding: "8px 14px",
-    fontSize: "13px",
-    fontWeight: 600,
+    fontSize: "12px",
+    fontWeight: 500,
+    letterSpacing: "0.04em",
     cursor: "pointer",
   } as React.CSSProperties,
   btnGhost: {
     backgroundColor: "transparent",
-    color: "#6B7280",
-    border: "1px solid #D1D5DB",
-    borderRadius: "8px",
+    color: inkSoft,
+    border: `1px solid ${line}`,
+    borderRadius: "2px",
     padding: "8px 14px",
-    fontSize: "13px",
+    fontSize: "12px",
+    letterSpacing: "0.04em",
     cursor: "pointer",
   } as React.CSSProperties,
   btnGreen: {
-    backgroundColor: "#10B981",
+    backgroundColor: accent,
     color: "#fff",
-    border: "none",
-    borderRadius: "8px",
+    border: `1px solid ${accent}`,
+    borderRadius: "2px",
     padding: "8px 14px",
-    fontSize: "13px",
-    fontWeight: 600,
+    fontSize: "12px",
+    fontWeight: 500,
+    letterSpacing: "0.04em",
     cursor: "pointer",
   } as React.CSSProperties,
   btnIcon: {
     backgroundColor: "transparent",
-    border: "1px solid #E5E7EB",
-    borderRadius: "6px",
+    border: `1px solid ${line}`,
+    borderRadius: "2px",
     padding: "6px 10px",
-    fontSize: "16px",
+    fontSize: "15px",
     cursor: "pointer",
     lineHeight: 1,
+    color: ink,
   } as React.CSSProperties,
   btnIconDanger: {
     backgroundColor: "transparent",
-    border: "1px solid #FCA5A5",
-    borderRadius: "6px",
+    border: `1px solid ${danger}`,
+    borderRadius: "2px",
     padding: "6px 10px",
-    fontSize: "16px",
+    fontSize: "15px",
     cursor: "pointer",
     lineHeight: 1,
-    color: "#EF4444",
+    color: danger,
   } as React.CSSProperties,
   courseRow: {
     display: "flex",
     alignItems: "center",
     gap: "12px",
     padding: "14px 0",
-    borderBottom: "1px solid #F3F4F6",
+    borderBottom: `1px solid ${line}`,
   } as React.CSSProperties,
   grid2: {
     display: "grid",
@@ -215,18 +255,40 @@ const s = {
   th: {
     textAlign: "left" as const,
     padding: "8px 10px",
-    backgroundColor: "#F9FAFB",
-    borderBottom: "2px solid #E5E7EB",
+    backgroundColor: "transparent",
+    borderBottom: `1px solid ${line}`,
     fontWeight: 600,
-    color: "#374151",
-    fontSize: "12px",
+    color: inkSoft,
+    fontSize: "11px",
+    letterSpacing: "0.05em",
+    fontFamily: mono,
   } as React.CSSProperties,
   td: {
     padding: "8px 10px",
-    borderBottom: "1px solid #F3F4F6",
+    borderBottom: `1px solid ${line}`,
     verticalAlign: "middle" as const,
+    color: ink,
+  } as React.CSSProperties,
+  kicker: {
+    fontFamily: mono,
+    fontSize: "11px",
+    letterSpacing: "0.15em",
+    color: inkSoft,
+    fontWeight: 500,
+    textTransform: "uppercase" as const,
   } as React.CSSProperties,
 };
+
+// Blueprint-style corner marks — 與課程上架頁一致的科技感點綴
+function CornerMarks() {
+  const mark: React.CSSProperties = { position: "absolute", width: "14px", height: "14px", pointerEvents: "none" };
+  return (
+    <>
+      <span style={{ ...mark, top: "-1px", left: "-1px", borderTop: `1.5px solid ${accent}`, borderLeft: `1.5px solid ${accent}` }} />
+      <span style={{ ...mark, bottom: "-1px", right: "-1px", borderBottom: `1.5px solid ${accent}`, borderRight: `1.5px solid ${accent}` }} />
+    </>
+  );
+}
 
 // ── Toast ────────────────────────────────────────────────────────────────────
 function Toast({ msg }: { msg: string }) {
@@ -238,60 +300,19 @@ function Toast({ msg }: { msg: string }) {
         top: "20px",
         right: "20px",
         zIndex: 9999,
-        backgroundColor: "#1B3A6B",
-        color: "#fff",
+        backgroundColor: "#fff",
+        color: ink,
+        borderLeft: `2px solid ${accent}`,
+        border: `1px solid ${line}`,
+        borderLeftWidth: "2px",
+        borderLeftColor: accent,
         padding: "12px 20px",
-        borderRadius: "10px",
-        fontWeight: 600,
-        fontSize: "14px",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+        borderRadius: "2px",
+        fontWeight: 500,
+        fontSize: "13px",
       }}
     >
       {msg}
-    </div>
-  );
-}
-
-// ── Login screen ─────────────────────────────────────────────────────────────
-function LoginScreen({ onLogin }: { onLogin: () => void }) {
-  const [pw, setPw] = useState("");
-  const [err, setErr] = useState(false);
-
-  const submit = () => {
-    if (pw === ADMIN_PASSWORD) {
-      onLogin();
-    } else {
-      setErr(true);
-      setTimeout(() => setErr(false), 2000);
-    }
-  };
-
-  return (
-    <div style={{ ...s.page, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ ...s.card, width: "360px", textAlign: "center" }}>
-        <div style={{ fontSize: "40px", marginBottom: "8px" }}>🔒</div>
-        <h1 style={{ fontSize: "20px", fontWeight: 700, color: "#1B3A6B", marginBottom: "4px" }}>
-          傳啓資訊 後台管理
-        </h1>
-        <p style={{ fontSize: "13px", color: "#9CA3AF", marginBottom: "24px" }}>請輸入管理員密碼</p>
-        <input
-          type="password"
-          placeholder="密碼"
-          value={pw}
-          onChange={e => setPw(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && submit()}
-          style={{ ...s.input, textAlign: "center", fontSize: "16px", letterSpacing: "4px" }}
-          autoFocus
-        />
-        {err && (
-          <p style={{ color: "#EF4444", fontSize: "13px", marginBottom: "12px", marginTop: "-10px" }}>
-            密碼錯誤，請重新輸入
-          </p>
-        )}
-        <button style={{ ...s.btnPrimary, width: "100%", padding: "12px" }} onClick={submit}>
-          登入
-        </button>
-      </div>
     </div>
   );
 }
@@ -1050,13 +1071,13 @@ function ReorderModal({
           flexShrink: 0,
         }}>
           <div>
-            <div style={{ fontWeight: 700, fontSize: "16px", color: "#1B3A6B" }}>調整課程順序</div>
-            <div style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "2px" }}>拖曳或點選 ↑↓ 調整，完成後儲存</div>
+            <div style={{ fontWeight: 600, fontSize: "15px", color: ink }}>調整課程順序</div>
+            <div style={{ fontSize: "12px", color: inkSoft, marginTop: "2px" }}>拖曳或點選 ↑↓ 調整，完成後儲存</div>
           </div>
           <button
             onClick={onClose}
-            style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#9CA3AF", padding: "4px" }}
-          >✕</button>
+            style={{ background: "none", border: "none", fontSize: "18px", cursor: "pointer", color: inkSoft, padding: "4px" }}
+          ><X size={18} strokeWidth={1.5} /></button>
         </div>
 
         {/* List */}
@@ -1169,10 +1190,10 @@ function ReorderModal({
           flexShrink: 0,
         }}>
           <button
-            style={{ ...s.btnPrimary, flex: 1, padding: "12px" }}
+            style={{ ...s.btnPrimary, flex: 1, padding: "12px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
             onClick={() => onSave(list)}
           >
-            💾 儲存順序並同步前台
+            <Save size={14} strokeWidth={1.5} /> 儲存順序並同步前台
           </button>
           <button style={s.btnGhost} onClick={onClose}>取消</button>
         </div>
@@ -1234,7 +1255,6 @@ function PreviewModal({ course, onClose }: { course: Course; onClose: () => void
 
 // ── Main admin page ───────────────────────────────────────────────────────────
 export default function AdminCoursesPage() {
-  const [authed, setAuthed] = useState(false);
   const [view, setView] = useState<"list" | "edit" | "enrollment">("list");
   const [config, setConfig] = useState<CoursesConfig>(getLocalCoursesConfig);
   const [editingId, setEditingId] = useState<number | "new" | null>(null);
@@ -1427,7 +1447,6 @@ export default function AdminCoursesPage() {
     setConfig(c => ({ ...c, [field]: val }));
   };
 
-  if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />;
 
   const enrollCourse = enrollCourseId !== null
     ? config.courses.find(c => c.id === enrollCourseId)
@@ -1443,8 +1462,8 @@ export default function AdminCoursesPage() {
         <Toast msg={toast} />
         <div style={s.header}>
           <div>
-            <div style={{ fontSize: "18px", fontWeight: 700 }}>傳啓資訊 後台管理</div>
-            <div style={{ fontSize: "12px", color: "#93C5FD", marginTop: "2px" }}>
+            <div style={{ fontSize: "17px", fontWeight: 600, color: ink }}>傳啓資訊 後台管理</div>
+            <div style={{ fontSize: "12px", color: inkSoft, marginTop: "2px" }}>
               {saving ? "⏳ 儲存中..." : "精選課程編輯 · 已連接 Google Sheets"}
             </div>
           </div>
@@ -1467,8 +1486,8 @@ export default function AdminCoursesPage() {
         <Toast msg={toast} />
         <div style={s.header}>
           <div>
-            <div style={{ fontSize: "18px", fontWeight: 700 }}>傳啓資訊 後台管理</div>
-            <div style={{ fontSize: "12px", color: "#93C5FD", marginTop: "2px" }}>
+            <div style={{ fontSize: "17px", fontWeight: 600, color: ink }}>傳啓資訊 後台管理</div>
+            <div style={{ fontSize: "12px", color: inkSoft, marginTop: "2px" }}>
               報名管理 · 已連接 Google Sheets
             </div>
           </div>
@@ -1525,39 +1544,48 @@ export default function AdminCoursesPage() {
       {/* Header */}
       <div style={s.header}>
         <div>
-          <div style={{ fontSize: "18px", fontWeight: 700 }}>傳啓資訊 後台管理</div>
-          <div style={{ fontSize: "12px", color: "#93C5FD", marginTop: "2px" }}>
+          <div style={{ fontSize: "17px", fontWeight: 600, color: ink }}>傳啓資訊 後台管理</div>
+          <div style={{ fontSize: "12px", color: inkSoft, marginTop: "2px" }}>
             {saving ? "⏳ 儲存中..." : "精選課程編輯 · 已連接 Google Sheets"}
           </div>
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
-          <button style={s.btnGhost} onClick={handleExport}>📥 匯出備份</button>
-          <button style={s.btnGhost} onClick={() => setShowImport(v => !v)}>📤 匯入</button>
+          <button style={{ ...s.btnGhost, display: "inline-flex", alignItems: "center", gap: "6px" }} onClick={handleExport}>
+            <Download size={13} strokeWidth={1.5} /> 匯出備份
+          </button>
+          <button style={{ ...s.btnGhost, display: "inline-flex", alignItems: "center", gap: "6px" }} onClick={() => setShowImport(v => !v)}>
+            <Upload size={13} strokeWidth={1.5} /> 匯入
+          </button>
         </div>
       </div>
 
       <div style={s.main}>
         {/* Tabs */}
-        <div style={{ display: "flex", gap: "4px", marginBottom: "4px" }}>
+        <div style={{ display: "flex", gap: "0", marginBottom: "4px", borderBottom: `1px solid ${line}` }}>
           {([
-            { key: "courses" as const, label: "📚 課程管理" },
-            { key: "knowledge" as const, label: "🗂️ 知識庫" },
+            { key: "courses" as const, label: "課程管理", Icon: BookOpen },
+            { key: "knowledge" as const, label: "知識庫", Icon: Archive },
           ]).map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
                 padding: "10px 20px",
-                borderRadius: "10px 10px 0 0",
                 border: "none",
-                borderBottom: activeTab === tab.key ? "3px solid #1B3A6B" : "3px solid transparent",
-                background: activeTab === tab.key ? "#fff" : "transparent",
-                color: activeTab === tab.key ? "#1B3A6B" : "#9CA3AF",
-                fontWeight: 700,
-                fontSize: "14px",
+                borderBottom: activeTab === tab.key ? `2px solid ${accent}` : "2px solid transparent",
+                marginBottom: "-1px",
+                background: "transparent",
+                color: activeTab === tab.key ? accent : inkSoft,
+                fontWeight: 600,
+                fontSize: "13px",
+                letterSpacing: "0.03em",
                 cursor: "pointer",
               }}
             >
+              <tab.Icon size={15} strokeWidth={1.5} />
               {tab.label}
             </button>
           ))}
@@ -1586,17 +1614,19 @@ export default function AdminCoursesPage() {
         {/* Course list */}
         <div style={s.card}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-            <h2 style={{ fontWeight: 700, fontSize: "16px", color: "#1B3A6B" }}>
+            <h2 style={{ fontWeight: 700, fontSize: "16px", color: ink }}>
               課程列表（共 {config.courses.length} 門）
             </h2>
             <div style={{ display: "flex", gap: "8px" }}>
               <button
-                style={{ ...s.btnGhost, fontSize: "13px", display: "flex", alignItems: "center", gap: "4px" }}
+                style={{ ...s.btnGhost, fontSize: "13px", display: "flex", alignItems: "center", gap: "6px" }}
                 onClick={() => setShowReorder(true)}
               >
-                ⇅ 調整順序
+                <ArrowUpDown size={13} strokeWidth={1.5} /> 調整順序
               </button>
-              <button style={s.btnGreen} onClick={() => openEditView("new")}>＋ 新增課程</button>
+              <button style={{ ...s.btnGreen, display: "inline-flex", alignItems: "center", gap: "6px" }} onClick={() => openEditView("new")}>
+                <Plus size={14} strokeWidth={1.5} /> 新增課程
+              </button>
             </div>
           </div>
 
@@ -1737,32 +1767,32 @@ export default function AdminCoursesPage() {
               {/* Actions */}
               <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
                 <button
-                  style={{ ...s.btnIcon, fontSize: "18px", padding: "6px 12px", borderColor: "#BFDBFE", color: "#1D4ED8" }}
+                  style={{ ...s.btnIcon, padding: "7px 11px", display: "inline-flex", color: accent }}
                   onClick={() => setPreviewCourseId(course.id)}
                   title="預覽前台效果"
                 >
-                  👁️
+                  <Eye size={15} strokeWidth={1.5} />
                 </button>
                 <button
-                  style={{ ...s.btnIcon, fontSize: "18px", padding: "6px 12px" }}
+                  style={{ ...s.btnIcon, padding: "7px 11px", display: "inline-flex" }}
                   onClick={() => openEditView(course.id)}
                   title="編輯課程"
                 >
-                  ✏️
+                  <Pencil size={15} strokeWidth={1.5} />
                 </button>
                 <button
-                  style={{ ...s.btnIconDanger, fontSize: "18px", padding: "6px 12px" }}
+                  style={{ ...s.btnIconDanger, padding: "7px 11px", display: "inline-flex" }}
                   onClick={() => deleteCourse(course.id)}
                   title="刪除課程"
                 >
-                  🗑️
+                  <Trash2 size={15} strokeWidth={1.5} />
                 </button>
                 <button
-                  style={{ ...s.btnIcon, fontSize: "18px", padding: "6px 12px", borderColor: "#BFDBFE", color: "#1D4ED8" }}
+                  style={{ ...s.btnIcon, padding: "7px 11px", display: "inline-flex", color: accent }}
                   onClick={() => openEnrollmentView(course.id)}
                   title="報名清單"
                 >
-                  📋
+                  <ClipboardList size={15} strokeWidth={1.5} />
                 </button>
               </div>
             </div>
@@ -1786,15 +1816,15 @@ export default function AdminCoursesPage() {
               <h2 style={{ fontWeight: 700, fontSize: "16px", color: "#1B3A6B", margin: 0 }}>
                 報名統計表
               </h2>
-              <p style={{ fontSize: "12px", color: "#9CA3AF", margin: "4px 0 0" }}>
+              <p style={{ fontSize: "12px", color: inkSoft, margin: "4px 0 0" }}>
                 來自 Google Sheets 表單報名資料，共 {registrations.length} 筆
               </p>
             </div>
             <button
-              style={{ ...s.btnGhost, fontSize: "13px" }}
+              style={{ ...s.btnGhost, fontSize: "13px", display: "inline-flex", alignItems: "center", gap: "6px" }}
               onClick={() => { setRegLoading(true); fetchRegistrations().then(r => { setRegistrations(r); setRegLoading(false); }); }}
             >
-              🔄 重新整理
+              <RefreshCw size={13} strokeWidth={1.5} /> 重新整理
             </button>
           </div>
 
@@ -1853,10 +1883,10 @@ export default function AdminCoursesPage() {
             style={{ position: "fixed", inset: 0, zIndex: 1000, backgroundColor: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}
             onClick={e => { if (e.target === e.currentTarget) setRegDetail(null); }}
           >
-            <div style={{ backgroundColor: "#fff", borderRadius: "16px", width: "100%", maxWidth: "480px", boxShadow: "0 8px 40px rgba(0,0,0,0.2)", overflow: "hidden" }}>
-              <div style={{ backgroundColor: "#1B3A6B", padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ color: "#fff", fontWeight: 700, fontSize: "16px" }}>報名詳情</div>
-                <button onClick={() => setRegDetail(null)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", fontSize: "20px", cursor: "pointer" }}>✕</button>
+            <div style={{ backgroundColor: "#fff", border: `1px solid ${line}`, borderRadius: "2px", width: "100%", maxWidth: "480px", overflow: "hidden" }}>
+              <div style={{ backgroundColor: paper, borderBottom: `1px solid ${line}`, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ color: ink, fontWeight: 600, fontSize: "15px" }}>報名詳情</div>
+                <button onClick={() => setRegDetail(null)} style={{ background: "none", border: "none", color: inkSoft, fontSize: "18px", cursor: "pointer" }}><X size={18} strokeWidth={1.5} /></button>
               </div>
               <div style={{ padding: "20px 24px" }}>
                 {[

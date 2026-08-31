@@ -15,7 +15,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between gap-10 mb-10">
           {/* Brand — 放大20% */}
           <div className="flex flex-col gap-3 max-w-sm">
-            <span className="text-[21.6px] font-bold" style={{ color: "#F5F0E8" }}>傳啓資訊</span>
+            <span className="text-[21.6px] font-bold" style={{ color: "#F5F0E8" }}>傳啓資訊股份有限公司</span>
             <p className="text-[14.4px] leading-relaxed" style={{ color: "rgba(245,240,232,0.5)" }}>
               上課地點：台中市西屯區河南路二段262號7樓3
             </p>
