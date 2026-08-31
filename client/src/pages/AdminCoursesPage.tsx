@@ -2092,19 +2092,6 @@ export default function AdminCoursesPage() {
                 </div>
               </div>
 
-              {/* Status badge */}
-              <div style={{
-                padding: "4px 10px",
-                borderRadius: "20px",
-                fontSize: "12px",
-                fontWeight: 600,
-                backgroundColor: course.status === "full" ? "#FEE2E2" : "#D1FAE5",
-                color: course.status === "full" ? "#DC2626" : "#065F46",
-                flexShrink: 0,
-              }}>
-                {course.status === "full" ? "🚫 額滿" : "✅ 開放中"}
-              </div>
-
               {/* Published toggle */}
               <button
                 onClick={() => togglePublished(course.id)}
