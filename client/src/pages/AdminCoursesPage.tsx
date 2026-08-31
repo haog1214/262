@@ -112,10 +112,10 @@ const s = {
   } as React.CSSProperties,
   label: {
     display: "block",
-    fontSize: "12px",
+    fontSize: "18px",
     fontWeight: 600,
-    color: inkSoft,
-    marginBottom: "4px",
+    color: "#4A3728",
+    marginBottom: "6px",
   } as React.CSSProperties,
   input: {
     width: "100%",
@@ -325,6 +325,12 @@ interface CourseSession {
   id: string;
   date: string;
   time: string;
+  sameAsAbove?: boolean;
+}
+
+function parseTimeRange(time: string): { start: string; end: string } {
+  const m = time.match(/^(\d{2}:\d{2})-(\d{2}:\d{2})$/);
+  return m ? { start: m[1], end: m[2] } : { start: "", end: "" };
 }
 
 function CourseForm({
@@ -379,8 +385,24 @@ function CourseForm({
     setCalendarOpen(false);
   };
 
-  const setSessionTime = (id: string, time: string) => {
-    setSessions(prev => prev.map(s => (s.id === id ? { ...s, time } : s)));
+  const setSessionTimeRange = (id: string, part: "start" | "end", value: string) => {
+    setSessions(prev => prev.map(s => {
+      if (s.id !== id) return s;
+      const { start, end } = parseTimeRange(s.time);
+      const next = part === "start" ? { start: value, end } : { start, end: value };
+      return { ...s, time: next.start && next.end ? `${next.start}-${next.end}` : "" };
+    }));
+  };
+
+  const effectiveTime = (index: number): string => {
+    const sess = sessions[index];
+    if (!sess) return "";
+    if (sess.sameAsAbove && index > 0) return effectiveTime(index - 1);
+    return sess.time;
+  };
+
+  const toggleSameAsAbove = (id: string, checked: boolean) => {
+    setSessions(prev => prev.map(s => (s.id === id ? { ...s, sameAsAbove: checked } : s)));
   };
 
   const removeSession = (id: string) => {
@@ -394,11 +416,19 @@ function CourseForm({
       return;
     }
     setCodeError("");
-    onSave(draft, sessions);
+    const resolvedSessions = sessions.map((s, i) => ({ id: s.id, date: s.date, time: effectiveTime(i) }));
+    onSave(draft, resolvedSessions);
   };
 
   return (
-    <div style={s.card}>
+    <div className="course-form" style={s.card}>
+      <style>{`
+        .course-form input::placeholder,
+        .course-form textarea::placeholder {
+          color: #9D978B;
+          opacity: 1;
+        }
+      `}</style>
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
         <button style={s.btnGhost} onClick={onCancel}>← 返回</button>
         <h3 style={{ fontWeight: 700, fontSize: "16px", color: ink, margin: 0 }}>
@@ -524,32 +554,55 @@ function CourseForm({
 
       {sessions.length > 0 && (
         <div style={{ border: `1px solid ${line}`, marginBottom: "20px" }}>
-          {sessions.map((sess, i) => (
-            <div
-              key={sess.id}
-              style={{
-                display: "flex", alignItems: "center", gap: "12px",
-                padding: "10px 14px",
-                borderBottom: i < sessions.length - 1 ? `1px solid ${line}` : "none",
-              }}
-            >
-              <span style={{ fontSize: "13px", color: ink, fontWeight: 500, width: "100px", flexShrink: 0 }}>{sess.date}</span>
-              <input
-                style={{ ...s.inputSm, flex: 1 }}
-                value={sess.time}
-                onChange={e => setSessionTime(sess.id, e.target.value)}
-                placeholder="上課時間，例：13:00-16:00"
-              />
-              <button
-                type="button"
-                onClick={() => removeSession(sess.id)}
-                style={{ background: "none", border: "none", cursor: "pointer", color: inkSoft, padding: "4px", flexShrink: 0 }}
-                title="移除"
+          {sessions.map((sess, i) => {
+            const { start, end } = parseTimeRange(effectiveTime(i));
+            const locked = !!sess.sameAsAbove && i > 0;
+            return (
+              <div
+                key={sess.id}
+                style={{
+                  display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap",
+                  padding: "10px 14px",
+                  borderBottom: i < sessions.length - 1 ? `1px solid ${line}` : "none",
+                }}
               >
-                <X size={14} strokeWidth={1.5} />
-              </button>
-            </div>
-          ))}
+                <span style={{ fontSize: "13px", color: ink, fontWeight: 500, width: "92px", flexShrink: 0 }}>{sess.date}</span>
+                <input
+                  type="time"
+                  style={{ ...s.inputSm, width: "110px", opacity: locked ? 0.5 : 1 }}
+                  value={start}
+                  disabled={locked}
+                  onChange={e => setSessionTimeRange(sess.id, "start", e.target.value)}
+                />
+                <span style={{ color: inkSoft, fontSize: "12px" }}>至</span>
+                <input
+                  type="time"
+                  style={{ ...s.inputSm, width: "110px", opacity: locked ? 0.5 : 1 }}
+                  value={end}
+                  disabled={locked}
+                  onChange={e => setSessionTimeRange(sess.id, "end", e.target.value)}
+                />
+                {i > 0 && (
+                  <label style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", color: inkSoft, cursor: "pointer" }}>
+                    <input
+                      type="checkbox"
+                      checked={!!sess.sameAsAbove}
+                      onChange={e => toggleSameAsAbove(sess.id, e.target.checked)}
+                    />
+                    時間同上
+                  </label>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeSession(sess.id)}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: inkSoft, padding: "4px", marginLeft: "auto", flexShrink: 0 }}
+                  title="移除"
+                >
+                  <X size={14} strokeWidth={1.5} />
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
 
