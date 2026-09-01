@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, ChevronRight, Clock, Users, CheckCircle2, MapPin } from "lucide-react";
+import { ArrowLeft, ChevronRight, Clock, Users, MapPin } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
@@ -47,15 +47,6 @@ const targets = [
     label: "對 AI 工具感興趣的職場新人",
     desc: "希望透過 AI 數位轉型提升競爭力者。",
   },
-];
-
-const highlights = [
-  "ChatGPT 結構化腳本，3 分鐘完成簡報骨架",
-  "Canva 批次生成投影片，品牌視覺一次到位",
-  "Gemini + Google Slides 雲端協作，跨裝置同步",
-  "Gamma 一鍵輸出完整美觀簡報",
-  "從腳本到視覺，3 小時內完成完整提案",
-  "建立 AI 協作思維，不只教工具更教邏輯",
 ];
 
 export default function CoursePresentationDetail() {
@@ -210,21 +201,6 @@ export default function CoursePresentationDetail() {
                     <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-gray-300 ml-auto mt-1 flex-shrink-0" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 你將學到什麼 */}
-        <section className="py-14" style={{ backgroundColor: "#F5F0E8" }}>
-          <div className="container max-w-4xl">
-            <h2 className="text-2xl font-bold mb-8 text-center" style={{ color: "#1B3A6B" }}>你將學到什麼</h2>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {highlights.map((item, i) => (
-                <div key={i} className="flex items-start gap-3 bg-white rounded-xl p-4 shadow-sm">
-                  <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "#2E7D32" }} />
-                  <p className="text-gray-800 text-[15px]">{item}</p>
                 </div>
               ))}
             </div>

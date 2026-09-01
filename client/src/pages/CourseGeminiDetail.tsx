@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, ChevronRight, Clock, Users, CheckCircle2, MapPin } from "lucide-react";
+import { ArrowLeft, ChevronRight, Clock, Users, MapPin } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
@@ -69,15 +69,6 @@ const targets = [
     label: "一般社會人士",
     desc: "想要對 Gemini 更了解，如何落實在生活與工作中。",
   },
-];
-
-const highlights = [
-  "Gemini 版本全解析，選對方案省荷包",
-  "Gmail、行事曆、地圖一鍵 AI 整合",
-  "Nano Banana 高擬真影像生成實作",
-  "Veo 影片生成技術，文字變動態影片",
-  "打造專屬 Gem 機器人，針對你的工作場景客製化",
-  "Canvas 網頁小程式，AI 幫你寫 code",
 ];
 
 export default function CourseGeminiDetail() {
@@ -233,21 +224,6 @@ export default function CourseGeminiDetail() {
                     <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-gray-300 ml-auto mt-1 flex-shrink-0" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 你將學到什麼 */}
-        <section className="py-14" style={{ backgroundColor: "#F5F0E8" }}>
-          <div className="container max-w-4xl">
-            <h2 className="text-2xl font-bold mb-8 text-center" style={{ color: "#1B3A6B" }}>你將學到什麼</h2>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {highlights.map((item, i) => (
-                <div key={i} className="flex items-start gap-3 bg-white rounded-xl p-4 shadow-sm">
-                  <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "#2E7D32" }} />
-                  <p className="text-gray-800 text-[15px]">{item}</p>
                 </div>
               ))}
             </div>

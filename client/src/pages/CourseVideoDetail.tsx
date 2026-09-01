@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, ChevronRight, Clock, Users, CheckCircle2, MapPin } from "lucide-react";
+import { ArrowLeft, ChevronRight, Clock, Users, MapPin } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
@@ -57,14 +57,6 @@ const targets = [
     label: "AI 創作初學者",
     desc: "想學會使用 Banana AI 進行創意落地，無須繪圖基礎的人士。",
   },
-];
-
-const highlights = [
-  "全流程 AI 協作，3 小時學完一條龍",
-  "無需繪圖基礎，零門檻入門",
-  "Banana AI 高質感圖像生成實作",
-  "AI 配音 + 動態化 + 剪輯一次學會",
-  "實作發表，課堂完成作品帶回家",
 ];
 
 export default function CourseVideoDetail() {
@@ -242,21 +234,6 @@ export default function CourseVideoDetail() {
                     <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-gray-300 ml-auto mt-1 flex-shrink-0" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 2. 你將學到什麼 */}
-        <section className="py-14" style={{ backgroundColor: "#F5F0E8" }}>
-          <div className="container max-w-4xl">
-            <h2 className="text-2xl font-bold mb-8 text-center" style={{ color: "#1B3A6B" }}>你將學到什麼</h2>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {highlights.map((item, i) => (
-                <div key={i} className="flex items-start gap-3 bg-white rounded-xl p-4 shadow-sm">
-                  <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "#2E7D32" }} />
-                  <p className="text-gray-800 text-[15px]">{item}</p>
                 </div>
               ))}
             </div>

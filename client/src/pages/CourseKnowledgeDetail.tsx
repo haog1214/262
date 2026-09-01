@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, ChevronRight, Clock, Users, CheckCircle2, MapPin } from "lucide-react";
+import { ArrowLeft, ChevronRight, Clock, Users, MapPin } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
@@ -62,15 +62,6 @@ const targets = [
     label: "企業管理階層",
     desc: "希望快速掌握內部大量會議記錄與經營資訊的經理人。",
   },
-];
-
-const highlights = [
-  "一站式管理 PDF、網頁、筆記等多元資料來源",
-  "AI 語音摘要、心智圖自動生成，告別手動整理",
-  "快速建立個人專屬知識庫，隨問隨查",
-  "Gemini 聯動，跨文件深度搜尋與分析",
-  "從資料到簡報，一條龍 AI 工作流",
-  "零基礎可上手，適合所有知識工作者",
 ];
 
 export default function CourseKnowledgeDetail() {
@@ -225,21 +216,6 @@ export default function CourseKnowledgeDetail() {
                     <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-gray-300 ml-auto mt-1 flex-shrink-0" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 你將學到什麼 */}
-        <section className="py-14" style={{ backgroundColor: "#F5F0E8" }}>
-          <div className="container max-w-4xl">
-            <h2 className="text-2xl font-bold mb-8 text-center" style={{ color: "#1B3A6B" }}>你將學到什麼</h2>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {highlights.map((item, i) => (
-                <div key={i} className="flex items-start gap-3 bg-white rounded-xl p-4 shadow-sm">
-                  <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "#2E7D32" }} />
-                  <p className="text-gray-800 text-[15px]">{item}</p>
                 </div>
               ))}
             </div>
