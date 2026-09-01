@@ -1772,6 +1772,39 @@ export default function AdminCoursesPage() {
     showToast("📥 已下載備份檔");
   };
 
+  const handleExportTemplate = () => {
+    const csvEscape = (v: string) => (v.includes(",") || v.includes("\n") || v.includes('"') ? `"${v.replace(/"/g, '""')}"` : v);
+    const headers = [
+      "課程編碼(選填,3~5碼數字)", "課程標題", "副標語", "課程描述", "上課地點(選填)", "課程關鍵字(用、分隔)",
+      "徽章顏色(pink/purple/green/gold/teal)", "原價", "特價", "背景圖片路徑或網址",
+      "課程大綱1標題", "課程大綱1說明",
+      "課程大綱2標題", "課程大綱2說明",
+      "課程大綱3標題", "課程大綱3說明",
+      "課程大綱4標題", "課程大綱4說明",
+      "適合對象1標題", "適合對象1說明",
+      "適合對象2標題", "適合對象2說明",
+    ];
+    const example = [
+      "262", "讓手機搞定大小事", "學會手機 AI 工具應用，搞定生活大小事",
+      "本課程專為科技小白與長輩朋友設計，採漸進式教學…", "台中市西屯區河南路二段262號3樓之11",
+      "3H特訓班、上班族、長輩朋友", "green", "NT$ 4,000", "NT$ 2,000", "/課程封面.jpg",
+      "認識 AI 工具", "手機如何安裝 ChatGPT、Gemini，協助安裝並設定官方正版工具。",
+      "AI 工具對話", "Prompt 提問技巧：學習「精準指令」邏輯，讓 AI 真正聽懂你。",
+      "生活應用實作", "用 AI 處理生活大小事，從排程到訊息回覆一次搞定。",
+      "成果驗收", "現場演練並解答個人化問題，確保學會就能用。",
+      "科技小白／長輩朋友", "想了解 AI 卻不知從何下手，需要手把手教學者。",
+      "手機重度使用者", "習慣用手機處理大小事，希望將 AI 無縫融入日常的人。",
+    ];
+    const csv = "﻿" + headers.map(csvEscape).join(",") + "\n" + example.map(csvEscape).join(",") + "\n";
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "課程上架公版.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleImport = () => {
     const json = importRef.current?.value ?? "";
     if (importCoursesConfig(json)) {
@@ -1891,6 +1924,9 @@ export default function AdminCoursesPage() {
           </div>
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
+          <button style={{ ...s.btnGhost, display: "inline-flex", alignItems: "center", gap: "6px" }} onClick={handleExportTemplate}>
+            <Download size={13} strokeWidth={1.5} /> 匯出樣板
+          </button>
           <button style={{ ...s.btnGhost, display: "inline-flex", alignItems: "center", gap: "6px" }} onClick={handleExport}>
             <Download size={13} strokeWidth={1.5} /> 匯出備份
           </button>
