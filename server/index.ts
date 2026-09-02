@@ -15,6 +15,7 @@ import {
 } from "./sheets.js";
 import { sendEnrollmentNotification } from "./email.js";
 import { isBot, getBotHtml } from "./botRenderer.js";
+import { uploadImageToDrive, driveIsConfigured } from "./drive.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -60,7 +61,7 @@ async function startServer() {
   app.post(
     "/api/upload-image",
     express.raw({ type: "*/*", limit: "10mb" }),
-    (req, res) => {
+    async (req, res) => {
       if (req.headers["x-admin-password"] !== ADMIN_PASSWORD) {
         return res.status(401).json({ error: "Unauthorized" });
       }
@@ -73,6 +74,15 @@ async function startServer() {
         return res.status(400).json({ error: "Unsupported file type" });
       }
       const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
+      if (driveIsConfigured()) {
+        try {
+          const url = await uploadImageToDrive(req.body, safeName, ext);
+          return res.json({ url });
+        } catch (err) {
+          console.error("Drive upload failed:", err);
+          return res.status(500).json({ error: "Failed to upload image to Drive" });
+        }
+      }
       fs.writeFileSync(path.join(UPLOADS_DIR, safeName), req.body);
       res.json({ url: `/uploads/${safeName}` });
     }
