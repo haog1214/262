@@ -82,7 +82,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                   </div>
                 )}
                 <h1 className="text-4xl md:text-5xl font-bold leading-tight text-gray-900">
-                  {course.courseCode && <span className="mr-4 text-gray-400 font-normal">{course.courseCode}</span>}
+                  {course.courseCode && <span className="mr-4 text-gray-400 font-normal" style={{ fontSize: "0.6em" }}>{course.courseCode}</span>}
                   {course.title}
                 </h1>
                 {course.tools && <p className="text-lg text-gray-600 leading-relaxed">{course.tools}</p>}
@@ -134,7 +134,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                   <div className="flex-shrink-0" style={{ marginLeft: schedules.length > 0 ? "40px" : 0 }}>
                     {course.discountPrice && (
                       <>
-                        <p className="text-3xl font-bold text-gray-900"><span style={{ fontSize: "18px" }}>NT：</span>{course.discountPrice}</p>
+                        <p className="text-3xl font-bold text-gray-900"><span style={{ fontSize: "18px" }}>NT：</span>{course.discountPrice.replace(/\s+/g, "")}</p>
                         {course.originalPrice && (
                           <p className="text-gray-400 line-through text-sm mb-3">{course.originalPrice}</p>
                         )}
@@ -182,8 +182,10 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                       {i + 1}
                     </span>
                     <div>
-                      <p className="font-semibold text-gray-900 mb-1">{item.title}</p>
-                      <p className="text-gray-600 text-sm leading-relaxed">{item.description}</p>
+                      <p className={`font-semibold text-gray-900${item.description ? " mb-1" : ""}`}>{item.title}</p>
+                      {item.description && (
+                        <p className="text-gray-600 text-sm leading-relaxed">{item.description}</p>
+                      )}
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-300 ml-auto mt-1 flex-shrink-0" />
                   </div>
@@ -202,8 +204,10 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                 {course.targetAudience.map((t, i) => (
                   <div key={i} className="flex items-start gap-4 p-5 rounded-xl border border-gray-100 hover:shadow-md transition-all">
                     <div>
-                      <p className="font-bold text-gray-900 mb-1">{t.title}</p>
-                      <p className="text-gray-600 text-sm leading-relaxed">{t.description}</p>
+                      <p className={`font-bold text-gray-900${t.description ? " mb-1" : ""}`}>{t.title}</p>
+                      {t.description && (
+                        <p className="text-gray-600 text-sm leading-relaxed">{t.description}</p>
+                      )}
                     </div>
                   </div>
                 ))}
