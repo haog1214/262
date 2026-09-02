@@ -74,20 +74,23 @@ function emptyCourseDraft(): Omit<Course, "id"> {
 }
 
 // ── Design tokens — 日式簡約科技感（與課程上架頁一致）───────────────────────
-const ink = "#2B2B28";
-const inkSoft = "#8C8577";
-const accent = "#1B3A6B";
-const paper = "#FAF9F6";
-const line = "#E3DFD5";
-const danger = "#B3564A";
+// Palette matches 課程資訊後台 (course-info-262x.html)'s :root tokens — ink-950,
+// ink-600, clay-600, page-bg, line — so the two admin surfaces read as one system.
+const ink = "#14150F";
+const inkSoft = "#71735F";
+const accent = "#FF5B22";
+const paper = "#EAECE4";
+const line = "#E7E8DD";
+const danger = "#CF4F39";
 const mono = "'SF Mono', ui-monospace, Menlo, Consolas, monospace";
+const bodyFont = "'Manrope', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif";
 
 // ── Styles ───────────────────────────────────────────────────────────────────
 const s = {
   page: {
     minHeight: "100vh",
     backgroundColor: paper,
-    fontFamily: "system-ui, sans-serif",
+    fontFamily: bodyFont,
     color: ink,
   } as React.CSSProperties,
   header: {
@@ -115,7 +118,7 @@ const s = {
     display: "block",
     fontSize: "18px",
     fontWeight: 600,
-    color: "#4A3728",
+    color: ink,
     marginBottom: "6px",
   } as React.CSSProperties,
   input: {
@@ -979,7 +982,7 @@ function EnrollmentView({
           }}
         >← 返回課程列表</button>
         <div>
-          <div style={{ fontWeight: 700, fontSize: "18px", color: "#1B3A6B" }}>{course.title}</div>
+          <div style={{ fontWeight: 700, fontSize: "18px", color: "#FF5B22" }}>{course.title}</div>
           <div style={{ fontSize: "12px", color: "#9CA3AF" }}>報名管理</div>
         </div>
       </div>
@@ -1020,7 +1023,7 @@ function EnrollmentView({
       {/* Schedules */}
       <div style={s.card}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-          <h3 style={{ fontWeight: 700, fontSize: "15px", color: "#1B3A6B", margin: 0 }}>
+          <h3 style={{ fontWeight: 700, fontSize: "15px", color: "#FF5B22", margin: 0 }}>
             課程梯次 {savingSched && <span style={{ fontSize: "12px", color: "#9CA3AF" }}>儲存中...</span>}
           </h3>
           <button style={s.btnGreen} onClick={addSchedule} disabled={!!editingSchedId}>
@@ -1135,7 +1138,7 @@ function EnrollmentView({
       <div style={s.card}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <h3 style={{ fontWeight: 700, fontSize: "15px", color: "#1B3A6B", margin: 0 }}>
+            <h3 style={{ fontWeight: 700, fontSize: "15px", color: "#FF5B22", margin: 0 }}>
               報名人員 {savingEnroll && <span style={{ fontSize: "12px", color: "#9CA3AF" }}>儲存中...</span>}
             </h3>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -1276,7 +1279,7 @@ function EnrollmentView({
         );
         return courseRegs.length > 0 ? (
           <div style={s.card}>
-            <h3 style={{ fontWeight: 700, fontSize: "15px", color: "#1B3A6B", margin: "0 0 16px" }}>
+            <h3 style={{ fontWeight: 700, fontSize: "15px", color: "#FF5B22", margin: "0 0 16px" }}>
               Google Sheets 報名資料（{courseRegs.length} 筆）
             </h3>
             <table style={s.table}>
@@ -1413,7 +1416,7 @@ function ReorderModal({
                 marginBottom: "6px",
                 borderRadius: "10px",
                 border: dragOverIdx === idx && dragIdx !== idx
-                  ? "2px solid #1B3A6B"
+                  ? "2px solid #FF5B22"
                   : "1px solid #E5E7EB",
                 backgroundColor: dragIdx === idx ? "#F0F4FF" : "#FAFAFA",
                 opacity: dragIdx === idx ? 0.5 : 1,
@@ -1428,7 +1431,7 @@ function ReorderModal({
               <div style={{
                 width: "24px", height: "24px",
                 borderRadius: "50%",
-                backgroundColor: "#1B3A6B",
+                backgroundColor: "#FF5B22",
                 color: "#fff",
                 fontSize: "12px",
                 fontWeight: 700,
@@ -1538,7 +1541,7 @@ function PreviewModal({ course, onClose }: { course: Course; onClose: () => void
         boxShadow: "0 8px 40px rgba(0,0,0,0.2)",
       }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-          <div style={{ fontWeight: 700, fontSize: "14px", color: "#1B3A6B" }}>前台呈現效果預覽</div>
+          <div style={{ fontWeight: 700, fontSize: "14px", color: "#FF5B22" }}>前台呈現效果預覽</div>
           <button
             onClick={onClose}
             style={{ background: "none", border: "none", fontSize: "18px", cursor: "pointer", color: "#9CA3AF" }}
@@ -1605,7 +1608,7 @@ function CourseRow({
         ...s.courseRow,
         opacity: dragIndex === idx ? 0.4 : 1,
         borderTop: dragOverIndex === idx && dragIndex !== null && dragIndex !== idx
-          ? "2px solid #1B3A6B"
+          ? "2px solid #FF5B22"
           : "none",
         cursor: dragIndex !== null ? "grabbing" : "default",
         transition: "opacity 0.15s",
@@ -1700,7 +1703,7 @@ function CourseRow({
       >
         <span style={{
           width: "34px", height: "20px", borderRadius: "10px",
-          backgroundColor: course.published ? "#1B3A6B" : "#D1D5DB",
+          backgroundColor: course.published ? "#FF5B22" : "#D1D5DB",
           position: "relative",
           transition: "background-color 0.15s",
           flexShrink: 0,
@@ -1714,7 +1717,7 @@ function CourseRow({
             boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
           }} />
         </span>
-        <span style={{ fontSize: "11px", fontWeight: 600, color: course.published ? "#1B3A6B" : "#9CA3AF", width: "36px" }}>
+        <span style={{ fontSize: "11px", fontWeight: 600, color: course.published ? "#FF5B22" : "#9CA3AF", width: "36px" }}>
           {course.published ? "顯示中" : "已隱藏"}
         </span>
       </button>
@@ -2081,6 +2084,9 @@ export default function AdminCoursesPage() {
   // ── List view (default) ──
   return (
     <div style={s.page}>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       <Toast msg={toast} />
       {showReorder && (
         <ReorderModal
