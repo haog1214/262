@@ -113,7 +113,12 @@ export default function CourseCard({
         {/* 按鈕 */}
         {detailPath ? (
           <Link href={detailPath}>
-            <a className="w-full flex items-center justify-center border-0 font-semibold rounded-lg transition-all text-[18px] py-2 group/btn" style={{ backgroundColor: "#1B3A6B", color: "#FFFFFF" }}>
+            <a
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center border-0 font-semibold rounded-lg transition-all text-[18px] py-2 group/btn"
+              style={{ backgroundColor: "#1B3A6B", color: "#FFFFFF" }}
+            >
               查看課程詳情
               <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
             </a>
