@@ -981,7 +981,7 @@ function EnrollmentView({
           }}
         >← 返回課程列表</button>
         <div>
-          <div style={{ fontWeight: 700, fontSize: "18px", color: "#FF5B22" }}>{course.title}</div>
+          <div style={{ fontWeight: 700, fontSize: "18px", color: "#FF5B22" }}>{course.courseCode ? `${course.courseCode} ${course.title}` : course.title}</div>
           <div style={{ fontSize: "12px", color: "#9CA3AF" }}>報名管理</div>
         </div>
       </div>
@@ -1460,7 +1460,7 @@ function ReorderModal({
 
               {/* Title */}
               <div style={{ flex: 1, fontWeight: 600, fontSize: "14px", color: "#111827", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {course.title || "（無標題）"}
+                {course.title ? (course.courseCode ? `${course.courseCode} ${course.title}` : course.title) : "（無標題）"}
               </div>
 
               {/* Up/Down buttons */}
@@ -1671,7 +1671,7 @@ function CourseRow({
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontWeight: 700, fontSize: "14px", color: "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-          {course.title || "（無標題）"}
+          {course.title ? (course.courseCode ? `${course.courseCode} ${course.title}` : course.title) : "（無標題）"}
         </div>
         <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "2px", display: "flex", alignItems: "center", gap: "8px" }}>
           <span>{formatPrice(course.discountPrice)}</span>

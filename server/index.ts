@@ -40,7 +40,7 @@ function deriveSessionFromSchedule(course: Course, sch: Schedule): HoursSession 
   const durationHours = Math.max(0.5, Math.round(((eh * 60 + em) - (sh * 60 + sm)) / 30) / 2);
   return {
     id: `course-${sch.courseId}-${sch.id}`,
-    name: course.title,
+    name: course.courseCode ? `${course.courseCode} ${course.title}` : course.title,
     session_date: sch.date,
     start_time: startTime,
     end_time: endTime,

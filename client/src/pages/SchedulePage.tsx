@@ -59,7 +59,7 @@ export default function SchedulePage() {
               const d = /^\d{4}-\d{2}-\d{2}$/.test(s.date) ? new Date(s.date) : null;
               items.push({
                 id: s.id,
-                course: course.title,
+                course: course.courseCode ? `${course.courseCode} ${course.title}` : course.title,
                 subtitle: course.tools,
                 badge: course.badge,
                 date: d ? `${s.date.slice(0, 4)} / ${s.date.slice(5, 7)} / ${s.date.slice(8, 10)}` : s.date,

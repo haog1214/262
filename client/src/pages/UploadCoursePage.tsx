@@ -495,7 +495,7 @@ function ExcelImport({ onBack }: { onBack: () => void }) {
                   drafts.map((d, i) => (
                     <div key={i} style={{ padding: "14px 18px", borderBottom: i < drafts.length - 1 ? `1px solid ${line}` : "none", display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center" }}>
                       <div>
-                        <p style={{ fontSize: "14px", fontWeight: 600, color: ink }}>{d.title}</p>
+                        <p style={{ fontSize: "14px", fontWeight: 600, color: ink }}>{d.courseCode ? `${d.courseCode} ${d.title}` : d.title}</p>
                         <p style={{ fontSize: "12px", color: inkSoft, marginTop: "2px" }}>{d.tools}</p>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
@@ -613,7 +613,7 @@ function Wizard({ onBack }: { onBack: () => void }) {
         <Panel style={{ width: "440px", maxWidth: "92vw", textAlign: "center" }}>
           <CheckCircle2 size={30} strokeWidth={1.5} color={accent} style={{ marginBottom: "16px" }} />
           <h2 style={{ fontSize: "18px", fontWeight: 600, color: ink, marginBottom: "10px" }}>課程已上架</h2>
-          <p style={{ fontSize: "13px", color: inkSoft, marginBottom: "32px" }}>「{draft.title}」已成功加入課程列表</p>
+          <p style={{ fontSize: "13px", color: inkSoft, marginBottom: "32px" }}>「{draft.courseCode ? `${draft.courseCode} ${draft.title}` : draft.title}」已成功加入課程列表</p>
           <button onClick={startOver} style={{ ...btnPrimary, width: "100%", marginBottom: "14px" }}>
             繼續上架下一堂課
           </button>
