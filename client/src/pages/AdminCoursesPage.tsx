@@ -1761,7 +1761,7 @@ export default function AdminCoursesPage() {
   const [editingId, setEditingId] = useState<number | "new" | null>(null);
   const [enrollCourseId, setEnrollCourseId] = useState<number | null>(null);
   const [previewCourseId, setPreviewCourseId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"courses" | "closed" | "knowledge">("courses");
+  const [activeTab, setActiveTab] = useState<"courses" | "closed" | "coursedata" | "knowledge">("courses");
   const visibleCourses = config.courses.filter(c => c.published);
   const closedCourses = config.courses.filter(c => !c.published);
   const [allSchedules, setAllSchedules] = useState<Schedule[]>([]);
@@ -2127,6 +2127,7 @@ export default function AdminCoursesPage() {
           {([
             { key: "courses" as const, label: "課程管理", Icon: BookOpen },
             { key: "closed" as const, label: "已關閉課程", Icon: Archive },
+            { key: "coursedata" as const, label: "課程資訊後台", Icon: ClipboardList },
             { key: "knowledge" as const, label: "知識庫", Icon: Archive },
           ]).map(tab => (
             <button
@@ -2252,6 +2253,16 @@ export default function AdminCoursesPage() {
             </div>
           )}
         </div>
+        )}
+
+        {activeTab === "coursedata" && (
+          <div style={{ ...s.card, padding: 0, overflow: "hidden" }}>
+            <iframe
+              src="/course-info-262x.html"
+              title="課程資訊後台"
+              style={{ width: "100%", height: "calc(100vh - 220px)", minHeight: "600px", border: "none", display: "block" }}
+            />
+          </div>
         )}
 
         {activeTab === "knowledge" && (
