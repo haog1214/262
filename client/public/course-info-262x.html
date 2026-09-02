@@ -9,10 +9,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<!-- Supabase client. Blocked by Artifact CSP when viewed via the claude.ai share link —
-     the app falls back to the built-in demo data in that case. Open this file locally
-     (or host it yourself) to actually read/write the real database. -->
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
   :root{
@@ -2744,18 +2740,36 @@
 </div>
 
 <script>
-  /* ---------- Supabase (real database) ---------- */
-  // Falls back to the built-in demo data everywhere below if this isn't available
-  // (e.g. blocked by the Artifact CSP, or offline).
-  let SB = null;
-  try {
-    if (window.supabase && window.supabase.createClient) {
-      SB = window.supabase.createClient(
-        'https://lmkhyfpuenvojdtrynvq.supabase.co',
-        'sb_publishable___pD-7D_NgrEXInF4Nyx0Q_357GEjPf'
-      );
-    }
-  } catch (e) { SB = null; }
+  /* ---------- Hours API (Google Sheets backed, same origin) ---------- */
+  // SB is kept as a truthy flag so existing "if (SB)" checks keep working unchanged.
+  const SB = true;
+  const HOURS_ADMIN_PASSWORD = '84204302';
+
+  async function hoursApi(path, options) {
+    const res = await fetch('/api/hours' + path, {
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': HOURS_ADMIN_PASSWORD },
+      ...options,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error((data && data.detail) || (data && data.error) || ('HTTP ' + res.status));
+    return data;
+  }
+  const HoursAPI = {
+    listStudents: () => hoursApi('/students'),
+    studentByPhone: (phone) => hoursApi('/students/by-phone/' + encodeURIComponent(phone)).then(r => r.student),
+    updateStudent: (id, patch) => hoursApi('/students/' + encodeURIComponent(id), { method: 'PATCH', body: JSON.stringify(patch) }),
+    listSessions: () => hoursApi('/sessions'),
+    sessionLookup: (name, date, start) => hoursApi('/sessions/lookup?' + new URLSearchParams({ name, date, start: start || '' })).then(r => r.session),
+    createSession: (data) => hoursApi('/sessions', { method: 'POST', body: JSON.stringify(data) }),
+    updateSession: (id, patch) => hoursApi('/sessions/' + encodeURIComponent(id), { method: 'PATCH', body: JSON.stringify(patch) }),
+    listRegistrations: () => hoursApi('/registrations'),
+    listCheckins: () => hoursApi('/checkins'),
+    listAdjustments: () => hoursApi('/adjustments'),
+    checkinAttempt: (phone, sessionId, hours) => hoursApi('/checkin/attempt', { method: 'POST', body: JSON.stringify({ phone, sessionId, hours }) }),
+    checkinRegisterExisting: (studentId, sessionId, phoneUsed, hours) => hoursApi('/checkin/register-existing', { method: 'POST', body: JSON.stringify({ studentId, sessionId, phoneUsed, hours }) }),
+    checkinRegisterNew: (payload) => hoursApi('/checkin/register-new', { method: 'POST', body: JSON.stringify(payload) }),
+    createAdjustment: (payload) => hoursApi('/adjustments', { method: 'POST', body: JSON.stringify(payload) }),
+  };
 
   // key -> { name, phone, hours, purchased, attended, joined, active, checkins:[], adjustments:[] }
   // Populated from Supabase when reachable; same shape as the built-in `studentData` below
@@ -2787,12 +2801,15 @@
   async function loadLiveStudents(){
     if (!SB) return false;
     try {
-      const [{ data: students, error: e1 }, { data: checkins, error: e2 }, { data: adjustments, error: e3 }] = await Promise.all([
-        SB.from('students').select('*').order('name'),
-        SB.from('checkins').select('student_id, hours_deducted, result, checked_in_at, course_sessions(name)').eq('result', 'success'),
-        SB.from('hour_adjustments').select('*').order('created_at', { ascending:false })
+      const [students, allCheckins, adjustments] = await Promise.all([
+        HoursAPI.listStudents(),
+        HoursAPI.listCheckins(),
+        HoursAPI.listAdjustments(),
       ]);
-      if (e1 || !students) throw e1 || new Error('no students');
+      if (!students) throw new Error('no students');
+      students.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      const checkins = allCheckins.filter(c => c.result === 'success');
+      adjustments.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
 
       const map = {};
       students.forEach(s => {
@@ -2813,7 +2830,7 @@
         const s = map[c.student_id];
         if (!s) return;
         s.checkins.push({
-          main: (c.course_sessions && c.course_sessions.name) || '課程',
+          main: c.session_name || '課程',
           sub: fmtDateTime(c.checked_in_at),
           amt: `-${Number(c.hours_deducted).toFixed(2).replace(/\.?0+$/,'')} hr`
         });
@@ -2885,8 +2902,7 @@
   async function syncSessionIds(){
     if (!SB) return;
     try {
-      const { data, error } = await SB.from('course_sessions').select('id, name, session_date, start_time');
-      if (error) throw error;
+      const data = await HoursAPI.listSessions();
       const byKey = {};
       (data || []).forEach(s => { byKey[s.name + '|' + s.session_date + '|' + s.start_time.slice(0, 5)] = s.id; });
       document.querySelectorAll('#session-list .sess-row').forEach(row => {
@@ -3061,18 +3077,19 @@
         let sessionId = row.dataset.id || null;
         if (!sessionId) {
           const iso = row.dataset.iso || new Date().toISOString().slice(0, 10);
-          let query = SB.from('course_sessions').select('id')
-            .eq('name', row.dataset.name).eq('session_date', iso);
-          if (row.dataset.start) query = query.eq('start_time', row.dataset.start);
-          const { data: sessionRow } = await query.limit(1).maybeSingle();
+          const sessionRow = await HoursAPI.sessionLookup(row.dataset.name, iso, row.dataset.start);
           sessionId = sessionRow ? sessionRow.id : null;
         }
         if (sessionId) {
-          const { data, error } = await SB.from('course_registrations')
-            .select('seats_total, seats_checked_in, students(name, phone)')
-            .eq('session_id', sessionId);
-          if (error) throw error;
-          regs = data || [];
+          const [allRegs, allStudents] = await Promise.all([HoursAPI.listRegistrations(), HoursAPI.listStudents()]);
+          const studentsById = new Map(allStudents.map(s => [s.id, s]));
+          regs = allRegs
+            .filter(r => r.session_id === sessionId)
+            .map(r => ({
+              seats_total: r.seats_total,
+              seats_checked_in: r.seats_checked_in,
+              students: studentsById.get(r.student_id) ? { name: studentsById.get(r.student_id).name, phone: studentsById.get(r.student_id).phone } : null,
+            }));
         }
       } catch (e) { console.warn('Roster lookup failed, falling back to demo list.', e); regs = null; }
     }
@@ -3255,16 +3272,14 @@
         try {
           let id = row.dataset.id;
           if (!id) {
-            const { data } = await SB.from('course_sessions').select('id')
-              .eq('name', originalName).eq('session_date', originalIso).limit(1).maybeSingle();
-            id = data ? data.id : null;
+            const found = await HoursAPI.sessionLookup(originalName, originalIso);
+            id = found ? found.id : null;
           }
           if (id) {
-            const { error } = await SB.from('course_sessions').update({
+            await HoursAPI.updateSession(id, {
               name, session_date: iso, start_time: start, end_time: end,
               teacher, room, hours_per_checkin: Number(hours), capacity: Number(cap)
-            }).eq('id', id);
-            if (error) throw error;
+            });
             row.dataset.id = id;
           }
         } catch (e) { console.warn('Session update failed, kept local only.', e); }
@@ -3296,11 +3311,10 @@
 
     if (SB) {
       try {
-        const { data: inserted, error } = await SB.from('course_sessions').insert({
+        const inserted = await HoursAPI.createSession({
           name, session_date: iso, start_time: start, end_time: end,
           teacher, room, hours_per_checkin: Number(hours), capacity: Number(cap), is_open: true
-        }).select().single();
-        if (error) throw error;
+        });
         row.dataset.id = inserted.id;
       } catch (e) { console.warn('Session create failed, kept local only.', e); }
     }
@@ -3335,8 +3349,8 @@
       markEl.className = 'mark crit';
     }
     if (SB && row.dataset.id) {
-      SB.from('course_sessions').update({ is_open: isOpen }).eq('id', row.dataset.id)
-        .then(({ error }) => { if (error) console.warn('is_open sync failed.', error); });
+      HoursAPI.updateSession(row.dataset.id, { is_open: isOpen })
+        .catch(e => console.warn('is_open sync failed.', e));
     }
   });
 
@@ -3401,11 +3415,8 @@
       // Fallback for rows syncSessionIds() didn't manage to id-stamp (e.g. Supabase was
       // unreachable at page load). Name+date+start_time narrows same-day-same-name collisions
       // but still isn't a true unique key — kept only as a best-effort fallback.
-      let query = SB.from('course_sessions').select('id')
-        .eq('name', ciSession.name).eq('session_date', ciSession.isoDate);
-      if (ciSession.startTime) query = query.eq('start_time', ciSession.startTime);
-      const { data } = await query.limit(1).maybeSingle();
-      ciSession.sessionId = data ? data.id : null;
+      const found = await HoursAPI.sessionLookup(ciSession.name, ciSession.isoDate, ciSession.startTime);
+      ciSession.sessionId = found ? found.id : null;
     } catch (e) { ciSession.sessionId = null; }
   }
 
@@ -3479,67 +3490,43 @@
     const need = Number(ciSession.hours) || 1;
 
     try {
-      const { data: student } = await SB.from('students').select('*').eq('phone', phone).maybeSingle();
-      if (!student) { showCiState('notfound'); return; }
+      const result = await HoursAPI.checkinAttempt(phone, ciSession.sessionId || null, need);
 
-      if (!ciSession.sessionId) {
-        // this course session row isn't wired to a real Supabase session yet
-        pendingStudent = student;
-        document.getElementById('ci-notreg-name').textContent = student.name;
-        document.getElementById('ci-notreg-remain').textContent = fmtHours(Number(student.remaining_hours));
+      if (result.state === 'notfound') { showCiState('notfound'); return; }
+
+      if (result.state === 'notregistered') {
+        pendingStudent = result.student;
+        document.getElementById('ci-notreg-name').textContent = result.student.name;
+        document.getElementById('ci-notreg-remain').textContent = fmtHours(Number(result.student.remaining_hours));
         showCiState('notregistered');
         return;
       }
 
-      const { data: reg } = await SB.from('course_registrations').select('*')
-        .eq('student_id', student.id).eq('session_id', ciSession.sessionId).maybeSingle();
-
-      if (!reg) {
-        pendingStudent = student;
-        document.getElementById('ci-notreg-name').textContent = student.name;
-        document.getElementById('ci-notreg-remain').textContent = fmtHours(Number(student.remaining_hours));
-        showCiState('notregistered');
-        return;
-      }
-
-      if (reg.seats_checked_in >= reg.seats_total) {
-        document.getElementById('ci-dup-name').textContent = student.name;
-        document.getElementById('ci-dup-time').textContent = ` (${reg.seats_checked_in}/${reg.seats_total} 位)`;
+      if (result.state === 'duplicate') {
+        document.getElementById('ci-dup-name').textContent = result.student.name;
+        document.getElementById('ci-dup-time').textContent = ` (${result.reg.seats_checked_in}/${result.reg.seats_total} 位)`;
         showCiState('duplicate');
         return;
       }
 
-      if (Number(student.remaining_hours) < need) {
-        document.getElementById('ci-insuff-remain').textContent = fmtHours(Number(student.remaining_hours));
+      if (result.state === 'insufficient') {
+        document.getElementById('ci-insuff-remain').textContent = fmtHours(Number(result.student.remaining_hours));
         document.getElementById('ci-insuff-need').textContent = fmtHours(need);
         showCiState('insufficient');
         return;
       }
 
-      const after = Math.max(0, Number(student.remaining_hours) - need);
-      try {
-        const { error: e1 } = await SB.from('course_registrations').update({ seats_checked_in: reg.seats_checked_in + 1 }).eq('id', reg.id);
-        if (e1) throw e1;
-        const { error: e2 } = await SB.from('students').update({ remaining_hours: after, attended_count: Number(student.attended_count) + 1 }).eq('id', student.id);
-        if (e2) throw e2;
-        const { error: e3 } = await SB.from('checkins').insert({ student_id: student.id, session_id: ciSession.sessionId, phone_used: phone, result: 'success', hours_deducted: need });
-        if (e3) throw e3;
-      } catch (writeErr) {
-        console.warn('Check-in write failed.', writeErr);
-        document.getElementById('ci-write-error-msg').textContent =
-          `${student.name} 的報到寫入失敗，尚未完成報到，時數也還沒有扣除，請重新再試一次。`;
-        showCiState('write-error');
-        return;
-      }
-
-      document.getElementById('ci-success-name').textContent = student.name;
+      const after = Number(result.student.remaining_hours);
+      document.getElementById('ci-success-name').textContent = result.student.name;
       document.getElementById('ci-deduct').textContent = fmtHours(need) + ' hr';
       document.getElementById('ci-remain').textContent = fmtHours(after) + ' hr';
       showCiState('success');
       await initLiveStudents();
     } catch (e) {
-      console.warn('Check-in lookup failed.', e);
-      showCiState('notfound');
+      console.warn('Check-in write failed.', e);
+      document.getElementById('ci-write-error-msg').textContent =
+        `報到寫入失敗，尚未完成報到，時數也還沒有扣除，請重新再試一次。`;
+      showCiState('write-error');
     }
   });
 
@@ -3563,21 +3550,16 @@
       return;
     }
     try {
-      if (ciSession.sessionId) {
-        const { error: regErr } = await SB.from('course_registrations').insert({
-          student_id: pendingStudent.id, session_id: ciSession.sessionId, seats_total: 1, seats_checked_in: 1
-        });
-        if (regErr) throw regErr;
-        const { error: ciErr } = await SB.from('checkins').insert({
-          student_id: pendingStudent.id, session_id: ciSession.sessionId,
-          phone_used: pendingStudent.phone, result: 'success', hours_deducted: need
-        });
-        if (ciErr) throw ciErr;
+      if (!ciSession.sessionId) throw new Error('No session id to register against');
+      const result = await HoursAPI.checkinRegisterExisting(pendingStudent.id, ciSession.sessionId, pendingStudent.phone, need);
+      if (!result.ok) {
+        document.getElementById('ci-insuff-remain').textContent = fmtHours(Number(result.student.remaining_hours));
+        document.getElementById('ci-insuff-need').textContent = fmtHours(need);
+        showCiState('insufficient');
+        return;
       }
-      const after = Math.max(0, remain - need);
-      const { error: stuErr } = await SB.from('students').update({ remaining_hours: after, attended_count: Number(pendingStudent.attended_count) + 1 }).eq('id', pendingStudent.id);
-      if (stuErr) throw stuErr;
-      document.getElementById('ci-success-name').textContent = pendingStudent.name;
+      const after = Number(result.student.remaining_hours);
+      document.getElementById('ci-success-name').textContent = result.student.name;
       document.getElementById('ci-deduct').textContent = fmtHours(need) + ' hr';
       document.getElementById('ci-remain').textContent = fmtHours(after) + ' hr';
       showCiState('success');
@@ -3627,33 +3609,12 @@
     // Wait for every write to actually succeed before telling the front desk it worked —
     // showing "報名成功" before the database confirms it would silently lose the check-in.
     try {
-      const { data: inserted, error } = await SB.from('students').insert({
-        name, phone: phoneDigits,
-        purchased_hours: need, remaining_hours: 0, attended_count: 1,
-        is_active: true, joined_at: new Date().toISOString().slice(0,10),
-        note: `現場報名・${planLabel}・付款方式：${payment}`
-      }).select().single();
-      if (error) throw error;
-
-      const { error: adjErr } = await SB.from('hour_adjustments').insert({
-        student_id: inserted.id, amount: need, reason: '現場報名購買時數',
-        note: `${planLabel}・${payment}`, operator: '管理員'
-      });
-      if (adjErr) throw adjErr;
-
       await ciSession.ready;
-      const matchedSessionId = ciSession.sessionId;
-      if (matchedSessionId) {
-        const { error: ciErr } = await SB.from('checkins').insert({
-          student_id: inserted.id, session_id: matchedSessionId,
-          phone_used: phoneDigits, result: 'success', hours_deducted: need
-        });
-        if (ciErr) throw ciErr;
-        const { error: regErr } = await SB.from('course_registrations').insert({
-          student_id: inserted.id, session_id: matchedSessionId, seats_total: 1, seats_checked_in: 1
-        });
-        if (regErr) throw regErr;
-      }
+      await HoursAPI.checkinRegisterNew({
+        name, phone: phoneDigits, hours: need,
+        note: `現場報名・${planLabel}・付款方式：${payment}`,
+        sessionId: ciSession.sessionId || null, planLabel, payment,
+      });
       showCiState('onsite-success');
       await initLiveStudents();
     } catch (err) {
@@ -3789,8 +3750,8 @@
     const mark = studentStatusMark(Number(s.hours), s.active);
     markCell.innerHTML = `<span class="mark ${mark.cls}">${mark.cls === 'neutral' ? '' : '<span class="dot"></span>'}${mark.label}</span>`;
     if (isLive && SB) {
-      try { await SB.from('students').update({ is_active: s.active }).eq('id', currentStudentKey); }
-      catch (e) { console.warn('Supabase status update failed.', e); }
+      try { await HoursAPI.updateStudent(currentStudentKey, { is_active: s.active }); }
+      catch (e) { console.warn('Status update failed.', e); }
     }
   });
 
@@ -4052,13 +4013,10 @@
 
     if (isLive && SB && id) {
       try {
-        await SB.from('hour_adjustments').insert({
-          student_id: id, amount: signedAmt, reason, note: note || null, operator: '管理員'
-        });
-        await SB.from('students').update({ remaining_hours: after }).eq('id', id);
+        await HoursAPI.createAdjustment({ studentId: id, amount: signedAmt, reason, note: note || '', operator: '管理員' });
         await initLiveStudents();
       } catch (e) {
-        console.warn('Supabase adjustment write failed.', e);
+        console.warn('Adjustment write failed.', e);
       }
     }
   });
