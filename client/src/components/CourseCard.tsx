@@ -48,6 +48,10 @@ export default function CourseCard({
   status,
   schedules,
 }: CourseCardProps) {
+  const nextSchedule = schedules && schedules.length > 0
+    ? [...schedules].sort((a, b) => a.date.localeCompare(b.date))[0]
+    : null;
+
   const getBadgeColorClass = () => {
     switch (badgeColor) {
       case "pink":
@@ -91,12 +95,14 @@ export default function CourseCard({
           {title}
         </h3>
 
-        {/* 副標語 - 16級 */}
-        <p className="text-[16px] font-light mb-2 text-gray-600">{tools}</p>
+        {/* 副標語 - 16級，最多兩行 */}
+        <p className="text-[16px] font-light mb-2 text-gray-600 line-clamp-2">{tools}</p>
 
-        {/* 內文 - 16級 */}
-        <p className="text-[16px] font-light mb-3 text-gray-700 flex-grow line-clamp-2">
-          {description}
+        {/* 最近上課日期 */}
+        <p className="text-[16px] font-light mb-3 text-gray-700 flex-grow">
+          {nextSchedule
+            ? `📅 ${nextSchedule.date}${nextSchedule.time ? ` ${nextSchedule.time}` : ""}`
+            : description}
         </p>
 
         {/* 價格區域 - 18級 */}
