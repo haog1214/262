@@ -97,7 +97,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                   )}
                   {course.targetAudience && course.targetAudience.length > 0 && (
                     <span className="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 text-gray-600 border border-gray-200">
-                      <Users className="w-4 h-4" /> 適合{course.targetAudience.length}種對象
+                      適合{course.targetAudience.length}種對象
                     </span>
                   )}
                 </div>
@@ -139,7 +139,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                   <div className="flex-shrink-0" style={{ marginLeft: schedules.length > 0 ? "40px" : 0 }}>
                     {course.discountPrice && (
                       <>
-                        <p className="text-3xl font-bold text-gray-900">{course.discountPrice}</p>
+                        <p className="text-3xl font-bold text-gray-900"><span style={{ fontSize: "18px" }}>NT：</span>{course.discountPrice}</p>
                         {course.originalPrice && (
                           <p className="text-gray-400 line-through text-sm mb-3">{course.originalPrice}</p>
                         )}
