@@ -1569,13 +1569,199 @@ function PreviewModal({ course, onClose }: { course: Course; onClose: () => void
 }
 
 // ── Main admin page ───────────────────────────────────────────────────────────
+function CourseRow({
+  course,
+  idx,
+  dragIndex,
+  dragOverIndex,
+  onDragStart,
+  onDragOver,
+  onDragEnd,
+  togglePublished,
+  setPreviewCourseId,
+  openEditView,
+  deleteCourse,
+  openEnrollmentView,
+  enrollCount,
+}: {
+  course: Course;
+  idx: number;
+  dragIndex: number | null;
+  dragOverIndex: number | null;
+  onDragStart: (e: React.DragEvent, idx: number) => void;
+  onDragOver: (e: React.DragEvent, idx: number) => void;
+  onDragEnd: () => void;
+  togglePublished: (id: number) => void;
+  setPreviewCourseId: (id: number) => void;
+  openEditView: (id: number | "new") => void;
+  deleteCourse: (id: number) => void;
+  openEnrollmentView: (id: number) => void;
+  enrollCount: number;
+}) {
+  return (
+    <div
+      style={{
+        ...s.courseRow,
+        opacity: dragIndex === idx ? 0.4 : 1,
+        borderTop: dragOverIndex === idx && dragIndex !== null && dragIndex !== idx
+          ? "2px solid #1B3A6B"
+          : "none",
+        cursor: dragIndex !== null ? "grabbing" : "default",
+        transition: "opacity 0.15s",
+      }}
+      draggable
+      onDragStart={e => onDragStart(e, idx)}
+      onDragOver={e => onDragOver(e, idx)}
+      onDragEnd={onDragEnd}
+    >
+      {/* Drag handle */}
+      <div
+        style={{
+          color: "#CBD5E1",
+          fontSize: "20px",
+          flexShrink: 0,
+          cursor: "grab",
+          userSelect: "none",
+          lineHeight: 1,
+          padding: "0 2px",
+        }}
+        title="拖拉以調整順序"
+      >
+        ⠿
+      </div>
+
+      {/* Thumbnail */}
+      <div style={{
+        width: "56px",
+        height: "56px",
+        borderRadius: "8px",
+        overflow: "hidden",
+        backgroundColor: "#E5E7EB",
+        flexShrink: 0,
+        position: "relative",
+      }}>
+        {course.backgroundImage && (
+          <img
+            src={course.backgroundImage}
+            alt=""
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            onError={e => ((e.target as HTMLImageElement).style.display = "none")}
+          />
+        )}
+        {course.status === "full" && (
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "10px",
+            fontWeight: 700,
+            color: "#fff",
+          }}>
+            額滿
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontWeight: 700, fontSize: "14px", color: "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {course.title || "（無標題）"}
+        </div>
+        <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "2px", display: "flex", alignItems: "center", gap: "8px" }}>
+          <span>{course.discountPrice}</span>
+          <span style={{
+            backgroundColor: "#EFF6FF",
+            color: "#1D4ED8",
+            borderRadius: "10px",
+            padding: "1px 8px",
+            fontWeight: 600,
+            fontSize: "11px",
+          }}>
+            已報名 {enrollCount} 人
+          </span>
+        </div>
+      </div>
+
+      {/* Published toggle */}
+      <button
+        onClick={() => togglePublished(course.id)}
+        title={course.published ? "點擊隱藏（不顯示於首頁）" : "點擊顯示於首頁"}
+        style={{
+          display: "flex", alignItems: "center", gap: "6px",
+          border: "none", cursor: "pointer",
+          background: "transparent",
+          padding: "4px 2px",
+          flexShrink: 0,
+        }}
+      >
+        <span style={{
+          width: "34px", height: "20px", borderRadius: "10px",
+          backgroundColor: course.published ? "#1B3A6B" : "#D1D5DB",
+          position: "relative",
+          transition: "background-color 0.15s",
+          flexShrink: 0,
+        }}>
+          <span style={{
+            position: "absolute", top: "2px",
+            left: course.published ? "16px" : "2px",
+            width: "16px", height: "16px", borderRadius: "50%",
+            backgroundColor: "#fff",
+            transition: "left 0.15s",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
+          }} />
+        </span>
+        <span style={{ fontSize: "11px", fontWeight: 600, color: course.published ? "#1B3A6B" : "#9CA3AF", width: "36px" }}>
+          {course.published ? "顯示中" : "已隱藏"}
+        </span>
+      </button>
+
+      {/* Actions */}
+      <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+        <button
+          style={{ ...s.btnIcon, padding: "7px 11px", display: "inline-flex", color: accent }}
+          onClick={() => setPreviewCourseId(course.id)}
+          title="預覽前台效果"
+        >
+          <Eye size={15} strokeWidth={1.5} />
+        </button>
+        <button
+          style={{ ...s.btnIcon, padding: "7px 11px", display: "inline-flex" }}
+          onClick={() => openEditView(course.id)}
+          title="編輯課程"
+        >
+          <Pencil size={15} strokeWidth={1.5} />
+        </button>
+        <button
+          style={{ ...s.btnIconDanger, padding: "7px 11px", display: "inline-flex" }}
+          onClick={() => deleteCourse(course.id)}
+          title="刪除課程"
+        >
+          <Trash2 size={15} strokeWidth={1.5} />
+        </button>
+        <button
+          style={{ ...s.btnIcon, padding: "7px 11px", display: "inline-flex", color: accent }}
+          onClick={() => openEnrollmentView(course.id)}
+          title="報名清單"
+        >
+          <ClipboardList size={15} strokeWidth={1.5} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminCoursesPage() {
   const [view, setView] = useState<"list" | "edit" | "enrollment">("list");
   const [config, setConfig] = useState<CoursesConfig>(getLocalCoursesConfig);
   const [editingId, setEditingId] = useState<number | "new" | null>(null);
   const [enrollCourseId, setEnrollCourseId] = useState<number | null>(null);
   const [previewCourseId, setPreviewCourseId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"courses" | "knowledge">("courses");
+  const [activeTab, setActiveTab] = useState<"courses" | "closed" | "knowledge">("courses");
+  const visibleCourses = config.courses.filter(c => c.published);
+  const closedCourses = config.courses.filter(c => !c.published);
   const [allSchedules, setAllSchedules] = useState<Schedule[]>([]);
   const [allEnrollments, setAllEnrollments] = useState<Enrollment[]>([]);
   const [enrollCountMap, setEnrollCountMap] = useState<Record<string, number>>({});
@@ -1726,7 +1912,7 @@ export default function AdminCoursesPage() {
         id: newId,
         detailPath: draft.detailPath || `/course/${newId}`,
       };
-      updated = { ...config, courses: [...config.courses, finalCourse] };
+      updated = { ...config, courses: [finalCourse, ...config.courses] };
     }
     goToList();
     setEditingId(null);
@@ -1942,6 +2128,7 @@ export default function AdminCoursesPage() {
         <div style={{ display: "flex", gap: "0", marginBottom: "4px", borderBottom: `1px solid ${line}` }}>
           {([
             { key: "courses" as const, label: "課程管理", Icon: BookOpen },
+            { key: "closed" as const, label: "已關閉課程", Icon: Archive },
             { key: "knowledge" as const, label: "知識庫", Icon: Archive },
           ]).map(tab => (
             <button
@@ -1993,7 +2180,7 @@ export default function AdminCoursesPage() {
         <div style={s.card}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
             <h2 style={{ fontWeight: 700, fontSize: "16px", color: ink }}>
-              課程列表（共 {config.courses.length} 門）
+              課程列表（共 {visibleCourses.length} 門）
             </h2>
             <div style={{ display: "flex", gap: "8px" }}>
               <button
@@ -2008,168 +2195,65 @@ export default function AdminCoursesPage() {
             </div>
           </div>
 
-          {config.courses.map((course, idx) => (
-            <div
+          {visibleCourses.map(course => (
+            <CourseRow
               key={course.id}
-              style={{
-                ...s.courseRow,
-                opacity: dragIndex === idx ? 0.4 : 1,
-                borderTop: dragOverIndex === idx && dragIndex !== null && dragIndex !== idx
-                  ? "2px solid #1B3A6B"
-                  : "none",
-                cursor: dragIndex !== null ? "grabbing" : "default",
-                transition: "opacity 0.15s",
-              }}
-              draggable
-              onDragStart={e => onDragStart(e, idx)}
-              onDragOver={e => onDragOver(e, idx)}
+              course={course}
+              idx={config.courses.findIndex(c => c.id === course.id)}
+              dragIndex={dragIndex}
+              dragOverIndex={dragOverIndex}
+              onDragStart={onDragStart}
+              onDragOver={onDragOver}
               onDragEnd={onDragEnd}
-            >
-              {/* Drag handle */}
-              <div
-                style={{
-                  color: "#CBD5E1",
-                  fontSize: "20px",
-                  flexShrink: 0,
-                  cursor: "grab",
-                  userSelect: "none",
-                  lineHeight: 1,
-                  padding: "0 2px",
-                }}
-                title="拖拉以調整順序"
-              >
-                ⠿
-              </div>
-
-              {/* Thumbnail */}
-              <div style={{
-                width: "56px",
-                height: "56px",
-                borderRadius: "8px",
-                overflow: "hidden",
-                backgroundColor: "#E5E7EB",
-                flexShrink: 0,
-                position: "relative",
-              }}>
-                {course.backgroundImage && (
-                  <img
-                    src={course.backgroundImage}
-                    alt=""
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    onError={e => ((e.target as HTMLImageElement).style.display = "none")}
-                  />
-                )}
-                {course.status === "full" && (
-                  <div style={{
-                    position: "absolute",
-                    inset: 0,
-                    backgroundColor: "rgba(0,0,0,0.5)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "10px",
-                    fontWeight: 700,
-                    color: "#fff",
-                  }}>
-                    額滿
-                  </div>
-                )}
-              </div>
-
-              {/* Info */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: "14px", color: "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {course.title || "（無標題）"}
-                </div>
-                <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "2px", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span>{course.discountPrice} · {course.badge}</span>
-                  <span style={{
-                    backgroundColor: "#EFF6FF",
-                    color: "#1D4ED8",
-                    borderRadius: "10px",
-                    padding: "1px 8px",
-                    fontWeight: 600,
-                    fontSize: "11px",
-                  }}>
-                    已報名 {enrollCountMap[String(course.id)] ?? 0} 人
-                  </span>
-                </div>
-              </div>
-
-              {/* Published toggle */}
-              <button
-                onClick={() => togglePublished(course.id)}
-                title={course.published ? "點擊隱藏（不顯示於首頁）" : "點擊顯示於首頁"}
-                style={{
-                  display: "flex", alignItems: "center", gap: "6px",
-                  border: "none", cursor: "pointer",
-                  background: "transparent",
-                  padding: "4px 2px",
-                  flexShrink: 0,
-                }}
-              >
-                <span style={{
-                  width: "34px", height: "20px", borderRadius: "10px",
-                  backgroundColor: course.published ? "#1B3A6B" : "#D1D5DB",
-                  position: "relative",
-                  transition: "background-color 0.15s",
-                  flexShrink: 0,
-                }}>
-                  <span style={{
-                    position: "absolute", top: "2px",
-                    left: course.published ? "16px" : "2px",
-                    width: "16px", height: "16px", borderRadius: "50%",
-                    backgroundColor: "#fff",
-                    transition: "left 0.15s",
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
-                  }} />
-                </span>
-                <span style={{ fontSize: "11px", fontWeight: 600, color: course.published ? "#1B3A6B" : "#9CA3AF", width: "36px" }}>
-                  {course.published ? "顯示中" : "已隱藏"}
-                </span>
-              </button>
-
-              {/* Actions */}
-              <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
-                <button
-                  style={{ ...s.btnIcon, padding: "7px 11px", display: "inline-flex", color: accent }}
-                  onClick={() => setPreviewCourseId(course.id)}
-                  title="預覽前台效果"
-                >
-                  <Eye size={15} strokeWidth={1.5} />
-                </button>
-                <button
-                  style={{ ...s.btnIcon, padding: "7px 11px", display: "inline-flex" }}
-                  onClick={() => openEditView(course.id)}
-                  title="編輯課程"
-                >
-                  <Pencil size={15} strokeWidth={1.5} />
-                </button>
-                <button
-                  style={{ ...s.btnIconDanger, padding: "7px 11px", display: "inline-flex" }}
-                  onClick={() => deleteCourse(course.id)}
-                  title="刪除課程"
-                >
-                  <Trash2 size={15} strokeWidth={1.5} />
-                </button>
-                <button
-                  style={{ ...s.btnIcon, padding: "7px 11px", display: "inline-flex", color: accent }}
-                  onClick={() => openEnrollmentView(course.id)}
-                  title="報名清單"
-                >
-                  <ClipboardList size={15} strokeWidth={1.5} />
-                </button>
-              </div>
-            </div>
+              togglePublished={togglePublished}
+              setPreviewCourseId={setPreviewCourseId}
+              openEditView={openEditView}
+              deleteCourse={deleteCourse}
+              openEnrollmentView={openEnrollmentView}
+              enrollCount={enrollCountMap[String(course.id)] ?? 0}
+            />
           ))}
 
-          {config.courses.length === 0 && (
+          {visibleCourses.length === 0 && (
             <div style={{ textAlign: "center", padding: "40px", color: "#9CA3AF", fontSize: "14px" }}>
-              目前沒有課程，點擊「新增課程」開始建立
+              目前沒有顯示中的課程，點擊「新增課程」開始建立
             </div>
           )}
         </div>
         </>
+        )}
+
+        {activeTab === "closed" && (
+        <div style={s.card}>
+          <h2 style={{ fontWeight: 700, fontSize: "16px", color: ink, marginBottom: "16px" }}>
+            已關閉課程（共 {closedCourses.length} 門）
+          </h2>
+
+          {closedCourses.map(course => (
+            <CourseRow
+              key={course.id}
+              course={course}
+              idx={config.courses.findIndex(c => c.id === course.id)}
+              dragIndex={dragIndex}
+              dragOverIndex={dragOverIndex}
+              onDragStart={onDragStart}
+              onDragOver={onDragOver}
+              onDragEnd={onDragEnd}
+              togglePublished={togglePublished}
+              setPreviewCourseId={setPreviewCourseId}
+              openEditView={openEditView}
+              deleteCourse={deleteCourse}
+              openEnrollmentView={openEnrollmentView}
+              enrollCount={enrollCountMap[String(course.id)] ?? 0}
+            />
+          ))}
+
+          {closedCourses.length === 0 && (
+            <div style={{ textAlign: "center", padding: "40px", color: "#9CA3AF", fontSize: "14px" }}>
+              目前沒有已關閉的課程
+            </div>
+          )}
+        </div>
         )}
 
         {activeTab === "knowledge" && (
