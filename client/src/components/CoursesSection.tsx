@@ -11,15 +11,17 @@ export default function CoursesSection() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
 
   useEffect(() => {
-    getCoursesConfig().then(setConfig);
-    fetchSchedules().then(setSchedules);
-
-    const onUpdate = () => {
+    const load = () => {
       getCoursesConfig().then(setConfig);
       fetchSchedules().then(setSchedules);
     };
-    window.addEventListener("courses-updated", onUpdate);
-    return () => window.removeEventListener("courses-updated", onUpdate);
+    load();
+    window.addEventListener("courses-updated", load);
+    const interval = setInterval(load, 20000);
+    return () => {
+      window.removeEventListener("courses-updated", load);
+      clearInterval(interval);
+    };
   }, []);
 
   const { sectionTitle, sectionSubtitle, courses: allCourses } = config;

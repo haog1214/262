@@ -21,16 +21,21 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
   const [selectedSessionId, setSelectedSessionId] = useState("");
 
   useEffect(() => {
-    Promise.all([getCoursesConfig(), fetchSchedules()]).then(([config, allSchedules]) => {
-      const found = config.courses.find((c) => String(c.id) === params.id) ?? null;
-      setCourse(found);
-      if (found) {
-        const own = allSchedules.filter((s) => s.courseId === String(found.id));
-        setSchedules(own);
-        const firstOpen = own.find((s) => s.status !== "full") ?? own[0];
-        if (firstOpen) setSelectedSessionId(firstOpen.id);
-      }
-    });
+    const load = () => {
+      Promise.all([getCoursesConfig(), fetchSchedules()]).then(([config, allSchedules]) => {
+        const found = config.courses.find((c) => String(c.id) === params.id) ?? null;
+        setCourse(found);
+        if (found) {
+          const own = allSchedules.filter((s) => s.courseId === String(found.id));
+          setSchedules(own);
+          const firstOpen = own.find((s) => s.status !== "full") ?? own[0];
+          if (firstOpen) setSelectedSessionId(prev => prev || firstOpen.id);
+        }
+      });
+    };
+    load();
+    const interval = setInterval(load, 20000);
+    return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 

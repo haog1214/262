@@ -42,6 +42,7 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const load = () => {
     Promise.all([getCoursesConfig(), fetchSchedules(), fetchEnrollments()]).then(([config, allSchedules, allEnrollments]) => {
       const todayStr = new Date().toISOString().slice(0, 10);
       const items: ScheduleItem[] = [];
@@ -78,6 +79,10 @@ export default function SchedulePage() {
       setSchedules(items);
       setLoading(false);
     });
+    };
+    load();
+    const interval = setInterval(load, 20000);
+    return () => clearInterval(interval);
   }, []);
 
   const available = schedules.filter((s) => !s.isFull);
