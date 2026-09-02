@@ -77,11 +77,6 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
           <div className="container py-16 md:py-20">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div className="space-y-6">
-                {course.badge && (
-                  <div className="inline-block px-3 py-1 rounded-full text-sm font-medium" style={{ backgroundColor: "#E8EEF7", border: "1px solid #1B3A6B", color: "#1B3A6B" }}>
-                    {course.badge}
-                  </div>
-                )}
                 <h1 className="text-4xl md:text-5xl font-bold leading-tight text-gray-900">
                   {course.courseCode && <span className="mr-4 text-gray-400 font-normal" style={{ fontSize: "0.6em" }}>{course.courseCode}</span>}
                   {course.title}
@@ -134,12 +129,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                   )}
                   <div className="flex-shrink-0" style={{ marginLeft: schedules.length > 0 ? "40px" : 0 }}>
                     {course.discountPrice && (
-                      <>
-                        <p className="text-3xl font-bold text-gray-900"><span style={{ fontSize: "18px" }}>NT：</span>{extractPriceDigits(course.discountPrice)}</p>
-                        {course.originalPrice && (
-                          <p className="text-gray-400 line-through text-sm mb-3">{course.originalPrice}</p>
-                        )}
-                      </>
+                      <p className="text-3xl font-bold text-gray-900"><span style={{ fontSize: "18px" }}>NT：</span>{extractPriceDigits(course.discountPrice)}</p>
                     )}
                     <a
                       href={enrollHref}

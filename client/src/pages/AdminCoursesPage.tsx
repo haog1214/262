@@ -571,23 +571,12 @@ function CourseForm({
 
       <div style={s.grid2}>
         <div>
-          <label style={s.label}>原價</label>
-          <input style={s.input} value={draft.originalPrice} onChange={e => set("originalPrice", e.target.value)} placeholder="NT$ 4,000" />
-        </div>
-        <div>
           <label style={s.label}>優惠價</label>
           <input style={s.input} value={draft.discountPrice} onChange={e => set("discountPrice", e.target.value)} placeholder="NT$ 2,000" />
         </div>
-      </div>
-
-      <div style={s.grid2}>
         <div>
           <label style={s.label}>上課地點</label>
           <input style={s.input} value={draft.location ?? ""} onChange={e => set("location", e.target.value)} placeholder="例：台中市西屯區河南路二段262號3樓之11" />
-        </div>
-        <div>
-          <label style={s.label}>課程關鍵字</label>
-          <input style={s.input} value={draft.badge} onChange={e => set("badge", e.target.value)} placeholder="例：3H特訓班、上班族、行銷人員" />
         </div>
       </div>
 

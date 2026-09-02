@@ -73,15 +73,6 @@ export default function CourseCard({
           className="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
           style={{ backgroundImage: `url('${backgroundImage}')` }}
         />
-        {/* 徽章放在圖片上方 — 霧面玻璃效果 */}
-        <div className="absolute top-3 left-3 z-10">
-          <div
-            className={`${getBadgeColorClass()} px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-md`}
-            style={{ border: "1px solid rgba(255,255,255,0.35)" }}
-          >
-            {badge}
-          </div>
-        </div>
         {/* 額滿覆蓋層 */}
         {status === "full" && (
           <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/45 backdrop-blur-sm">
@@ -135,7 +126,6 @@ export default function CourseCard({
 
         {/* 價格區域 - 18級 */}
         <div className="mb-3">
-          <p className="text-[14px] text-gray-500 line-through">{formatPrice(originalPrice)}</p>
           <p className="text-[18px] font-bold text-gray-900">{formatPrice(discountPrice)}</p>
         </div>
 

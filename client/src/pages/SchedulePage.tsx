@@ -102,7 +102,6 @@ export default function SchedulePage() {
           <p className="text-xs font-semibold text-gray-400 mb-1 md:hidden">{s.date}（{s.weekday}）</p>
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h3 className="text-base font-bold" style={{ color: s.isFull ? "#9ca3af" : "#111827" }}>{s.course}</h3>
-            {s.badge && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: s.tagBg, color: s.tagText }}>{s.badge}</span>}
             {s.isFull && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#fee2e2", color: "#dc2626" }}>額滿</span>}
           </div>
           <p className="text-sm text-gray-400 mb-2">{s.subtitle}</p>
@@ -113,7 +112,6 @@ export default function SchedulePage() {
         </div>
         <div className="flex md:flex-col items-center md:items-end justify-between px-5 py-4 gap-3 md:gap-2 flex-shrink-0 border-t md:border-t-0 md:border-l border-gray-100">
           <div className="text-right">
-            <p className="text-xs text-gray-300 line-through">{formatPrice(s.originalPrice)}</p>
             <p className="text-base font-black" style={{ color: "#1B3A6B" }}>{formatPrice(s.discountPrice)}</p>
           </div>
           {s.isFull ? (
