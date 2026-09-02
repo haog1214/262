@@ -70,7 +70,7 @@ function emptyCourseDraft(): Omit<Course, "id"> {
     backgroundImage: "",
     detailPath: "",
     status: "open",
-    published: false,
+    published: true,
   };
 }
 
@@ -481,7 +481,7 @@ function CourseForm({
       .map(formatDate)
       .filter(d => !existingDates.has(d))
       .sort();
-    setSessions(prev => [...prev, ...newOnes.map(d => ({ id: genId(), date: d, time: "" }))]);
+    setSessions(prev => [...prev, ...newOnes.map(d => ({ id: genId(), date: d, time: "13:30-16:30" }))]);
     setPickedDates([]);
     setCalendarOpen(false);
   };
