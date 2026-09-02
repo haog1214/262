@@ -112,7 +112,21 @@ export const hoursApi = {
 
   createAdjustment: (payload: { studentId: string; amount: number; reason: string; note?: string; operator?: string }) =>
     call<HoursStudent>("/adjustments", { method: "POST", body: JSON.stringify(payload) }),
+
+  importPreview: (url: string) => call<{ rows: ImportRow[] }>("/import/preview", { method: "POST", body: JSON.stringify({ url }) }),
+  importCommit: (rows: ImportRow[]) => call<{ created: number; updated: number }>("/import/commit", { method: "POST", body: JSON.stringify({ rows }) }),
 };
+
+export interface ImportRow {
+  name: string;
+  taxId: string;
+  purchasedHours: number;
+  note: string;
+  email: string;
+  courseName: string;
+  expiresAt: string;
+  error?: string;
+}
 
 export function fmtHours(n: number): string {
   return Number(n).toFixed(2).replace(/\.?0+$/, "") || "0";

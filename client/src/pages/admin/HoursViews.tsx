@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BookOpen, CheckSquare, AlertTriangle, Clock3, TrendingUp, TrendingDown, LayoutGrid } from "lucide-react";
-import { hoursApi, fmtHours, type HoursStudent, type HoursSession, type HoursRegistration, type HoursCheckin, type HoursAdjustment } from "@/lib/hoursApi";
+import { hoursApi, fmtHours, type HoursStudent, type HoursSession, type HoursRegistration, type HoursCheckin, type HoursAdjustment, type ImportRow } from "@/lib/hoursApi";
 import { ink, inkSoft, accent, line, danger, good, adminStyles as a } from "@/lib/adminTheme";
 
 const h2Style: React.CSSProperties = { fontWeight: 700, fontSize: "16px", color: ink, margin: "0 0 16px" };
@@ -411,69 +411,142 @@ export function SessionsView() {
 }
 
 // ── 匯入名單 ────────────────────────────────────────────────────────────────
+function StepDots({ step }: { step: 1 | 2 | 3 }) {
+  const steps = [
+    { n: 1, label: "連結 Google Sheets" },
+    { n: 2, label: "預覽確認" },
+    { n: 3, label: "匯入結果" },
+  ];
+  return (
+    <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
+      {steps.map((s, i) => (
+        <div key={s.n} style={{ display: "flex", alignItems: "center", flex: i < steps.length - 1 ? 1 : undefined }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+            <div style={{
+              width: "24px", height: "24px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "12px", fontWeight: 700,
+              background: step >= s.n ? ink : "#EFF0E6",
+              color: step >= s.n ? "#fff" : inkSoft,
+            }}>
+              {s.n}
+            </div>
+            <span style={{ fontSize: "13px", fontWeight: step === s.n ? 700 : 500, color: step === s.n ? ink : inkSoft, whiteSpace: "nowrap" }}>{s.label}</span>
+          </div>
+          {i < steps.length - 1 && <div style={{ flex: 1, height: "1px", background: line, margin: "0 12px" }} />}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ImportRosterView() {
-  const { sessions, loading, reload } = useHoursData();
-  const [text, setText] = useState("");
-  const [sessionId, setSessionId] = useState("");
-  const [purchasedHours, setPurchasedHours] = useState("10");
-  const [result, setResult] = useState<string | null>(null);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [url, setUrl] = useState("");
+  const [rows, setRows] = useState<ImportRow[]>([]);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{ created: number; updated: number } | null>(null);
 
-  if (loading) return <div style={emptyStyle}>載入中...</div>;
-
-  const runImport = async () => {
-    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
-    if (lines.length === 0) return;
-    setBusy(true);
-    let created = 0, skipped = 0;
-    for (const line of lines) {
-      const parts = line.split(/[,\t，]/).map(p => p.trim());
-      const name = parts[0];
-      const phone = (parts[1] || "").replace(/[^0-9]/g, "");
-      if (!name || !phone) { skipped++; continue; }
-      try {
-        const existing = await hoursApi.studentByPhone(phone);
-        if (existing) { skipped++; continue; }
-        await hoursApi.createStudent({
-          name, phone,
-          purchased_hours: Number(purchasedHours), remaining_hours: Number(purchasedHours),
-          note: "名單匯入新增",
-        });
-        created++;
-      } catch { skipped++; }
+  const runPreview = async () => {
+    if (!url.trim()) return;
+    setBusy(true); setError(null);
+    try {
+      const { rows: r } = await hoursApi.importPreview(url.trim());
+      setRows(r);
+      setStep(2);
+    } catch (e) {
+      setError(String(e));
     }
     setBusy(false);
-    setResult(`匯入完成：新增 ${created} 位，略過 ${skipped} 位（電話重複或格式錯誤）`);
-    setText("");
-    reload();
   };
+
+  const runCommit = async () => {
+    setBusy(true);
+    try {
+      const r = await hoursApi.importCommit(rows);
+      setResult(r);
+      setStep(3);
+    } catch (e) {
+      setError(String(e));
+    }
+    setBusy(false);
+  };
+
+  const validRows = rows.filter(r => !r.error);
+  const errorRows = rows.filter(r => r.error);
 
   return (
     <div>
       <h2 style={h2Style}>匯入名單</h2>
-      <div style={a.card}>
-        <p style={{ fontSize: "13px", color: inkSoft, marginBottom: "12px" }}>
-          每行一位學員，格式：姓名,電話（用逗號或 Tab 分隔）。系統會依電話判斷是否已存在，重複的電話會略過不重複新增。
-        </p>
-        <label style={a.label}>名單內容</label>
-        <textarea
-          style={{ ...a.input, minHeight: "160px", fontFamily: "monospace", fontSize: "13px" }}
-          placeholder={"王小明,0912345678\n林小華,0922333444"}
-          value={text}
-          onChange={e => setText(e.target.value)}
-        />
-        <label style={a.label}>初始購買時數（套用到這批全部新學員）</label>
-        <input type="number" style={{ ...a.input, width: "160px" }} value={purchasedHours} onChange={e => setPurchasedHours(e.target.value)} />
-        <div>
-          <label style={a.label}>（選填）同時報名場次</label>
-          <select style={{ ...a.input, width: "auto", minWidth: "260px" }} value={sessionId} onChange={e => setSessionId(e.target.value)}>
-            <option value="">不報名任何場次</option>
-            {sessions.map(s => <option key={s.id} value={s.id}>{s.name}（{s.session_date}）</option>)}
-          </select>
+      <StepDots step={step} />
+
+      {step === 1 && (
+        <div style={a.card}>
+          <h3 style={{ fontSize: "16px", fontWeight: 700, color: ink, margin: "0 0 8px" }}>從 Google Sheets 匯入課程報名名單</h3>
+          <p style={{ fontSize: "13px", color: inkSoft, marginBottom: "16px" }}>
+            必要欄位：公司名稱、統一編號、購買時數。統一編號是判斷客戶是否重複的依據——統一編號不存在時新增客戶，統一編號已存在時累加購買時數。
+          </p>
+          <div style={{ background: "#F7F8F2", borderRadius: "12px", padding: "16px", marginBottom: "16px" }}>
+            <div style={{ fontWeight: 700, fontSize: "14px", color: ink }}>學員名單匯入範本</div>
+            <div style={{ fontSize: "12px", color: inkSoft, marginTop: "4px" }}>
+              公司名稱・統一編號・購買時數・備註（選填）・Email（選填）・課程名稱（選填）・到期日（選填）
+            </div>
+          </div>
+          <label style={a.label}>Google Sheets 共用連結</label>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <input
+              style={{ ...a.input, marginBottom: 0 }}
+              placeholder="貼上 Google Sheets 共用連結，例如 https://docs.google.com/spreadsheets/d/..."
+              value={url}
+              onChange={e => setUrl(e.target.value)}
+            />
+            <button style={a.btnPrimary} disabled={busy} onClick={runPreview}>{busy ? "讀取中..." : "匯入資料"}</button>
+          </div>
+          <p style={{ fontSize: "12px", color: inkSoft, marginTop: "10px" }}>
+            請先在 Google Sheets 右上角「共用」設為「知道連結的使用者」可檢視，並依範本欄位順序整理資料，再貼上連結。
+          </p>
+          {error && <div style={{ marginTop: "12px", fontSize: "13px", color: danger }}>{error}</div>}
         </div>
-        <button style={a.btnPrimary} disabled={busy} onClick={runImport}>{busy ? "匯入中..." : "開始匯入"}</button>
-        {result && <div style={{ marginTop: "12px", fontSize: "13px", color: ink }}>{result}</div>}
-      </div>
+      )}
+
+      {step === 2 && (
+        <div style={a.card}>
+          <h3 style={{ fontSize: "16px", fontWeight: 700, color: ink, margin: "0 0 8px" }}>預覽確認</h3>
+          <p style={{ fontSize: "13px", color: inkSoft, marginBottom: "16px" }}>
+            共 {rows.length} 筆，其中 {validRows.length} 筆可匯入{errorRows.length > 0 ? `，${errorRows.length} 筆有錯誤將略過` : ""}。
+          </p>
+          <div style={{ maxHeight: "360px", overflow: "auto" }}>
+            <table style={a.table}>
+              <thead><tr><th style={a.th}>公司名稱</th><th style={a.th}>統一編號</th><th style={a.th}>購買時數</th><th style={a.th}>狀態</th></tr></thead>
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr key={i}>
+                    <td style={a.td}>{r.name || "—"}</td>
+                    <td style={a.td}>{r.taxId || "—"}</td>
+                    <td style={a.td}>{r.purchasedHours || "—"}</td>
+                    <td style={{ ...a.td, color: r.error ? danger : good }}>{r.error || "OK"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
+            <button style={a.btnPrimary} disabled={busy || validRows.length === 0} onClick={runCommit}>{busy ? "匯入中..." : `確認匯入 ${validRows.length} 筆`}</button>
+            <button style={a.btnGhost} onClick={() => setStep(1)}>返回</button>
+          </div>
+          {error && <div style={{ marginTop: "12px", fontSize: "13px", color: danger }}>{error}</div>}
+        </div>
+      )}
+
+      {step === 3 && result && (
+        <div style={a.card}>
+          <h3 style={{ fontSize: "16px", fontWeight: 700, color: ink, margin: "0 0 8px" }}>匯入結果</h3>
+          <p style={{ fontSize: "13px", color: ink, marginBottom: "16px" }}>
+            新增 <b>{result.created}</b> 位新客戶，累加 <b>{result.updated}</b> 位既有客戶的時數。
+          </p>
+          <button style={a.btnPrimary} onClick={() => { setStep(1); setUrl(""); setRows([]); setResult(null); }}>再匯入一次</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -635,9 +708,11 @@ export function AdjustView() {
 
   if (loading) return <div style={emptyStyle}>載入中...</div>;
 
-  const matches = q.trim() ? students.filter(s => s.name.includes(q) || s.phone.includes(q)) : [];
+  const list = [...students]
+    .filter(s => !q.trim() || s.name.includes(q) || s.phone.includes(q))
+    .sort((x, y) => x.name.localeCompare(y.name));
   const selected = students.find(s => s.id === selectedId) ?? null;
-  const history = [...adjustments].sort((x, y) => (y.created_at || "").localeCompare(x.created_at || "")).slice(0, 15);
+  const history = [...adjustments].sort((x, y) => (y.created_at || "").localeCompare(x.created_at || "")).slice(0, 20);
   const studentsById = new Map(students.map(s => [s.id, s]));
 
   const submit = async () => {
@@ -646,48 +721,88 @@ export function AdjustView() {
     setToast(`已${Number(amount) >= 0 ? "加" : "扣"} ${Math.abs(Number(amount))} hr`);
     setTimeout(() => setToast(""), 2600);
     setAmount(""); setReason(""); setNote("");
+    setSelectedId(null);
     reload();
   };
 
   return (
     <div>
       <h2 style={h2Style}>時數調整</h2>
-      <div style={a.card}>
-        <label style={a.label}>搜尋學員（姓名或電話）</label>
-        <input style={a.input} value={selected ? `${selected.name}（${selected.phone}）` : q} onChange={e => { setQ(e.target.value); setSelectedId(null); }} />
-        {!selected && matches.length > 0 && (
-          <div style={{ border: `1px solid ${line}`, borderRadius: "8px", marginTop: "-10px", marginBottom: "14px" }}>
-            {matches.slice(0, 6).map(s => (
-              <div key={s.id} style={{ padding: "8px 12px", cursor: "pointer", fontSize: "13px", borderBottom: `1px solid ${line}` }} onClick={() => { setSelectedId(s.id); setQ(""); }}>
-                {s.name}　{s.phone}　剩餘 {fmtHours(s.remaining_hours)} hr
+      <div style={{ display: "flex", gap: "16px", alignItems: "flex-start", flexWrap: "wrap" }}>
+        <div style={{ ...a.card, flex: "1.3 1 420px", marginBottom: 0 }}>
+          <h3 style={{ fontSize: "16px", fontWeight: 700, color: ink, margin: "0 0 6px" }}>手動加減時數</h3>
+          <p style={{ fontSize: "13px", color: inkSoft, marginBottom: "14px" }}>
+            請先用統一編號或公司名稱搜尋要調整時數的學生，選好之後才能進行加減時數。
+          </p>
+          <input style={{ ...a.input, marginBottom: "14px" }} placeholder="輸入公司名稱或統一編號搜尋..." value={q} onChange={e => setQ(e.target.value)} />
+
+          {selected && (
+            <div style={{ background: "#F7F8F2", borderRadius: "12px", padding: "14px", marginBottom: "14px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: "14px", color: ink }}>{selected.name}</div>
+                  <div style={{ fontSize: "12px", color: inkSoft }}>{selected.phone}・剩餘 {fmtHours(selected.remaining_hours)} hr</div>
+                </div>
+                <button style={{ ...a.btnGhost, padding: "4px 10px" }} onClick={() => setSelectedId(null)}>取消選擇</button>
+              </div>
+              <label style={a.label}>調整時數（正數為加時，負數為扣時）</label>
+              <input type="number" style={a.input} value={amount} onChange={e => setAmount(e.target.value)} placeholder="例：5 或 -2" />
+              <label style={a.label}>原因</label>
+              <input style={a.input} value={reason} onChange={e => setReason(e.target.value)} placeholder="例：補購課程包" />
+              <label style={a.label}>備註（選填）</label>
+              <input style={a.input} value={note} onChange={e => setNote(e.target.value)} />
+              <button style={a.btnPrimary} onClick={submit}>確認調整</button>
+              {toast && <span style={{ marginLeft: "12px", fontSize: "13px", color: good }}>{toast}</span>}
+            </div>
+          )}
+
+          <div style={{ maxHeight: "420px", overflow: "auto" }}>
+            {list.map(s => (
+              <div
+                key={s.id}
+                onClick={() => setSelectedId(s.id)}
+                style={{
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  padding: "10px 4px", borderBottom: `1px solid ${line}`, cursor: "pointer",
+                  background: selectedId === s.id ? "#FFF3EC" : "transparent",
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: "13px", color: ink }}>{s.name}</div>
+                  <div style={{ fontSize: "11px", color: inkSoft }}>{s.phone}</div>
+                </div>
+                <div style={{ fontWeight: 700, fontSize: "14px", color: ink }}>{fmtHours(s.remaining_hours)} hr</div>
               </div>
             ))}
+            {list.length === 0 && <div style={emptyStyle}>沒有符合的學生</div>}
           </div>
-        )}
-        {selected && (
-          <>
-            <div style={{ fontSize: "13px", color: ink, marginBottom: "12px" }}>目前剩餘 <b>{fmtHours(selected.remaining_hours)} hr</b></div>
-            <label style={a.label}>調整時數（正數為加時，負數為扣時）</label>
-            <input type="number" style={a.input} value={amount} onChange={e => setAmount(e.target.value)} placeholder="例：5 或 -2" />
-            <label style={a.label}>原因</label>
-            <input style={a.input} value={reason} onChange={e => setReason(e.target.value)} placeholder="例：補購課程包" />
-            <label style={a.label}>備註（選填）</label>
-            <input style={a.input} value={note} onChange={e => setNote(e.target.value)} />
-            <button style={a.btnPrimary} onClick={submit}>確認調整</button>
-            {toast && <span style={{ marginLeft: "12px", fontSize: "13px", color: good }}>{toast}</span>}
-          </>
-        )}
-      </div>
+        </div>
 
-      <div style={a.card}>
-        <h3 style={{ fontSize: "14px", fontWeight: 700, color: ink, margin: "0 0 12px" }}>最近異動紀錄</h3>
-        {history.length === 0 ? <div style={emptyStyle}>尚無異動紀錄</div> : history.map(x => (
-          <div key={x.id} style={{ fontSize: "13px", color: ink, padding: "8px 0", borderBottom: `1px solid ${line}` }}>
-            <b>{studentsById.get(x.student_id)?.name ?? "—"}</b> {x.reason}
-            <span style={{ color: Number(x.amount) >= 0 ? good : danger }}>{Number(x.amount) >= 0 ? "+" : ""}{x.amount} hr</span>
-            <span style={{ color: inkSoft, marginLeft: "8px" }}>{fmtDateTime(x.created_at)}</span>
-          </div>
-        ))}
+        <div style={{ ...a.card, flex: "1 1 320px", marginBottom: 0 }}>
+          <h3 style={{ fontSize: "16px", fontWeight: 700, color: ink, margin: "0 0 14px" }}>最近調整紀錄</h3>
+          {history.length === 0 ? <div style={emptyStyle}>尚無異動紀錄</div> : history.map(x => {
+            const isAdd = Number(x.amount) >= 0;
+            return (
+              <div key={x.id} style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "10px 0", borderBottom: `1px solid ${line}` }}>
+                <div style={{
+                  width: "22px", height: "22px", borderRadius: "50%", flexShrink: 0, marginTop: "2px",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: isAdd ? "#DFF3E7" : "#FBE2DB", color: isAdd ? good : danger, fontWeight: 800, fontSize: "13px",
+                }}>
+                  {isAdd ? "+" : "−"}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: "13px", color: ink }}>
+                    <b>{studentsById.get(x.student_id)?.name ?? "—"}</b> 手動{isAdd ? "加時" : "扣回"} {fmtHours(Math.abs(Number(x.amount)))} hr
+                  </div>
+                  <div style={{ fontSize: "11px", color: inkSoft, marginTop: "2px" }}>
+                    原因：{x.reason}・{x.operator || "管理員"}操作・{fmtDateTime(x.created_at)}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

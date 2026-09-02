@@ -488,6 +488,120 @@ async function startServer() {
     }
   });
 
+  // ── Roster import from a link-shared Google Sheet (no OAuth needed — Sheets
+  // serves a plain CSV export for anyone the link is shared with) ────────────
+  function parseCsv(text: string): string[][] {
+    const rows: string[][] = [];
+    let row: string[] = [];
+    let field = "";
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; }
+          else inQuotes = false;
+        } else field += c;
+      } else if (c === '"') inQuotes = true;
+      else if (c === ",") { row.push(field); field = ""; }
+      else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+      else if (c === "\r") { /* skip */ }
+      else field += c;
+    }
+    if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+    return rows.filter(r => r.some(c => c.trim() !== ""));
+  }
+
+  interface ImportRow {
+    name: string; taxId: string; purchasedHours: number;
+    note: string; email: string; courseName: string; expiresAt: string;
+    error?: string;
+  }
+
+  function parseImportRows(csv: string[][]): ImportRow[] {
+    const [header, ...dataRows] = csv;
+    const idx = (label: string) => header.findIndex(h => h.trim() === label);
+    const iName = idx("公司名稱"), iTax = idx("統一編號"), iHours = idx("購買時數"),
+      iNote = idx("備註"), iEmail = idx("Email"), iCourse = idx("課程名稱"), iExpire = idx("到期日");
+    return dataRows.map(row => {
+      const name = (iName >= 0 ? row[iName] : "")?.trim() ?? "";
+      const taxId = (iTax >= 0 ? row[iTax] : "")?.trim() ?? "";
+      const hoursRaw = (iHours >= 0 ? row[iHours] : "")?.trim() ?? "";
+      const purchasedHours = Number(hoursRaw);
+      let error: string | undefined;
+      if (!name) error = "缺少公司名稱";
+      else if (!taxId) error = "缺少統一編號";
+      else if (!hoursRaw || isNaN(purchasedHours) || purchasedHours <= 0) error = "購買時數格式錯誤";
+      return {
+        name, taxId, purchasedHours: isNaN(purchasedHours) ? 0 : purchasedHours,
+        note: (iNote >= 0 ? row[iNote] : "")?.trim() ?? "",
+        email: (iEmail >= 0 ? row[iEmail] : "")?.trim() ?? "",
+        courseName: (iCourse >= 0 ? row[iCourse] : "")?.trim() ?? "",
+        expiresAt: (iExpire >= 0 ? row[iExpire] : "")?.trim() ?? "",
+        error,
+      };
+    });
+  }
+
+  app.post("/api/hours/import/preview", async (req, res) => {
+    if (!requireHoursAdmin(req, res)) return;
+    try {
+      const { url } = req.body as { url: string };
+      const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      if (!match) return res.status(400).json({ error: "看不出來這是 Google Sheets 連結" });
+      const gidMatch = url.match(/[#&]gid=(\d+)/);
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=csv${gidMatch ? `&gid=${gidMatch[1]}` : ""}`;
+      const csvRes = await fetch(csvUrl);
+      if (!csvRes.ok) return res.status(400).json({ error: "無法讀取這份 Google Sheets，請確認共用權限已設為「知道連結的使用者」" });
+      const text = await csvRes.text();
+      const rows = parseImportRows(parseCsv(text));
+      res.json({ rows });
+    } catch (err) {
+      res.status(500).json({ error: "Preview failed", detail: String(err) });
+    }
+  });
+
+  app.post("/api/hours/import/commit", async (req, res) => {
+    if (!requireHoursAdmin(req, res)) return;
+    try {
+      const rows = (req.body as { rows: ImportRow[] }).rows.filter(r => !r.error);
+      const result = await hours.withHoursLock(async () => {
+        let created = 0, updated = 0;
+        for (const row of rows) {
+          const students = await hours.readStudents();
+          const existing = students.find(s => s.phone === row.taxId);
+          if (existing) {
+            await hours.raw.updateStudent(existing.id, {
+              purchased_hours: Number(existing.purchased_hours) + row.purchasedHours,
+              remaining_hours: Number(existing.remaining_hours) + row.purchasedHours,
+            });
+            await hours.raw.createAdjustment({
+              student_id: existing.id, amount: row.purchasedHours, reason: "名單匯入加值",
+              note: row.note || row.courseName, operator: "管理員",
+            });
+            updated++;
+          } else {
+            const student = await hours.raw.createStudent({
+              name: row.name, phone: row.taxId, email: row.email,
+              purchased_hours: row.purchasedHours, remaining_hours: row.purchasedHours,
+              attended_count: 0, is_active: true, note: row.note || "名單匯入新增",
+              joined_at: new Date().toISOString().slice(0, 10),
+            });
+            await hours.raw.createAdjustment({
+              student_id: student.id, amount: row.purchasedHours, reason: "首次購買",
+              note: "名單匯入新增", operator: "管理員",
+            });
+            created++;
+          }
+        }
+        return { created, updated };
+      });
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: "Import failed", detail: String(err) });
+    }
+  });
+
   // One-time migration seed from the old Supabase data — safe to call again (overwrites tabs).
   app.post("/api/hours/_seed", async (req, res) => {
     if (!requireHoursAdmin(req, res)) return;
