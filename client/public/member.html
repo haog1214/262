@@ -10,10 +10,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<!-- Supabase client. Blocked by Artifact CSP when viewed via the claude.ai share link —
-     the app falls back to built-in demo data in that case. Open this file locally
-     (or host it yourself) to actually read/write the real database. -->
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
   :root{
@@ -986,15 +982,26 @@
      5. 這裡（學員專區）只負責顯示帳號的專屬 QR Code與已報名課程資訊，不提供自行報到按鈕──
         實際扣時數的報到動作，一律由後台櫃台掃碼觸發。
   ---------------------------------------------------------------- */
-  let SB = null;
-  try {
-    if (window.supabase && window.supabase.createClient) {
-      SB = window.supabase.createClient(
-        'https://lmkhyfpuenvojdtrynvq.supabase.co',
-        'sb_publishable___pD-7D_NgrEXInF4Nyx0Q_357GEjPf'
-      );
-    }
-  } catch (e) { SB = null; }
+  const SB = true;
+  async function hoursApi(path, options) {
+    const res = await fetch('/api/hours' + path, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error((data && data.detail) || (data && data.error) || ('HTTP ' + res.status));
+    return data;
+  }
+  const HoursAPI = {
+    studentByPhone: (phone) => hoursApi('/students/by-phone/' + encodeURIComponent(phone)).then(r => r.student),
+    studentById: (id) => hoursApi('/students').then(list => list.find(s => s.id === id) || null),
+    selfRegister: (name, phone) => hoursApi('/students/self-register', { method: 'POST', body: JSON.stringify({ name, phone }) }),
+    updateNameSelf: (id, name) => hoursApi('/students/self/' + encodeURIComponent(id), { method: 'PATCH', body: JSON.stringify({ name }) }),
+    listRegistrations: () => hoursApi('/registrations'),
+    listSessions: () => hoursApi('/sessions'),
+    listCheckins: () => hoursApi('/checkins'),
+    listAdjustments: () => hoursApi('/adjustments'),
+  };
 
   /* ---------- Demo fallback data (used when Supabase is unreachable, e.g. Artifact CSP) ---------- */
   const DEMO_STUDENTS = {
@@ -1116,8 +1123,7 @@
   async function findStudentByPhone(phone){
     if (SB) {
       try {
-        const { data, error } = await SB.from('students').select('*').eq('phone', phone).maybeSingle();
-        if (error) throw error;
+        const data = await HoursAPI.studentByPhone(phone);
         return data ? { fromLive:true, row:data } : null;
       } catch (e) {
         console.warn('Supabase lookup failed, falling back to demo data.', e);
@@ -1204,13 +1210,7 @@
 
     if (SB) {
       try {
-        const { data, error } = await SB.from('students').insert({
-          name, phone: pendingPhone,
-          remaining_hours: 0, purchased_hours: 0, attended_count: 0,
-          is_active: true, joined_at: todayIso(),
-          note: '學員自行於 App 註冊'
-        }).select().single();
-        if (error) throw error;
+        const data = await HoursAPI.selfRegister(name, pendingPhone);
         me = studentRowToMe(data, true);
         saveSession({ id: me.id, phone: me.phone, isLive: true });
         clearBusy(regSubmitBtn, regSubmitLabel, '完成註冊');
@@ -1303,13 +1303,11 @@
     if (!me) return;
     if (me.isLive && SB) {
       try {
-        const { data, error } = await SB.from('course_registrations')
-          .select('seats_total, seats_checked_in, course_sessions(*)')
-          .eq('student_id', me.id);
-        if (error) throw error;
-        myRegistrations = (data || [])
-          .filter(r => r.course_sessions)
-          .map(r => ({ ...r.course_sessions, seats_total: r.seats_total, seats_checked_in: r.seats_checked_in }))
+        const [allRegs, allSessions] = await Promise.all([HoursAPI.listRegistrations(), HoursAPI.listSessions()]);
+        const sessionsById = new Map(allSessions.map(s => [s.id, s]));
+        myRegistrations = allRegs
+          .filter(r => r.student_id === me.id && sessionsById.has(r.session_id))
+          .map(r => ({ ...sessionsById.get(r.session_id), seats_total: r.seats_total, seats_checked_in: r.seats_checked_in }))
           .filter(r => r.session_date >= todayIso())
           .sort((a, b) => (a.session_date + a.start_time).localeCompare(b.session_date + b.start_time));
         return;
@@ -1327,8 +1325,7 @@
     if (!me) return;
     if (me.isLive && SB) {
       try {
-        const { data, error } = await SB.from('students').select('*').eq('id', me.id).maybeSingle();
-        if (error) throw error;
+        const data = await HoursAPI.studentById(me.id);
         if (data) me = studentRowToMe(data, true);
       } catch (e) { console.warn('refreshMe failed', e); }
     }
@@ -1338,13 +1335,19 @@
     if (!me) return;
     if (me.isLive && SB) {
       try {
-        const [{ data: checkins, error: e1 }, { data: adjustments, error: e2 }] = await Promise.all([
-          SB.from('checkins').select('hours_deducted, result, checked_in_at, course_sessions(name, session_date, start_time, end_time, hours_per_checkin, teacher, room)').eq('student_id', me.id).order('checked_in_at', { ascending:false }),
-          SB.from('hour_adjustments').select('*').eq('student_id', me.id).order('created_at', { ascending:false })
+        const [allCheckins, allAdjustments, allSessions] = await Promise.all([
+          HoursAPI.listCheckins(), HoursAPI.listAdjustments(), HoursAPI.listSessions(),
         ]);
-        if (e1 || e2) throw e1 || e2;
-        myCheckins = (checkins || []).filter(c => c.result === 'success').map(c => {
-          const cs = c.course_sessions || {};
+        const sessionsById = new Map(allSessions.map(s => [s.id, s]));
+        const checkins = allCheckins
+          .filter(c => c.student_id === me.id)
+          .sort((a, b) => (b.checked_in_at || '').localeCompare(a.checked_in_at || ''));
+        const adjustments = allAdjustments
+          .filter(a => a.student_id === me.id)
+          .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+
+        myCheckins = checkins.filter(c => c.result === 'success').map(c => {
+          const cs = sessionsById.get(c.session_id) || {};
           return {
             main: cs.name || '課程',
             sub: fmtDateTime(c.checked_in_at),
@@ -1359,7 +1362,7 @@
             seats_checked_in: 1, seats_total: 1
           };
         });
-        myAdjustments = (adjustments || []).map(a => ({
+        myAdjustments = adjustments.map(a => ({
           main: a.reason,
           sub: `${a.note ? a.note + '・' : ''}${a.operator || ''}操作・${fmtDateTime(a.created_at)}`,
           amt: `${Number(a.amount) >= 0 ? '+' : ''}${fmtHours(a.amount)} hr`,
@@ -1375,12 +1378,11 @@
   async function loadSessions(){
     if (SB) {
       try {
-        const { data, error } = await SB.from('course_sessions')
-          .select('*')
-          .gte('session_date', todayIso())
-          .order('session_date').order('start_time');
-        if (error) throw error;
-        upcomingSessions = data || [];
+        const data = await HoursAPI.listSessions();
+        const todayStr = todayIso();
+        upcomingSessions = data
+          .filter(s => s.session_date >= todayStr)
+          .sort((a, b) => (a.session_date + a.start_time).localeCompare(b.session_date + b.start_time));
         openSessions = upcomingSessions.filter(s => s.is_open);
         return;
       } catch (e) { console.warn('loadSessions failed, using demo data.', e); }
@@ -1672,8 +1674,8 @@
     if (!name || !me) return;
     me.name = name;
     if (me.isLive && SB) {
-      try { await SB.from('students').update({ name }).eq('id', me.id); }
-      catch (e) { console.warn('Supabase name update failed.', e); }
+      try { await HoursAPI.updateNameSelf(me.id, name); }
+      catch (e) { console.warn('Name update failed.', e); }
     }
     editProfileForm.style.display = 'none';
     renderHome();
@@ -1687,8 +1689,8 @@
     if (!s) return;
     if (s.isLive && SB) {
       try {
-        const { data, error } = await SB.from('students').select('*').eq('id', s.id).maybeSingle();
-        if (error || !data) throw error || new Error('not found');
+        const data = await HoursAPI.studentById(s.id);
+        if (!data) throw new Error('not found');
         me = studentRowToMe(data, true);
         enterApp();
         return;

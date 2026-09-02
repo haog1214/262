@@ -203,6 +203,36 @@ async function startServer() {
     }
   });
 
+  // Public, unauthenticated self-service — matches the old Supabase setup where the
+  // member portal wrote directly with an anon key. Defaults are forced server-side
+  // so a self-registration can't hand itself free hours.
+  app.post("/api/hours/students/self-register", async (req, res) => {
+    try {
+      const { name, phone } = req.body as { name: string; phone: string };
+      const created = await hours.createStudent({
+        name, phone,
+        email: "", remaining_hours: 0, purchased_hours: 0, attended_count: 0,
+        is_active: true, joined_at: new Date().toISOString().slice(0, 10),
+        note: "學員自行於 App 註冊",
+      });
+      res.json(created);
+    } catch (err) {
+      res.status(500).json({ error: "Self-registration failed", detail: String(err) });
+    }
+  });
+
+  // Public — only the name field is accepted, so this can't be used to touch hours.
+  app.patch("/api/hours/students/self/:id", async (req, res) => {
+    try {
+      const { name } = req.body as { name: string };
+      const updated = await hours.updateStudent(req.params.id, { name });
+      if (!updated) return res.status(404).json({ error: "Student not found" });
+      res.json(updated);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to update name", detail: String(err) });
+    }
+  });
+
   app.patch("/api/hours/students/:id", async (req, res) => {
     if (!requireHoursAdmin(req, res)) return;
     try {
