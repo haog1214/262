@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { BookOpen, CheckSquare, AlertTriangle, Clock3, TrendingUp, TrendingDown, LayoutGrid } from "lucide-react";
 import { hoursApi, fmtHours, type HoursStudent, type HoursSession, type HoursRegistration, type HoursCheckin, type HoursAdjustment } from "@/lib/hoursApi";
 import { ink, inkSoft, accent, line, danger, good, adminStyles as a } from "@/lib/adminTheme";
 
@@ -41,71 +42,187 @@ function useHoursData() {
 }
 
 // ── 儀表板 ──────────────────────────────────────────────────────────────────
+function StatCard({ icon, iconBg, iconColor, label, value, unit, badge, badgeColor }: {
+  icon: React.ReactNode; iconBg: string; iconColor: string; label: string;
+  value: string | number; unit: string; badge: string; badgeColor: string;
+}) {
+  return (
+    <div style={{ ...a.card, flex: 1, minWidth: "220px", marginBottom: 0 }}>
+      <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: iconBg, color: iconColor, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "14px" }}>
+        {icon}
+      </div>
+      <div style={{ fontSize: "13px", color: inkSoft, marginBottom: "8px" }}>{label}</div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
+        <span style={{ fontSize: "30px", fontWeight: 800, color: ink }}>{value}</span>
+        <span style={{ fontSize: "13px", color: inkSoft }}>{unit}</span>
+      </div>
+      <div style={{ display: "inline-block", marginTop: "10px", padding: "3px 10px", borderRadius: "999px", background: badgeColor, fontSize: "11px", color: ink, fontWeight: 600 }}>
+        {badge}
+      </div>
+    </div>
+  );
+}
+
+function sessionStatus(sess: HoursSession): { label: string; color: string; bg: string } {
+  const now = new Date();
+  const start = new Date(`${sess.session_date}T${sess.start_time}`);
+  const end = new Date(`${sess.session_date}T${sess.end_time}`);
+  if (now < start) return { label: "未開始", color: inkSoft, bg: "#EFF0E6" };
+  if (now > end) return { label: "已結束", color: inkSoft, bg: "#EFF0E6" };
+  return { label: "進行中", color: good, bg: "#DFF3E7" };
+}
+
 export function DashboardView() {
-  const { students, sessions, checkins, loading, reload } = useHoursData();
+  const { students, sessions, registrations, checkins, adjustments, loading, reload } = useHoursData();
   if (loading) return <div style={emptyStyle}>載入中...</div>;
 
-  const today = new Date().toISOString().slice(0, 10);
-  const todaySessions = sessions.filter(s => s.session_date === today);
-  const lowHours = students.filter(s => s.is_active && Number(s.remaining_hours) < 1.5).sort((x, y) => Number(x.remaining_hours) - Number(y.remaining_hours));
-  const recentCheckins = [...checkins].filter(c => c.result === "success").sort((x, y) => (y.checked_in_at || "").localeCompare(x.checked_in_at || "")).slice(0, 8);
-  const studentsById = new Map(students.map(s => [s.id, s]));
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+  const yesterdayStr = new Date(now.getTime() - 86400000).toISOString().slice(0, 10);
+  const thisMonth = todayStr.slice(0, 7);
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 7);
 
-  const stat = (label: string, value: string | number) => (
-    <div style={{ ...a.card, flex: 1, minWidth: "140px", marginBottom: 0, textAlign: "center" }}>
-      <div style={{ fontSize: "26px", fontWeight: 800, color: accent }}>{value}</div>
-      <div style={{ fontSize: "12px", color: inkSoft, marginTop: "4px" }}>{label}</div>
+  const todaySessions = sessions.filter(s => s.session_date === todayStr).sort((x, y) => x.start_time.localeCompare(y.start_time));
+  const successCheckins = checkins.filter(c => c.result === "success");
+  const todayCheckins = successCheckins.filter(c => (c.checked_in_at || "").slice(0, 10) === todayStr);
+  const yesterdayCheckins = successCheckins.filter(c => (c.checked_in_at || "").slice(0, 10) === yesterdayStr);
+  const monthHours = successCheckins.filter(c => (c.checked_in_at || "").slice(0, 7) === thisMonth).reduce((n, c) => n + Number(c.hours_deducted), 0);
+  const lastMonthHours = successCheckins.filter(c => (c.checked_in_at || "").slice(0, 7) === lastMonth).reduce((n, c) => n + Number(c.hours_deducted), 0);
+  const monthChangePct = lastMonthHours > 0 ? Math.round(((monthHours - lastMonthHours) / lastMonthHours) * 100) : 0;
+
+  const lowHours = students.filter(s => s.is_active && Number(s.remaining_hours) < 1.5).sort((x, y) => Number(x.remaining_hours) - Number(y.remaining_hours));
+  const studentsById = new Map(students.map(s => [s.id, s]));
+  const recentAdjustments = [...adjustments].sort((x, y) => (y.created_at || "").localeCompare(x.created_at || "")).slice(0, 6);
+
+  const todayRegs = registrations.filter(r => todaySessions.some(s => s.id === r.session_id));
+  const totalSeatsToday = todayRegs.reduce((n, r) => n + Number(r.seats_total), 0);
+  const checkedInToday = todayRegs.reduce((n, r) => n + Number(r.seats_checked_in), 0);
+  const attendanceRate = totalSeatsToday > 0 ? Math.round((checkedInToday / totalSeatsToday) * 100) : 0;
+  const nearFull = todaySessions.filter(s => {
+    const regs = registrations.filter(r => r.session_id === s.id);
+    const filled = regs.reduce((n, r) => n + Number(r.seats_checked_in), 0);
+    return s.capacity > 0 && filled / s.capacity >= 0.8;
+  });
+  const totalCapacityToday = todaySessions.reduce((n, s) => n + Number(s.capacity), 0);
+  const remainingSeatsToday = Math.max(0, totalCapacityToday - checkedInToday);
+
+  const activeCount = students.filter(s => s.is_active).length;
+  const lowCount = lowHours.length;
+  const inactiveCount = students.length - activeCount;
+
+  const miniStat = (icon: React.ReactNode, label: string, value: React.ReactNode) => (
+    <div style={{ background: "#F7F8F2", borderRadius: "12px", padding: "14px", flex: "1 1 45%", minWidth: "140px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "6px", color: inkSoft, fontSize: "12px", marginBottom: "8px" }}>
+        {icon} {label}
+      </div>
+      <div style={{ fontSize: "20px", fontWeight: 800, color: ink }}>{value}</div>
     </div>
   );
 
   return (
     <div>
       <h2 style={h2Style}>儀表板</h2>
-      <div style={{ display: "flex", gap: "14px", marginBottom: "20px", flexWrap: "wrap" }}>
-        {stat("學員總數", students.length)}
-        {stat("啟用中學員", students.filter(s => s.is_active).length)}
-        {stat("今日場次", todaySessions.length)}
-        {stat("時數偏低學員", lowHours.length)}
+
+      <div style={{ display: "flex", gap: "14px", marginBottom: "16px", flexWrap: "wrap" }}>
+        <StatCard
+          icon={<BookOpen size={17} strokeWidth={2} />} iconBg="#FFE3D6" iconColor={accent}
+          label="今日課程" value={todaySessions.length} unit="場"
+          badge={todaySessions[0] ? `最近一場 ${todaySessions[0].start_time.slice(0, 5)} 開始` : "今天沒有場次"} badgeColor="#F2F3EC"
+        />
+        <StatCard
+          icon={<CheckSquare size={17} strokeWidth={2} />} iconBg="#DFF3E7" iconColor={good}
+          label="今日報到人次" value={todayCheckins.length} unit="人次"
+          badge={`${todayCheckins.length >= yesterdayCheckins.length ? "↗" : "↘"} ${Math.abs(todayCheckins.length - yesterdayCheckins.length)} 較昨日同時段`} badgeColor="#DFF3E7"
+        />
+        <StatCard
+          icon={<AlertTriangle size={17} strokeWidth={2} />} iconBg="#F6ECD2" iconColor="#B17F2A"
+          label="時數偏低學員" value={lowCount} unit="位"
+          badge={lowCount > 0 ? `${lowHours.filter(s => Number(s.remaining_hours) <= 0).length} 位已用罄` : "目前都正常"} badgeColor="#F6ECD2"
+        />
+        <StatCard
+          icon={<Clock3 size={17} strokeWidth={2} />} iconBg="#FBE2DB" iconColor={danger}
+          label="本月扣除時數" value={fmtHours(monthHours)} unit="小時"
+          badge={`${monthChangePct >= 0 ? "↗" : "↘"} ${Math.abs(monthChangePct)}% 較上月`} badgeColor="#FBE2DB"
+        />
       </div>
 
-      <div style={a.card}>
-        <h3 style={{ fontSize: "14px", fontWeight: 700, color: ink, margin: "0 0 12px" }}>時數偏低 / 已用罄</h3>
-        {lowHours.length === 0 ? <div style={emptyStyle}>目前沒有時數偏低的學員</div> : (
-          <table style={a.table}>
-            <thead><tr><th style={a.th}>姓名</th><th style={a.th}>電話</th><th style={a.th}>剩餘時數</th></tr></thead>
-            <tbody>
-              {lowHours.map(s => (
-                <tr key={s.id}>
-                  <td style={a.td}>{s.name}</td>
-                  <td style={a.td}>{s.phone}</td>
-                  <td style={{ ...a.td, color: Number(s.remaining_hours) <= 0 ? danger : "#B17F2A", fontWeight: 700 }}>{fmtHours(s.remaining_hours)} hr</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      <div style={a.card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-          <h3 style={{ fontSize: "14px", fontWeight: 700, color: ink, margin: 0 }}>最近報到</h3>
-          <button style={a.btnGhost} onClick={() => reload()}>重新整理</button>
+      <div style={{ display: "flex", gap: "16px", alignItems: "flex-start", flexWrap: "wrap", marginBottom: "16px" }}>
+        <div style={{ ...a.card, flex: "2 1 480px", marginBottom: 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+            <h3 style={{ fontSize: "14px", fontWeight: 700, color: ink, margin: 0 }}>今日課程場次</h3>
+            <button style={{ ...a.btnGhost, border: "none", padding: 0, color: accent }} onClick={() => reload()}>重新整理 →</button>
+          </div>
+          {todaySessions.length === 0 ? <div style={emptyStyle}>今天沒有排課程場次</div> : todaySessions.map(sess => {
+            const st = sessionStatus(sess);
+            const regs = registrations.filter(r => r.session_id === sess.id);
+            const checkedIn = regs.reduce((n, r) => n + Number(r.seats_checked_in), 0);
+            return (
+              <div key={sess.id} style={{ display: "flex", alignItems: "center", gap: "14px", padding: "12px 0", borderBottom: `1px solid ${line}` }}>
+                <div style={{ width: "56px", flexShrink: 0 }}>
+                  <div style={{ fontWeight: 800, fontSize: "15px", color: ink }}>{sess.start_time.slice(0, 5)}</div>
+                  <div style={{ fontSize: "11px", color: inkSoft }}>{sess.hours_per_checkin ? Math.round(Number(sess.hours_per_checkin) * 60) : ""} 分鐘</div>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: "14px", color: ink }}>{sess.name}</div>
+                  <div style={{ fontSize: "12px", color: inkSoft }}>{sess.teacher}・{sess.room}</div>
+                </div>
+                <div style={{ fontSize: "13px", color: ink, flexShrink: 0 }}>{checkedIn} / {sess.capacity} 已報到</div>
+                <span style={{ padding: "4px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: 700, color: st.color, background: st.bg, flexShrink: 0 }}>{st.label}</span>
+              </div>
+            );
+          })}
         </div>
-        {recentCheckins.length === 0 ? <div style={emptyStyle}>尚無報到紀錄</div> : (
-          <table style={a.table}>
-            <thead><tr><th style={a.th}>學員</th><th style={a.th}>課程</th><th style={a.th}>扣除時數</th><th style={a.th}>時間</th></tr></thead>
-            <tbody>
-              {recentCheckins.map(c => (
-                <tr key={c.id}>
-                  <td style={a.td}>{studentsById.get(c.student_id)?.name ?? "—"}</td>
-                  <td style={a.td}>{c.session_name || "—"}</td>
-                  <td style={a.td}>-{fmtHours(c.hours_deducted)} hr</td>
-                  <td style={{ ...a.td, color: inkSoft, fontSize: "12px" }}>{fmtDateTime(c.checked_in_at)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+
+        <div style={{ ...a.card, flex: "1 1 320px", marginBottom: 0 }}>
+          <h3 style={{ fontSize: "14px", fontWeight: 700, color: ink, margin: "0 0 12px" }}>課程數據</h3>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+            {miniStat(<BookOpen size={13} strokeWidth={2} />, "今日場次", `${todaySessions.length} 場`)}
+            {miniStat(<CheckSquare size={13} strokeWidth={2} />, "平均出席率", `${attendanceRate}%`)}
+            {miniStat(<AlertTriangle size={13} strokeWidth={2} />, "近滿場場次", `${nearFull.length} 場`)}
+            {miniStat(<LayoutGrid size={13} strokeWidth={2} />, "剩餘名額", `${remainingSeatsToday} / ${totalCapacityToday} 位`)}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+        <div style={{ ...a.card, flex: "1 1 300px", marginBottom: 0 }}>
+          <h3 style={{ fontSize: "14px", fontWeight: 700, color: ink, margin: "0 0 12px" }}>時數偏低 / 已用罄</h3>
+          {lowHours.length === 0 ? <div style={emptyStyle}>目前沒有時數偏低的學員</div> : lowHours.slice(0, 6).map(s => (
+            <div key={s.id} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${line}`, fontSize: "13px" }}>
+              <span style={{ color: ink }}>{s.name}</span>
+              <span style={{ color: Number(s.remaining_hours) <= 0 ? danger : "#B17F2A", fontWeight: 700 }}>{fmtHours(s.remaining_hours)} hr</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ ...a.card, flex: "1 1 300px", marginBottom: 0 }}>
+          <h3 style={{ fontSize: "14px", fontWeight: 700, color: ink, margin: "0 0 12px" }}>最近時數異動</h3>
+          {recentAdjustments.length === 0 ? <div style={emptyStyle}>尚無異動紀錄</div> : recentAdjustments.map(x => (
+            <div key={x.id} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 0", borderBottom: `1px solid ${line}`, fontSize: "13px" }}>
+              {Number(x.amount) >= 0
+                ? <TrendingUp size={14} strokeWidth={2} color={good} />
+                : <TrendingDown size={14} strokeWidth={2} color={danger} />}
+              <span style={{ color: ink, flex: 1 }}>{studentsById.get(x.student_id)?.name ?? "—"} {x.reason}</span>
+              <span style={{ color: Number(x.amount) >= 0 ? good : danger, fontWeight: 700 }}>{Number(x.amount) >= 0 ? "+" : ""}{x.amount} hr</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ ...a.card, flex: "1 1 220px", marginBottom: 0 }}>
+          <h3 style={{ fontSize: "14px", fontWeight: 700, color: ink, margin: "0 0 12px" }}>學生狀態</h3>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0" }}>
+            <span style={{ padding: "3px 10px", borderRadius: "999px", background: "#DFF3E7", color: good, fontSize: "12px", fontWeight: 700 }}>正常</span>
+            <span style={{ fontWeight: 700, color: ink }}>{activeCount - lowCount} 位</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0" }}>
+            <span style={{ padding: "3px 10px", borderRadius: "999px", background: "#F6ECD2", color: "#B17F2A", fontSize: "12px", fontWeight: 700 }}>時數偏低</span>
+            <span style={{ fontWeight: 700, color: ink }}>{lowCount} 位</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0" }}>
+            <span style={{ padding: "3px 10px", borderRadius: "999px", background: "#EFF0E6", color: inkSoft, fontSize: "12px", fontWeight: 700 }}>已停用</span>
+            <span style={{ fontWeight: 700, color: ink }}>{inactiveCount} 位</span>
+          </div>
+        </div>
       </div>
     </div>
   );
