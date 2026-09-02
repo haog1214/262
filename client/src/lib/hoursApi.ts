@@ -86,6 +86,7 @@ export const hoursApi = {
   listSessions: () => call<HoursSession[]>("/sessions"),
   createSession: (data: Omit<HoursSession, "id" | "created_at">) => call<HoursSession>("/sessions", { method: "POST", body: JSON.stringify(data) }),
   updateSession: (id: string, patch: Partial<HoursSession>) => call<HoursSession>(`/sessions/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(patch) }),
+  syncSessionsFromCourses: () => call<{ ok: boolean; count: number }>("/sessions/sync-from-courses", { method: "POST" }),
 
   listRegistrations: () => call<HoursRegistration[]>("/registrations"),
   listCheckins: () => call<HoursCheckin[]>("/checkins"),

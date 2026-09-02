@@ -282,11 +282,26 @@ export function SessionsView() {
   const [ciSessionId, setCiSessionId] = useState<string | null>(null);
   const [ciPhone, setCiPhone] = useState("");
   const [ciResult, setCiResult] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState<string | null>(null);
 
   if (loading) return <div style={emptyStyle}>載入中...</div>;
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const sorted = [...sessions].sort((x, y) => (x.session_date + x.start_time).localeCompare(y.session_date + y.start_time));
+
+  const runSync = async () => {
+    if (!confirm("這會清空目前所有課程場次（含模擬資料）與相關報到紀錄，改成用「課程管理」裡真實課程的上課日期自動產生場次，確定要繼續嗎？")) return;
+    setSyncing(true);
+    try {
+      const result = await hoursApi.syncSessionsFromCourses();
+      setSyncMsg(`已同步 ${result.count} 場真實課程場次`);
+      reload();
+    } catch (e) {
+      setSyncMsg("同步失敗：" + String(e));
+    }
+    setSyncing(false);
+  };
 
   const saveSession = async (data: Omit<HoursSession, "id" | "created_at">) => {
     if (editing) await hoursApi.updateSession(editing.id, data);
@@ -314,10 +329,16 @@ export function SessionsView() {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
         <h2 style={{ ...h2Style, margin: 0 }}>課程場次（共 {sessions.length} 場）</h2>
-        <button style={a.btnPrimary} onClick={() => { setEditing(null); setShowForm(true); }}>＋ 新增場次</button>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button style={a.btnGhost} disabled={syncing} onClick={runSync}>
+            {syncing ? "同步中..." : "↻ 從課程管理同步真實課程"}
+          </button>
+          <button style={a.btnPrimary} onClick={() => { setEditing(null); setShowForm(true); }}>＋ 新增場次</button>
+        </div>
       </div>
+      {syncMsg && <div style={{ fontSize: "12px", color: inkSoft, marginBottom: "16px" }}>{syncMsg}</div>}
 
       {showForm && <SessionForm initial={editing} onSave={saveSession} onCancel={() => { setShowForm(false); setEditing(null); }} />}
 

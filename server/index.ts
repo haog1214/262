@@ -449,6 +449,49 @@ async function startServer() {
     }
   });
 
+  // Replace 課程場次 (hours_sessions) with rows derived from the real, admin-confirmed
+  // course catalog (courses + schedules tabs) — discards whatever was there before
+  // (e.g. leftover template demo sessions), along with checkins/registrations that
+  // pointed at those discarded session ids.
+  app.post("/api/hours/sessions/sync-from-courses", async (req, res) => {
+    if (!requireHoursAdmin(req, res)) return;
+    try {
+      const [coursesConfig, schedules] = await Promise.all([readCoursesFromSheet(), readSchedulesFromSheet()]);
+      const coursesById = new Map(coursesConfig.courses.map(c => [String(c.id), c]));
+
+      const now = new Date().toISOString();
+      const sessions = schedules
+        .filter(sch => coursesById.has(sch.courseId))
+        .map(sch => {
+          const course = coursesById.get(sch.courseId)!;
+          const [start, end] = sch.time.split("-").map(t => t.trim());
+          const startTime = /^\d{2}:\d{2}$/.test(start || "") ? `${start}:00` : (start || "00:00:00");
+          const endTime = /^\d{2}:\d{2}$/.test(end || "") ? `${end}:00` : (end || "00:00:00");
+          const [sh, sm] = startTime.split(":").map(Number);
+          const [eh, em] = endTime.split(":").map(Number);
+          const durationHours = Math.max(0.5, Math.round(((eh * 60 + em) - (sh * 60 + sm)) / 30) / 2);
+          return {
+            id: `course-${sch.courseId}-${sch.id}`,
+            name: course.title,
+            session_date: sch.date,
+            start_time: startTime,
+            end_time: endTime,
+            teacher: "",
+            room: course.location ?? "",
+            hours_per_checkin: durationHours,
+            capacity: Number(sch.maxCapacity) || 20,
+            is_open: sch.status !== "full",
+            created_at: now,
+          };
+        });
+
+      await hours.seedAll({ sessions, checkins: [], registrations: [] });
+      res.json({ ok: true, count: sessions.length });
+    } catch (err) {
+      res.status(500).json({ error: "Sync failed", detail: String(err) });
+    }
+  });
+
   // ── Static files ─────────────────────────────────────────────────────────
   const staticPath =
     process.env.NODE_ENV === "production"
