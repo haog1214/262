@@ -82,6 +82,11 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
           <div className="container py-16 md:py-20">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div className="space-y-6">
+                {course.backgroundImage && (
+                  <div className="md:hidden rounded-2xl overflow-hidden shadow-lg aspect-square">
+                    <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url('${course.backgroundImage}')` }} />
+                  </div>
+                )}
                 <h1 className="text-4xl md:text-5xl font-bold leading-tight text-gray-900">
                   {course.courseCode && <span className="mr-4 text-gray-400 font-normal" style={{ fontSize: "0.6em" }}>{course.courseCode}</span>}
                   {course.title}
@@ -132,7 +137,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                       })}
                     </div>
                   )}
-                  <div className="flex-shrink-0" style={{ marginLeft: schedules.length > 0 ? "40px" : 0 }}>
+                  <div className="hidden md:block flex-shrink-0" style={{ marginLeft: schedules.length > 0 ? "40px" : 0 }}>
                     {course.discountPrice && (
                       <p className="text-3xl font-bold text-gray-900"><span style={{ fontSize: "18px" }}>NT：</span>{extractPriceDigits(course.discountPrice)}</p>
                     )}
@@ -232,7 +237,30 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
             </div>
           </div>
         </section>
+
+        {/* Mobile spacer so fixed bottom bar doesn't cover content */}
+        {course.discountPrice && <div className="h-20 md:hidden" />}
       </main>
+
+      {course.discountPrice && (
+        <div
+          className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-200 px-6 py-3"
+          style={{ boxShadow: "0 -4px 12px rgba(0,0,0,0.06)" }}
+        >
+          <div className="flex items-center justify-center" style={{ gap: "20px" }}>
+            <p className="text-2xl font-bold text-gray-900">
+              <span style={{ fontSize: "14px" }}>NT：</span>{extractPriceDigits(course.discountPrice)}
+            </p>
+            <a
+              href={enrollHref}
+              className="px-8 py-3 font-bold rounded-full shadow-lg text-base"
+              style={{ backgroundColor: "#1B3A6B", color: "#FFFFFF" }}
+            >
+              立即報名
+            </a>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
