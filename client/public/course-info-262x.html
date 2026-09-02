@@ -1341,6 +1341,14 @@
         <span class="ico">&#9673;</span> 儀表板
       </button>
 
+      <div class="nav-group-label">課程上架</div>
+      <button class="navitem" data-view="course-manage">
+        <span class="ico">&#9776;</span> 課程管理
+      </button>
+      <button class="navitem" data-view="course-closed">
+        <span class="ico">&#8865;</span> 已關閉課程
+      </button>
+
       <div class="nav-group-label">日常作業</div>
       <button class="navitem" data-view="courses">
         <span class="ico">&#9636;</span> 課程場次
@@ -2611,6 +2619,16 @@
           <p class="ci-hint">客戶輸入公司統一編號即可查詢，不需要密碼、不用登入帳號。</p>
         </div>
       </div>
+    </section>
+
+    <section class="view" id="view-course-manage">
+      <div class="topline"><div><p class="eyebrow">課程上架</p><h1>課程管理</h1></div></div>
+      <iframe src="/manage-courses-262x?tab=courses" title="課程管理" style="width:100%; height:calc(100vh - 160px); min-height:600px; border:none; display:block; border-radius:var(--r-lg); background:#fff;"></iframe>
+    </section>
+
+    <section class="view" id="view-course-closed">
+      <div class="topline"><div><p class="eyebrow">課程上架</p><h1>已關閉課程</h1></div></div>
+      <iframe src="/manage-courses-262x?tab=closed" title="已關閉課程" style="width:100%; height:calc(100vh - 160px); min-height:600px; border:none; display:block; border-radius:var(--r-lg); background:#fff;"></iframe>
     </section>
   </main>
 </div>

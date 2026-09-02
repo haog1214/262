@@ -6,7 +6,6 @@ import {
   Pencil,
   Trash2,
   ClipboardList,
-  RefreshCw,
   ArrowUpDown,
   Plus,
   Minus,
@@ -1761,7 +1760,10 @@ export default function AdminCoursesPage() {
   const [editingId, setEditingId] = useState<number | "new" | null>(null);
   const [enrollCourseId, setEnrollCourseId] = useState<number | null>(null);
   const [previewCourseId, setPreviewCourseId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"courses" | "closed" | "coursedata" | "knowledge">("courses");
+  const [activeTab, setActiveTab] = useState<"courses" | "closed">(() => {
+    const tab = new URLSearchParams(window.location.search).get("tab");
+    return tab === "closed" ? "closed" : "courses";
+  });
   const visibleCourses = config.courses.filter(c => c.published);
   const closedCourses = config.courses.filter(c => !c.published);
   const [allSchedules, setAllSchedules] = useState<Schedule[]>([]);
@@ -1769,8 +1771,6 @@ export default function AdminCoursesPage() {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const registrationCountFor = (course: Course) =>
     registrations.filter(r => r.course.includes(course.title.slice(0, 6))).length;
-  const [regLoading, setRegLoading] = useState(false);
-  const [regDetail, setRegDetail] = useState<Registration | null>(null);
   const [toast, setToast] = useState("");
   const [saving, setSaving] = useState(false);
   const [showImport, setShowImport] = useState(false);
@@ -1814,11 +1814,7 @@ export default function AdminCoursesPage() {
       setAllEnrollments(enrolls);
     });
     // Load registrations from Apps Script sheet
-    setRegLoading(true);
-    fetchRegistrations().then(regs => {
-      setRegistrations(regs);
-      setRegLoading(false);
-    });
+    fetchRegistrations().then(setRegistrations);
   }, []);
 
   const showToast = (msg: string) => {
@@ -2127,8 +2123,6 @@ export default function AdminCoursesPage() {
           {([
             { key: "courses" as const, label: "課程管理", Icon: BookOpen },
             { key: "closed" as const, label: "已關閉課程", Icon: Archive },
-            { key: "coursedata" as const, label: "課程資訊後台", Icon: ClipboardList },
-            { key: "knowledge" as const, label: "知識庫", Icon: Archive },
           ]).map(tab => (
             <button
               key={tab.key}
@@ -2255,119 +2249,6 @@ export default function AdminCoursesPage() {
         </div>
         )}
 
-        {activeTab === "coursedata" && (
-          <div style={{ ...s.card, padding: 0, overflow: "hidden" }}>
-            <iframe
-              src="/course-info-262x.html"
-              title="課程資訊後台"
-              style={{ width: "100%", height: "calc(100vh - 220px)", minHeight: "600px", border: "none", display: "block" }}
-            />
-          </div>
-        )}
-
-        {activeTab === "knowledge" && (
-        <>
-        {/* Registration stats table — 報名紀錄知識庫 */}
-        <div style={s.card}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-            <div>
-              <h2 style={{ fontWeight: 700, fontSize: "16px", color: "#1B3A6B", margin: 0 }}>
-                報名統計表
-              </h2>
-              <p style={{ fontSize: "12px", color: inkSoft, margin: "4px 0 0" }}>
-                來自 Google Sheets 表單報名資料，共 {registrations.length} 筆
-              </p>
-            </div>
-            <button
-              style={{ ...s.btnGhost, fontSize: "13px", display: "inline-flex", alignItems: "center", gap: "6px" }}
-              onClick={() => { setRegLoading(true); fetchRegistrations().then(r => { setRegistrations(r); setRegLoading(false); }); }}
-            >
-              <RefreshCw size={13} strokeWidth={1.5} /> 重新整理
-            </button>
-          </div>
-
-          {regLoading ? (
-            <div style={{ textAlign: "center", padding: "32px", color: "#9CA3AF", fontSize: "14px" }}>
-              載入中...
-            </div>
-          ) : registrations.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "32px", color: "#9CA3AF", fontSize: "14px" }}>
-              尚無報名資料（請確認 Google Sheets 設定正確）
-            </div>
-          ) : (
-            <table style={s.table}>
-              <thead>
-                <tr>
-                  <th style={{ ...s.th, width: "32px" }}>#</th>
-                  <th style={s.th}>姓名</th>
-                  <th style={s.th}>課程</th>
-                  <th style={s.th}>上課時間</th>
-                  <th style={s.th}>時間戳記</th>
-                  <th style={{ ...s.th, width: "70px" }}>詳情</th>
-                </tr>
-              </thead>
-              <tbody>
-                {registrations.map((reg, idx) => (
-                  <tr key={idx}>
-                    <td style={{ ...s.td, color: "#9CA3AF", fontSize: "12px" }}>{idx + 1}</td>
-                    <td style={{ ...s.td, fontWeight: 600 }}>{reg.name || "—"}</td>
-                    <td style={{ ...s.td, fontSize: "13px", maxWidth: "200px" }}>
-                      <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {reg.course || "—"}
-                      </span>
-                    </td>
-                    <td style={{ ...s.td, fontSize: "13px", color: "#4B5563" }}>{reg.sessionDate || "—"}</td>
-                    <td style={{ ...s.td, fontSize: "11px", color: "#9CA3AF" }}>{reg.timestamp || "—"}</td>
-                    <td style={s.td}>
-                      <button
-                        style={{ ...s.btnIcon, fontSize: "13px", padding: "4px 10px", color: "#1D4ED8", borderColor: "#BFDBFE" }}
-                        onClick={() => setRegDetail(reg)}
-                      >
-                        詳情
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-        </>
-        )}
-
-        {/* Registration detail modal */}
-        {regDetail && (
-          <div
-            style={{ position: "fixed", inset: 0, zIndex: 1000, backgroundColor: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}
-            onClick={e => { if (e.target === e.currentTarget) setRegDetail(null); }}
-          >
-            <div style={{ backgroundColor: "#fff", border: `1px solid ${line}`, borderRadius: "2px", width: "100%", maxWidth: "480px", overflow: "hidden" }}>
-              <div style={{ backgroundColor: paper, borderBottom: `1px solid ${line}`, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ color: ink, fontWeight: 600, fontSize: "15px" }}>報名詳情</div>
-                <button onClick={() => setRegDetail(null)} style={{ background: "none", border: "none", color: inkSoft, fontSize: "18px", cursor: "pointer" }}><X size={18} strokeWidth={1.5} /></button>
-              </div>
-              <div style={{ padding: "20px 24px" }}>
-                {[
-                  ["姓名", regDetail.name],
-                  ["課程", regDetail.course],
-                  ["上課時間", regDetail.sessionDate],
-                  ["手機號碼", regDetail.phone],
-                  ["Email", regDetail.email],
-                  ["公司/職稱", regDetail.company],
-                  ["統一編號", regDetail.taxId],
-                  ["得知管道", regDetail.referral],
-                  ["備註", regDetail.notes],
-                  ["報名時間", regDetail.timestamp],
-                ].map(([label, value]) => (
-                  <div key={label} style={{ display: "flex", gap: "12px", padding: "8px 0", borderBottom: "1px solid #F3F4F6" }}>
-                    <div style={{ width: "90px", fontSize: "12px", color: "#6B7280", fontWeight: 600, flexShrink: 0 }}>{label}</div>
-                    <div style={{ fontSize: "13px", color: "#111827", wordBreak: "break-all" }}>{value || "—"}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
 
         <p style={{ textAlign: "center", fontSize: "12px", color: "#D1D5DB", marginTop: "32px" }}>
           傳啓資訊後台管理系統 · 資料儲存於 Google Sheets
