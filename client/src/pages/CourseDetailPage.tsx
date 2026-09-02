@@ -95,11 +95,6 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                       <MapPin className="w-4 h-4 text-red-500" /> {course.location}
                     </span>
                   )}
-                  {course.targetAudience && course.targetAudience.length > 0 && (
-                    <span className="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 text-gray-600 border border-gray-200">
-                      適合{course.targetAudience.length}種對象
-                    </span>
-                  )}
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-start gap-6 pt-2">
