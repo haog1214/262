@@ -62,7 +62,7 @@ function emptyCourseDraft(): Omit<Course, "id"> {
     description: "",
     tools: "",
     originalPrice: "NT$ 0",
-    discountPrice: "NT$ 0",
+    discountPrice: "2000",
     badge: "",
     badgeColor: "pink",
     location: "台中市西屯區河南路二段262號7F-3",
