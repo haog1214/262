@@ -99,9 +99,9 @@ export default function CourseCard({
         <p className="text-[16px] font-light mb-2 text-gray-600 line-clamp-2">{tools}</p>
 
         {/* 最近上課日期 */}
-        <p className="text-[16px] font-light mb-3 text-gray-700 flex-grow">
+        <p className="text-[16px] font-light mb-3 flex-grow" style={{ marginTop: "15px", color: "#91270F" }}>
           {nextSchedule
-            ? `📅 ${nextSchedule.date}${nextSchedule.time ? ` ${nextSchedule.time}` : ""}`
+            ? `${nextSchedule.date.replace(/-/g, ".")}${nextSchedule.time ? `    ${nextSchedule.time}` : ""}`
             : description}
         </p>
 
