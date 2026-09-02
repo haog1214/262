@@ -461,7 +461,7 @@ async function startServer() {
 
       const now = new Date().toISOString();
       const sessions = schedules
-        .filter(sch => coursesById.has(sch.courseId))
+        .filter(sch => coursesById.get(sch.courseId)?.published === true)
         .map(sch => {
           const course = coursesById.get(sch.courseId)!;
           const [start, end] = sch.time.split("-").map(t => t.trim());
