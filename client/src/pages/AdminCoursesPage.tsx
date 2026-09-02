@@ -681,7 +681,7 @@ function CourseForm({
                 <span style={{ fontSize: "13px", color: ink, fontWeight: 500, width: "92px", flexShrink: 0 }}>{sess.date}</span>
                 <input
                   type="time"
-                  style={{ ...s.inputSm, width: "110px", opacity: locked ? 0.5 : 1 }}
+                  style={{ ...s.inputSm, width: "140px", opacity: locked ? 0.5 : 1 }}
                   value={start}
                   disabled={locked}
                   onChange={e => setSessionTimeRange(sess.id, "start", e.target.value)}
@@ -689,7 +689,7 @@ function CourseForm({
                 <span style={{ color: inkSoft, fontSize: "12px" }}>至</span>
                 <input
                   type="time"
-                  style={{ ...s.inputSm, width: "110px", opacity: locked ? 0.5 : 1 }}
+                  style={{ ...s.inputSm, width: "140px", opacity: locked ? 0.5 : 1 }}
                   value={end}
                   disabled={locked}
                   onChange={e => setSessionTimeRange(sess.id, "end", e.target.value)}
