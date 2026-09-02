@@ -93,6 +93,30 @@ function FloatingButtons() {
         gap: "10px",
       }}
     >
+      {/* 會員選課 — mobile only, vertical text */}
+      <a
+        href="https://claude.ai/code/artifact/c9ea5aae-00c0-4212-b1a2-540d866a775f"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="會員選課"
+        className="md:hidden flex items-center justify-center"
+        style={{
+          writingMode: "vertical-rl",
+          backgroundColor: "#1B3A6B",
+          color: "#fff",
+          fontSize: "13px",
+          fontWeight: 700,
+          letterSpacing: "3px",
+          padding: "10px 6px",
+          borderRadius: "12px",
+          textDecoration: "none",
+          boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
+          flexShrink: 0,
+        }}
+      >
+        會員選課
+      </a>
+
       {/* Gear group: hover on this area toggles social buttons */}
       <div
         style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}
