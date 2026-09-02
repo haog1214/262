@@ -2,16 +2,18 @@ import { google } from "googleapis";
 import { Readable } from "stream";
 
 function getDrive() {
-  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
+  const refreshToken = process.env.GOOGLE_OAUTH_REFRESH_TOKEN;
   const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
-  if (!raw || !folderId) throw new Error("Missing Google Drive env vars");
+  if (!clientId || !clientSecret || !refreshToken || !folderId) {
+    throw new Error("Missing Google Drive OAuth env vars");
+  }
 
-  const credentials = JSON.parse(raw);
-  const auth = new google.auth.GoogleAuth({
-    credentials,
-    scopes: ["https://www.googleapis.com/auth/drive"],
-  });
-  return { drive: google.drive({ version: "v3", auth }), folderId };
+  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
+  oauth2Client.setCredentials({ refresh_token: refreshToken });
+
+  return { drive: google.drive({ version: "v3", auth: oauth2Client }), folderId };
 }
 
 const MIME_BY_EXT: Record<string, string> = {
@@ -53,5 +55,10 @@ export async function uploadImageToDrive(
 }
 
 export function driveIsConfigured(): boolean {
-  return Boolean(process.env.GOOGLE_SERVICE_ACCOUNT_JSON && process.env.GOOGLE_DRIVE_FOLDER_ID);
+  return Boolean(
+    process.env.GOOGLE_OAUTH_CLIENT_ID &&
+      process.env.GOOGLE_OAUTH_CLIENT_SECRET &&
+      process.env.GOOGLE_OAUTH_REFRESH_TOKEN &&
+      process.env.GOOGLE_DRIVE_FOLDER_ID
+  );
 }
