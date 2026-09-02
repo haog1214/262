@@ -13,6 +13,13 @@ interface CourseSchedule {
   status?: string;
 }
 
+function formatPrice(raw: string): string {
+  if (!raw) return raw;
+  const digits = raw.replace(/[^\d]/g, "");
+  if (!digits) return raw;
+  return `NT$ ${Number(digits).toLocaleString()}`;
+}
+
 interface CourseCardProps {
   courseCode?: string;
   title: string;
@@ -133,8 +140,8 @@ export default function CourseCard({
 
         {/* 價格區域 - 18級 */}
         <div className="mb-3">
-          <p className="text-[14px] text-gray-500 line-through">{originalPrice}</p>
-          <p className="text-[18px] font-bold text-gray-900">{discountPrice}</p>
+          <p className="text-[14px] text-gray-500 line-through">{formatPrice(originalPrice)}</p>
+          <p className="text-[18px] font-bold text-gray-900">{formatPrice(discountPrice)}</p>
         </div>
 
         {/* 按鈕 */}
