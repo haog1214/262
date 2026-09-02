@@ -1,0 +1,4094 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+</head>
+<body>
+
+<meta charset="utf-8">
+<title>課程資訊後台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Supabase client. Blocked by Artifact CSP when viewed via the claude.ai share link —
+     the app falls back to the built-in demo data in that case. Open this file locally
+     (or host it yourself) to actually read/write the real database. -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<style>
+  :root{
+    --page-bg:#eaece4;
+    --shell-shadow: 0 40px 80px -30px rgba(20,21,15,.22), 0 10px 26px -14px rgba(20,21,15,.12);
+    --ink-950:#14150f;
+    --ink-800:#34362b;
+    --ink-600:#71735f;
+    --ink-400:#a7a993;
+    --paper-100:#f2f3ec;
+    --paper-000:#f7f8f2;
+    --paper-card:#ffffff;
+    --line:#e7e8dd;
+    --line-soft:#eff0e6;
+    --clay-600:#FF5B22;
+    --clay-700:#E5470F;
+    --clay-100:#FFE3D6;
+    --on-accent:#ffffff;
+    --good-600:#1f8f5c;
+    --good-100:#dff3e7;
+    --warn-600:#b17f2a;
+    --warn-100:#f6ecd2;
+    --crit-600:#cf4f39;
+    --crit-100:#fbe2db;
+    --pill-bg:#14150f;
+    --pill-ink:#ffffff;
+    --shadow-card: 0 1px 2px rgba(20,21,15,.04), 0 10px 24px -12px rgba(20,21,15,.10);
+    --r-xl:30px;
+    --r-lg:22px;
+    --r-md:14px;
+    --r-pill:999px;
+    --font-body:'Manrope','Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --page-bg:#0c0d09;
+      --shell-shadow: 0 40px 90px -30px rgba(0,0,0,.7);
+      --ink-950:#f1f2e9;
+      --ink-800:#d2d4c4;
+      --ink-600:#939583;
+      --ink-400:#54564a;
+      --paper-100:#1b1c15;
+      --paper-000:#1f2018;
+      --paper-card:#17180f;
+      --line:#2b2c22;
+      --line-soft:#25261e;
+      --clay-600:#FF5B22;
+      --clay-700:#FF7A47;
+      --clay-100:#3a1f14;
+      --good-600:#57c98a;
+      --good-100:#173226;
+      --warn-600:#d8a75b;
+      --warn-100:#332a17;
+      --crit-600:#e2725c;
+      --crit-100:#3a241f;
+      --pill-bg:#f1f2e9;
+      --pill-ink:#14150f;
+      --shadow-card: 0 1px 2px rgba(0,0,0,.4), 0 10px 24px -12px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --page-bg:#0c0d09;
+    --shell-shadow: 0 40px 90px -30px rgba(0,0,0,.7);
+    --ink-950:#f1f2e9;
+    --ink-800:#d2d4c4;
+    --ink-600:#939583;
+    --ink-400:#54564a;
+    --paper-100:#1b1c15;
+    --paper-000:#1f2018;
+    --paper-card:#17180f;
+    --line:#2b2c22;
+    --line-soft:#25261e;
+    --clay-600:#FF5B22;
+    --clay-700:#FF7A47;
+    --clay-100:#3a1f14;
+    --good-600:#57c98a;
+    --good-100:#173226;
+    --warn-600:#d8a75b;
+    --warn-100:#332a17;
+    --crit-600:#e2725c;
+    --crit-100:#3a241f;
+    --pill-bg:#f1f2e9;
+    --pill-ink:#14150f;
+    --shadow-card: 0 1px 2px rgba(0,0,0,.4), 0 10px 24px -12px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--page-bg);
+    color:var(--ink-950);
+    font-family:var(--font-body);
+    font-weight:400;
+    -webkit-font-smoothing:antialiased;
+    font-feature-settings:"palt";
+  }
+  ::selection{ background:var(--clay-600); color:var(--on-accent); }
+
+  a{color:inherit;}
+  button{font-family:inherit;}
+
+  .app{
+    display:grid;
+    grid-template-columns:216px 1fr;
+    max-width:1360px;
+    margin:22px auto;
+    min-height:calc(100vh - 44px);
+    background:var(--paper-card);
+    border-radius:var(--r-xl);
+    box-shadow:var(--shell-shadow);
+    overflow:hidden;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    background:var(--paper-100);
+    padding:26px 16px 20px;
+    display:flex;
+    flex-direction:column;
+    gap:28px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:2px 8px;
+  }
+  .brand-mark{
+    flex:none; color:var(--on-accent);
+    width:36px; height:36px;
+    background:var(--clay-600);
+    border-radius:11px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .brand-mark svg{ display:block; width:19px; height:19px; }
+  .brand-text{ line-height:1.3; }
+  .brand-title{
+    font-weight:800;
+    font-size:24px;
+    letter-spacing:-.01em;
+    color:var(--ink-950);
+    line-height:1.2;
+  }
+  .brand-sub{
+    font-size:11px;
+    font-weight:500;
+    color:var(--ink-600);
+    letter-spacing:.02em;
+    margin-top:1px;
+  }
+
+  nav.navlist{ display:flex; flex-direction:column; gap:3px; }
+  .nav-group-label{
+    font-size:10.5px;
+    font-weight:700;
+    color:var(--ink-400);
+    letter-spacing:.1em;
+    padding:16px 10px 6px;
+    text-transform:uppercase;
+  }
+  .navitem{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 12px;
+    border-radius:var(--r-pill);
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink-800);
+    cursor:pointer;
+    border:none;
+    background:transparent;
+    width:100%;
+    text-align:left;
+    letter-spacing:.01em;
+  }
+  .navitem .ico{
+    width:18px;flex:none;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink-400);
+    font-size:12px;
+  }
+  .navitem:hover{ background:var(--line-soft); }
+  .navitem.active{
+    background:var(--clay-600);
+    color:var(--on-accent);
+  }
+  .navitem.active .ico{ color:var(--on-accent); }
+
+  .sidebar-foot{
+    margin-top:auto;
+    border-top:1px solid var(--line);
+    padding-top:16px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:12px;
+    font-weight:500;
+    color:var(--ink-600);
+  }
+  .avatar{
+    width:32px;height:32px;border-radius:50%;
+    background:var(--ink-950);
+    color:var(--clay-600);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:12.5px;
+    flex:none;
+  }
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:18px 36px;
+    flex-wrap:wrap;
+    background:color-mix(in srgb, var(--paper-card) 68%, transparent);
+    backdrop-filter:blur(14px) saturate(160%);
+    -webkit-backdrop-filter:blur(14px) saturate(160%);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .topbar-greet{ display:flex; align-items:center; gap:12px; }
+  .topbar-greet .avatar{ width:38px; height:38px; font-size:14px; }
+  .topbar-hi{ font-size:14px; font-weight:700; color:var(--ink-950); }
+  .topbar-sub{ font-size:12px; font-weight:500; color:var(--ink-600); margin-top:1px; }
+  .topbar-actions{ display:flex; align-items:center; gap:8px; }
+  .icon-pill{
+    width:38px; height:38px; border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--paper-card);
+    color:var(--ink-800);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    font-size:15px;
+    flex:none;
+  }
+  .icon-pill:hover{ background:var(--line-soft); }
+  .date-chip{
+    display:flex; align-items:center; gap:8px;
+    border-radius:var(--r-pill);
+    border:1px solid var(--line);
+    background:var(--paper-card);
+    padding:8px 16px 8px 10px;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-800);
+    white-space:nowrap;
+  }
+  .date-chip .dot-badge{
+    width:20px; height:20px; border-radius:50%;
+    background:var(--clay-600); color:var(--on-accent);
+    font-size:10.5px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- Main ---------- */
+  main{ padding:0 0 56px; max-width:1140px; }
+  .view{ padding:0 36px; }
+  .topline{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin:26px 0 22px;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  .eyebrow{
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--ink-600);
+    letter-spacing:.08em;
+    margin:0 0 6px;
+  }
+  h1{
+    font-size:26px;
+    font-weight:800;
+    margin:0;
+    letter-spacing:-.01em;
+    color:var(--ink-950);
+    text-wrap:balance;
+  }
+  .topline-meta{ font-size:12.5px; font-weight:500; color:var(--ink-600); text-align:left; }
+  .topline-meta b{ color:var(--ink-950); font-weight:700; }
+
+  .btn{
+    display:inline-flex;align-items:center;gap:7px;
+    padding:10px 18px;
+    border-radius:var(--r-pill);
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    border:1px solid var(--line);
+    background:var(--paper-card);
+    color:var(--ink-800);
+  }
+  .btn:hover{ background:var(--line-soft); }
+  .btn.primary{
+    background:var(--clay-600);
+    border-color:var(--clay-600);
+    color:var(--on-accent);
+  }
+  .btn.primary:hover{ background:var(--clay-700); border-color:var(--clay-700); }
+
+  /* stat cards */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin-bottom:16px;
+  }
+  .stat-card{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    box-shadow:var(--shadow-card);
+    padding:18px 20px 20px;
+    position:relative;
+  }
+  .stat-icon{
+    width:30px; height:30px; border-radius:50%;
+    background:var(--stat-accent, var(--clay-600));
+    color:var(--on-accent);
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px;
+    margin-bottom:14px;
+  }
+  .stat-label{
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-600);
+    margin:0 0 10px;
+    letter-spacing:.01em;
+  }
+  .stat-value{
+    font-variant-numeric:tabular-nums;
+    font-size:30px;
+    font-weight:800;
+    line-height:1;
+    color:var(--ink-950);
+    letter-spacing:-.01em;
+  }
+  .stat-value small{
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-600);
+    margin-right:3px;
+  }
+  .stat-delta{
+    display:inline-flex; align-items:center; gap:4px;
+    margin-top:12px;
+    padding:3px 9px;
+    border-radius:var(--r-pill);
+    font-size:11px;
+    font-weight:700;
+    background:var(--line-soft);
+    color:var(--ink-600);
+  }
+  .stat-delta.good{ background:var(--good-100); color:var(--good-600); }
+  .stat-delta.warn{ background:var(--warn-100); color:var(--warn-600); }
+
+  /* ---------- Live now (currently in session) ---------- */
+  .live-now-panel{
+    background:var(--clay-100);
+    border:1.5px solid var(--clay-600);
+    border-radius:var(--r-lg);
+    padding:18px 20px 20px;
+    margin-bottom:16px;
+    transition:background-color .15s, border-color .15s;
+  }
+  .live-now-panel.is-empty{ background:var(--paper-card); border-color:var(--line); }
+  .live-now-panel.is-empty .live-dot{ background:var(--ink-400); animation:none; }
+  .live-now-head{ display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:14px; }
+  .live-now-title{ display:flex; align-items:center; gap:9px; font-weight:800; font-size:15px; color:var(--ink-950); }
+  .live-dot{
+    width:9px; height:9px; border-radius:50%; background:var(--good-600); flex:none;
+    animation:live-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes live-pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+  @media (prefers-reduced-motion: reduce){ .live-dot{ animation:none; } }
+  .live-now-count{ font-size:12px; font-weight:700; color:var(--ink-800); }
+  .live-card{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+    gap:16px;
+    padding:16px 18px;
+    background:var(--paper-card);
+    border-left:4px solid var(--good-600);
+    border-radius:var(--r-md);
+    box-shadow:var(--shadow-card);
+    margin-bottom:10px;
+  }
+  .live-card:last-child{ margin-bottom:0; }
+  .live-card-name{ font-size:19px; font-weight:800; color:var(--ink-950); line-height:1.2; }
+  .live-card-sub{ font-size:12.5px; font-weight:600; color:var(--ink-600); margin-top:3px; }
+  .live-card-progress{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+  .live-card-bar{ width:130px; height:6px; border-radius:999px; background:var(--line-soft); overflow:hidden; }
+  .live-card-bar-fill{ height:100%; background:var(--good-600); border-radius:999px; }
+  .live-card-count{ font-size:12px; font-weight:600; color:var(--ink-600); white-space:nowrap; }
+  .live-card-count b{ color:var(--ink-950); font-weight:800; font-variant-numeric:tabular-nums; }
+  .live-now-toggle-label{ font-size:11px; font-weight:600; color:var(--ink-600); white-space:nowrap; }
+  /* "no live course" state: show the next upcoming session instead */
+  .next-card{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+    gap:16px;
+    padding:16px 18px;
+    background:var(--paper-card);
+    border-left:4px solid var(--ink-400);
+    border-radius:var(--r-md);
+    box-shadow:var(--shadow-card);
+  }
+  .next-card-eyebrow{ font-size:11px; font-weight:700; color:var(--ink-400); letter-spacing:.04em; margin-bottom:4px; }
+  .next-card-name{ font-size:19px; font-weight:800; color:var(--ink-950); line-height:1.2; }
+  .next-card-sub{ font-size:12.5px; font-weight:600; color:var(--ink-600); margin-top:3px; }
+  .next-card-countdown{
+    font-size:12px; font-weight:700; color:var(--ink-800);
+    background:var(--paper-000); padding:6px 12px; border-radius:var(--r-pill); white-space:nowrap;
+  }
+
+  /* ---------- Course stats / student status mini panels ---------- */
+  .mini-stat-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px;
+    padding:14px 20px 20px;
+  }
+  .mini-stat{
+    background:var(--paper-000); border-radius:var(--r-md); padding:14px 15px;
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .mini-stat-top{ display:flex; align-items:center; gap:8px; }
+  .mini-stat-icon{
+    width:24px; height:24px; border-radius:50%; flex:none;
+    background:var(--paper-card); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:11px;
+  }
+  .mini-stat .lbl{ font-size:11px; font-weight:600; color:var(--ink-600); }
+  .mini-stat-body{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .mini-stat .val{ font-size:20px; font-weight:800; color:var(--ink-950); font-variant-numeric:tabular-nums; line-height:1; }
+  .mini-stat .val small{ font-size:11.5px; font-weight:600; color:var(--ink-600); }
+
+  .mini-ring{
+    --pct:0;
+    width:38px; height:38px; border-radius:50%; flex:none;
+    background:conic-gradient(var(--good-600) calc(var(--pct)*1%), var(--line-soft) 0);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .mini-ring::after{ content:""; width:24px; height:24px; border-radius:50%; background:var(--paper-000); }
+
+  .mini-bars{ display:flex; align-items:flex-end; gap:3px; height:30px; flex:none; }
+  .mini-bars span{ width:6px; border-radius:3px; background:var(--line-soft); display:block; }
+  .mini-bars span.b-ended{ background:var(--ink-400); opacity:.4; }
+  .mini-bars span.b-live{ background:var(--good-600); }
+  .mini-bars span.b-upcoming{ background:var(--clay-600); }
+  .mini-bars span.b-warn{ background:var(--warn-600); }
+
+  .mini-bar-h{ width:100%; height:6px; border-radius:999px; background:var(--line-soft); overflow:hidden; }
+  .mini-bar-h > div{ height:100%; border-radius:999px; background:var(--good-600); }
+
+  .status-row-list{ padding:6px 20px 16px; display:flex; flex-direction:column; gap:2px; }
+  .status-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 0; border-top:1px solid var(--line-soft);
+  }
+  .status-row:first-child{ border-top:none; }
+  .status-row .count{ font-size:15px; font-weight:800; color:var(--ink-950); font-variant-numeric:tabular-nums; }
+
+  /* dashboard rows (each row's panels share equal height) */
+  .dash-row{
+    display:grid;
+    gap:14px;
+    align-items:stretch;
+    margin-bottom:14px;
+  }
+  .dash-row:last-child{ margin-bottom:0; }
+  .dash-row-course{ grid-template-columns:1.6fr 1fr; }
+  .dash-row-reverse{ grid-template-columns:1fr 1.6fr; }
+  .dash-row-3{ grid-template-columns:1fr 1fr 1fr; }
+  .dash-row > .panel{ margin-bottom:0; height:100%; display:flex; flex-direction:column; }
+  .dash-row > .panel > .panel-body{ flex:1; }
+  .dash-row > .panel > .mini-stat-grid{ flex:1; align-content:center; }
+  .dash-row > .panel > .status-row-list{ flex:1; }
+  @media (max-width: 900px){
+    .dash-row-course, .dash-row-reverse, .dash-row-3{ grid-template-columns:1fr; }
+    .dash-row > .panel{ height:auto; }
+  }
+  .panel{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    box-shadow:var(--shadow-card);
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .panel-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 20px 14px;
+  }
+  .panel-title{
+    font-weight:800;
+    font-size:14.5px;
+    letter-spacing:0;
+    color:var(--ink-950);
+  }
+  .panel-link{
+    font-size:12px;
+    font-weight:700;
+    color:var(--ink-600);
+    cursor:pointer;
+  }
+  .panel-link:hover{ color:var(--ink-950); }
+  .panel-body{ padding:0 0 6px; }
+  .panel-body.pad{ padding:14px 20px 20px; }
+
+  /* course rows */
+  .course-row{
+    display:grid;
+    grid-template-columns:56px 1fr auto auto auto auto;
+    gap:14px;
+    align-items:center;
+    padding:12px 20px;
+    border-top:1px solid var(--line-soft);
+  }
+  .course-row .sess-actions{ display:flex; gap:8px; }
+  .course-time{
+    font-variant-numeric:tabular-nums;
+    font-size:12.5px;
+    font-weight:500;
+    color:var(--ink-600);
+    line-height:1.3;
+  }
+  .course-time b{ display:block; font-size:15px; color:var(--ink-950); font-weight:800; }
+  .course-name{ font-weight:700; font-size:14px; color:var(--ink-950); }
+  .course-sub{ font-size:11.5px; font-weight:500; color:var(--ink-600); margin-top:2px; }
+  .course-checkin{
+    font-variant-numeric:tabular-nums;
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink-600);
+    text-align:right;
+    white-space:nowrap;
+  }
+  .course-checkin b{ color:var(--ink-950); font-size:14.5px; font-weight:800; }
+  .edit-pencil, .roster-btn, .duplicate-btn, .qr-btn{
+    width:34px;height:34px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--paper-000);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    color:var(--ink-600);
+    flex:none;
+    font-size:14px;
+  }
+  .edit-pencil:hover, .roster-btn:hover, .duplicate-btn:hover, .qr-btn:hover{ background:var(--clay-600); border-color:var(--clay-600); color:var(--on-accent); }
+  .roster-btn svg, .duplicate-btn svg{ width:16px; height:16px; display:block; }
+
+  /* status chips */
+  .mark{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:11.5px;
+    font-weight:700;
+    padding:4px 10px;
+    border-radius:var(--r-pill);
+    background:var(--line-soft);
+    color:var(--ink-600);
+  }
+  .mark .dot{ width:6px;height:6px;border-radius:50%; background:currentColor; flex:none; }
+  .mark.good{ background:var(--good-100); color:var(--good-600); }
+  .mark.warn{ background:var(--warn-100); color:var(--warn-600); }
+  .mark.crit{ background:var(--crit-100); color:var(--crit-600); }
+  .mark.neutral{ background:var(--line-soft); color:var(--ink-400); }
+
+  .tag{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:11.5px;
+    font-weight:700;
+    padding:4px 11px;
+    border-radius:var(--r-pill);
+    background:var(--crit-100);
+    color:var(--crit-600);
+  }
+
+  /* alert feed */
+  .feed-row{
+    display:flex;
+    gap:13px;
+    padding:13px 20px;
+    border-top:1px solid var(--line-soft);
+  }
+  .feed-icon{
+    width:28px;height:28px;
+    flex:none;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:50%;
+    font-size:12px;
+  }
+  .feed-icon.crit{ background:var(--crit-100); color:var(--crit-600); }
+  .feed-icon.warn{ background:var(--warn-100); color:var(--warn-600); }
+  .feed-icon.good{ background:var(--good-100); color:var(--good-600); }
+  .feed-text{ font-size:13px; font-weight:500; line-height:1.55; color:var(--ink-800); }
+  .feed-text b{ font-weight:800; color:var(--ink-950); }
+  .feed-meta{ font-size:11px; font-weight:500; color:var(--ink-400); margin-top:2px; letter-spacing:.01em; }
+  .feed-action{
+    margin-left:auto;
+    font-size:11.5px;
+    color:var(--on-accent);
+    font-weight:700;
+    align-self:center;
+    cursor:pointer;
+    white-space:nowrap;
+    padding:5px 11px;
+    border-radius:var(--r-pill);
+    background:var(--clay-600);
+  }
+
+  /* student table */
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  thead th{
+    text-align:left;
+    font-weight:700;
+    font-size:11px;
+    color:var(--ink-400);
+    padding:11px 20px;
+    border-bottom:1px solid var(--line);
+    letter-spacing:.04em;
+    text-transform:uppercase;
+  }
+  tbody td{
+    text-align:left;
+    padding:12px 20px;
+    border-top:1px solid var(--line-soft);
+    vertical-align:middle;
+    font-weight:500;
+  }
+  tbody tr:hover{ background:var(--paper-000); }
+  .student-name{ font-weight:700; color:var(--ink-950); }
+  .student-phone{ font-variant-numeric:tabular-nums; color:var(--ink-600); font-size:12px; font-weight:500; }
+  .hours-num{ font-variant-numeric:tabular-nums; font-weight:700; color:var(--ink-950); }
+  .search-row{
+    display:flex; gap:10px; padding:15px 20px; border-top:1px solid var(--line);
+  }
+  .search-input{
+    flex:1;
+    border:1px solid var(--line);
+    background:var(--paper-000);
+    border-radius:var(--r-pill);
+    padding:10px 16px;
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink-950);
+    font-family:inherit;
+  }
+  .search-input:focus{ outline:1.5px solid var(--clay-600); outline-offset:1px; }
+  .search-input::placeholder{ color:var(--ink-400); }
+
+  .table-wrap{ overflow-x:auto; }
+
+  .placeholder{
+    padding:70px 30px;
+    text-align:center;
+    color:var(--ink-600);
+  }
+  .placeholder .ico{
+    width:52px;height:52px;margin:0 auto 18px;
+    border-radius:50%;
+    background:var(--clay-100);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink-950);
+    font-size:18px;
+  }
+  .placeholder h2{
+    font-size:17px;
+    font-weight:800;
+    color:var(--ink-950);
+    margin:0 0 8px;
+  }
+  .placeholder p{ font-size:13px; font-weight:500; color:var(--ink-600); max-width:360px; margin:0 auto; line-height:1.7; }
+
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  @media (max-width: 920px){
+    .app{ grid-template-columns:1fr; margin:0; border-radius:0; min-height:100vh; }
+    .sidebar{ flex-direction:row; overflow-x:auto; align-items:center; padding:16px 18px; gap:14px; }
+    .sidebar-foot{ display:none; }
+    nav.navlist{ flex-direction:row; }
+    .nav-group-label{ display:none; }
+    .stats{ grid-template-columns:repeat(2,1fr); }
+    .topbar{ padding:18px 18px 0; }
+    .view{ padding:0 18px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+
+  /* ---------- Import flow ---------- */
+  .steps{
+    display:flex;
+    align-items:center;
+    margin-bottom:28px;
+  }
+  .step{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .step-num{
+    width:28px;height:28px;border-radius:50%;
+    border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:700;
+    color:var(--ink-400);
+    background:var(--paper-card);
+    flex:none;
+  }
+  .step-label{
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink-400);
+    white-space:nowrap;
+  }
+  .step.done .step-num{ background:var(--clay-600); border-color:var(--clay-600); color:var(--on-accent); }
+  .step.done .step-label{ color:var(--ink-600); }
+  .step.current .step-num{ background:var(--ink-950); border-color:var(--ink-950); color:var(--clay-600); }
+  .step.current .step-label{ color:var(--ink-950); font-weight:700; }
+  .step-rule{
+    flex:1;
+    height:1px;
+    background:var(--line);
+    margin:0 16px;
+    min-width:24px;
+  }
+
+  .import-card{ padding:26px 26px 30px; }
+  .import-card h2{
+    font-size:17px; font-weight:800; margin:0 0 6px; color:var(--ink-950);
+  }
+  .import-card > p{ font-size:13px; font-weight:500; color:var(--ink-600); margin:0 0 22px; line-height:1.7; max-width:520px; }
+
+  .template-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:14px 18px;
+    border:1px solid var(--line);
+    border-radius:var(--r-md);
+    background:var(--paper-000);
+    margin-bottom:22px;
+  }
+  .template-info{ display:flex; align-items:center; gap:12px; }
+  .file-ico{
+    width:36px;height:36px;flex:none;
+    border-radius:10px;
+    background:var(--clay-100);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink-950);
+    font-size:14px;
+  }
+  .template-name{ font-size:13.5px; font-weight:700; color:var(--ink-950); }
+  .template-sub{ font-size:11.5px; font-weight:500; color:var(--ink-600); margin-top:2px; }
+
+  .gs-import-box label{ display:block; font-size:12px; font-weight:600; color:var(--ink-600); margin-bottom:8px; }
+  .gs-input-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .gs-input-row input{
+    flex:1; min-width:220px;
+    border:1.5px solid var(--line);
+    background:var(--paper-000);
+    border-radius:var(--r-md);
+    padding:11px 15px;
+    font-size:13.5px;
+    font-weight:500;
+    color:var(--ink-950);
+    font-family:inherit;
+  }
+  .gs-input-row input:focus{ outline:1.5px solid var(--clay-600); outline-offset:1px; }
+  .gs-input-row input.error{ border-color:var(--crit-600); }
+  .gs-input-row .btn{ flex:none; }
+  .gs-error{ font-size:12px; font-weight:600; color:var(--crit-600); margin:8px 0 0; display:none; }
+  .gs-error.show{ display:block; }
+  .gs-hint{ font-size:12px; font-weight:500; color:var(--ink-600); line-height:1.7; margin:12px 0 0; }
+
+  .preview-meta{
+    display:flex; gap:22px; flex-wrap:wrap;
+    padding:16px 20px;
+    background:var(--paper-000);
+    font-size:12.5px;
+  }
+  .preview-meta div{ display:flex; flex-direction:column; gap:3px; }
+  .preview-meta b{ font-size:18px; font-weight:800; color:var(--ink-950); font-variant-numeric:tabular-nums; }
+  .preview-meta span{ font-weight:600; color:var(--ink-600); }
+  .preview-meta .n-good b{ color:var(--good-600); }
+  .preview-meta .n-bad b{ color:var(--crit-600); }
+
+  tbody tr.row-bad{ background:var(--crit-100); }
+  tbody tr.row-bad:hover{ background:var(--crit-100); }
+  .row-reason{ font-size:11px; font-weight:600; color:var(--crit-600); margin-top:2px; }
+  .row-note{ font-size:11px; font-weight:600; color:var(--warn-600); margin-top:2px; }
+
+  .import-actions{
+    display:flex; justify-content:flex-end; gap:10px;
+    margin-top:20px;
+  }
+
+  .result-hero{
+    display:flex; align-items:center; gap:18px;
+    padding:8px 4px 26px;
+  }
+  .result-icon{
+    width:54px;height:54px;flex:none;
+    border-radius:50%;
+    background:var(--clay-600);
+    color:var(--on-accent);
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;
+  }
+  .result-hero h2{ font-size:19px; font-weight:800; margin:0 0 4px; color:var(--ink-950); }
+  .result-hero p{ font-size:13px; font-weight:500; color:var(--ink-600); margin:0; }
+
+  .result-stats{
+    display:grid; grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-bottom:24px;
+  }
+  .result-stat{ background:var(--paper-000); border-radius:var(--r-md); padding:16px 18px; }
+  .result-stat .lbl{ font-size:11.5px; font-weight:600; color:var(--ink-600); margin-bottom:8px; }
+  .result-stat .val{ font-size:23px; font-weight:800; font-variant-numeric:tabular-nums; color:var(--ink-950); }
+  .result-stat.bad .val{ color:var(--crit-600); }
+  .result-stat.new .val{ color:var(--good-600); }
+
+  /* ---------- Courses ---------- */
+  .date-head{
+    padding:4px 2px 12px;
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--ink-400);
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  .date-head:not(:first-child){ margin-top:8px; }
+  .sess-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:18px;
+    padding:20px 22px;
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    box-shadow:var(--shadow-card);
+    margin-bottom:12px;
+    transition:background-color .12s;
+  }
+  .sess-row:hover{ background:var(--paper-000); }
+  .sess-row:last-child{ margin-bottom:0; }
+  .sess-main{ display:flex; flex-direction:column; gap:5px; min-width:220px; }
+  .sess-name{ font-size:26px; font-weight:800; color:var(--ink-950); line-height:1.2; letter-spacing:-.01em; }
+  .sess-time{ font-variant-numeric:tabular-nums; font-size:13.5px; font-weight:600; color:var(--ink-600); }
+  .sess-date{ color:var(--ink-400); font-weight:700; margin-right:2px; }
+  .sess-sub{ font-size:12.5px; font-weight:500; color:var(--ink-600); }
+  .sess-meta{ display:flex; align-items:flex-start; gap:26px; flex:none; }
+  .sess-hours, .sess-progress{
+    display:flex; flex-direction:column; align-items:flex-end; gap:4px;
+    white-space:nowrap; text-align:right;
+  }
+  .sess-hours .lbl, .sess-progress .lbl{ font-size:11px; font-weight:600; color:var(--ink-400); }
+  .sess-hours b, .sess-progress b{
+    font-variant-numeric:tabular-nums; color:var(--ink-950); font-weight:800; font-size:16px;
+  }
+  .sess-progress .mark{ margin-top:2px; }
+
+  .switch{ position:relative; display:inline-block; width:38px; height:22px; cursor:pointer; flex:none; }
+  .switch input{ position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; z-index:1; }
+  .switch-track{
+    position:absolute; inset:0; background:var(--line); border-radius:999px; transition:background .15s;
+  }
+  .switch-thumb{
+    position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%;
+    background:var(--paper-card); box-shadow:0 1px 2px rgba(0,0,0,.25); transition:transform .15s;
+  }
+  .switch input:checked ~ .switch-track{ background:var(--clay-600); }
+  .switch input:checked ~ .switch-track .switch-thumb{ transform:translateX(16px); }
+  .switch input:focus-visible ~ .switch-track{ outline:2px solid var(--clay-600); outline-offset:2px; }
+
+  .sess-actions{ display:flex; gap:8px; flex:none; }
+
+  .courses-toolbar{
+    display:flex; justify-content:space-between; align-items:center; gap:16px;
+    margin-bottom:16px; flex-wrap:wrap;
+  }
+  .courses-toolbar-actions{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .courses-toolbar-actions .search-input{ width:220px; }
+
+  @media (max-width: 760px){
+    .sess-row{ flex-direction:column; align-items:stretch; }
+    .sess-meta{ justify-content:space-between; }
+    .sess-progress{ align-items:flex-start; }
+  }
+
+  .form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px 18px;
+    margin-bottom:22px;
+  }
+  .form-field{ display:flex; flex-direction:column; gap:6px; }
+  .form-field.span2{ grid-column:1 / -1; }
+  .form-field label{ font-size:12px; font-weight:600; color:var(--ink-600); }
+  .form-field input, .form-field select{
+    border:1px solid var(--line);
+    background:var(--paper-000);
+    border-radius:var(--r-md);
+    padding:10px 13px;
+    font-size:13.5px;
+    font-weight:500;
+    color:var(--ink-950);
+    font-family:inherit;
+  }
+  .form-field input:focus, .form-field select:focus{ outline:1.5px solid var(--clay-600); outline-offset:1px; }
+
+  /* QR overlay */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(20,21,15,.55);
+    display:none;
+    align-items:center; justify-content:center;
+    padding:24px;
+    z-index:40;
+  }
+  .overlay.open{ display:flex; }
+  .qr-modal{
+    background:var(--paper-card);
+    border-radius:var(--r-lg);
+    box-shadow:var(--shell-shadow);
+    max-width:360px; width:100%;
+    padding:28px 26px 26px;
+    text-align:center;
+    position:relative;
+    max-height:88vh;
+    overflow-y:auto;
+  }
+  .qr-modal .eyebrow{ margin-bottom:4px; }
+  .qr-modal h3{ font-size:17px; font-weight:800; margin:0 0 2px; color:var(--ink-950); }
+  .qr-modal .qr-sub{ font-size:12px; font-weight:600; color:var(--ink-600); margin-bottom:20px; }
+  .qr-graphic{
+    width:180px; height:180px; margin:0 auto 18px;
+    border-radius:var(--r-md);
+    padding:12px;
+    background:var(--paper-000);
+  }
+  .qr-graphic svg{ display:block; width:100%; height:100%; }
+  .qr-progress{
+    font-size:13px; font-weight:600; color:var(--ink-800); margin-bottom:20px;
+  }
+  .qr-progress b{ font-variant-numeric:tabular-nums; color:var(--ink-950); font-weight:800; }
+  .qr-actions{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+
+  /* ---------- Student check-in preview ---------- */
+  .back-link{ cursor:pointer; }
+  .back-link:hover{ color:var(--ink-950); }
+  .checkin-shell{
+    display:grid;
+    grid-template-columns:313px 1fr;
+    gap:24px;
+    align-items:start;
+  }
+  .phone-frame{
+    background:var(--ink-950);
+    border-radius:35px;
+    padding:13px;
+    box-shadow:var(--shell-shadow);
+  }
+  .phone-notch{
+    width:83px; height:20px;
+    background:var(--ink-950);
+    border-radius:0 0 13px 13px;
+    margin:0 auto;
+    position:relative;
+    z-index:2;
+  }
+  .phone-screen{
+    background:var(--paper-card);
+    border-radius:24px;
+    margin-top:-20px;
+    padding:31px 20px 26px;
+    min-height:442px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+  }
+  .ci-course{ margin-bottom:28px; }
+  .ci-course-name{ font-size:16px; font-weight:800; color:var(--ink-950); }
+  .ci-course-sub{ font-size:11.5px; font-weight:600; color:var(--ink-600); margin-top:4px; }
+  .ci-state{ width:100%; display:flex; flex-direction:column; align-items:center; }
+  .ci-icon{
+    width:56px; height:56px; border-radius:50%;
+    background:var(--clay-100);
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px;
+    margin-bottom:18px;
+  }
+  .ci-instruct{ font-size:13.5px; font-weight:600; color:var(--ink-800); margin:0 0 18px; }
+  .ci-input{
+    width:100%;
+    border:1.5px solid var(--line);
+    background:var(--paper-000);
+    border-radius:var(--r-pill);
+    padding:13px 18px;
+    font-size:15px;
+    font-weight:700;
+    text-align:center;
+    letter-spacing:.02em;
+    color:var(--ink-950);
+    font-family:inherit;
+    margin-bottom:14px;
+  }
+  .ci-input:focus{ outline:1.5px solid var(--clay-600); outline-offset:1px; }
+  .ci-input::placeholder{ color:var(--ink-400); font-weight:500; }
+  .ci-submit{ width:100%; justify-content:center; padding:13px; font-size:14px; }
+  .ci-result-icon{
+    width:60px; height:60px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:26px; font-weight:800;
+    margin-bottom:16px;
+  }
+  .ci-result-icon.good{ background:var(--good-100); color:var(--good-600); }
+  .ci-result-icon.crit{ background:var(--crit-100); color:var(--crit-600); }
+  .ci-result-icon.warn{ background:var(--warn-100); color:var(--warn-600); }
+  .ci-state h3{ font-size:17px; font-weight:800; margin:0 0 8px; color:var(--ink-950); }
+  .ci-state p{ font-size:13px; font-weight:500; color:var(--ink-600); line-height:1.6; margin:0 0 22px; max-width:250px; }
+  .ci-state p b{ color:var(--ink-950); font-weight:800; }
+  .ci-hours-box{
+    display:flex; gap:10px; width:100%; margin-bottom:22px;
+  }
+  .ci-hours-box > div{
+    flex:1; background:var(--paper-000); border-radius:var(--r-md);
+    padding:12px; text-align:center;
+  }
+  .ci-hours-box span{ display:block; font-size:11px; font-weight:600; color:var(--ink-600); margin-bottom:4px; }
+  .ci-hours-box b{ font-size:16px; font-weight:800; color:var(--ink-950); font-variant-numeric:tabular-nums; }
+  .ci-reset{ width:100%; justify-content:center; }
+
+  .ci-form{ width:100%; text-align:left; }
+  .ci-form-field{ margin-bottom:14px; }
+  .ci-form-field label{ display:block; font-size:11.5px; font-weight:700; color:var(--ink-600); margin-bottom:6px; }
+  .ci-form-field input, .ci-form-field select{
+    width:100%;
+    border:1.5px solid var(--line);
+    background:var(--paper-000);
+    border-radius:var(--r-md);
+    padding:11px 14px;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink-950);
+    font-family:inherit;
+  }
+  .ci-form-field input:focus, .ci-form-field select:focus{ outline:1.5px solid var(--clay-600); outline-offset:1px; }
+  .ci-form-field .ci-static{
+    padding:11px 14px; border-radius:var(--r-md); background:var(--paper-000);
+    font-size:13.5px; font-weight:700; color:var(--ink-950); font-variant-numeric:tabular-nums;
+  }
+  .ci-form-note{ font-size:11px; font-weight:500; color:var(--ink-400); margin:-6px 0 16px; line-height:1.5; }
+  .ci-form-actions{ display:flex; flex-direction:column; gap:8px; }
+
+  .checkin-side{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    box-shadow:var(--shadow-card);
+    padding:22px;
+  }
+  .ci-demo-chips{ display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+  .chip-btn{
+    display:flex; align-items:center; gap:10px;
+    text-align:left;
+    border:1px solid var(--line);
+    background:var(--paper-000);
+    border-radius:var(--r-md);
+    padding:11px 14px;
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink-800);
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .chip-btn:hover{ border-color:var(--clay-600); background:var(--clay-100); }
+  .ci-hint{ font-size:12px; font-weight:500; color:var(--ink-600); line-height:1.6; margin:0; }
+
+  @media (max-width: 760px){
+    .checkin-shell{ grid-template-columns:1fr; }
+  }
+
+  /* ---------- Students ---------- */
+  .link-btn{
+    background:none; border:none; cursor:pointer;
+    font-family:inherit; font-size:12.5px; font-weight:700;
+    color:var(--ink-950); text-decoration:underline; text-underline-offset:2px;
+    padding:0;
+  }
+  .stu-row-name{ display:flex; align-items:center; gap:10px; }
+
+  .student-modal{ max-width:480px; text-align:left; padding:26px 26px 28px; }
+  .sm-close{
+    position:absolute; top:16px; right:16px;
+    width:30px; height:30px; border-radius:50%;
+    border:1px solid var(--line); background:var(--paper-000);
+    color:var(--ink-600); cursor:pointer; font-size:14px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .sm-header{ display:flex; align-items:center; gap:14px; margin-bottom:20px; }
+  .sm-avatar{
+    width:52px; height:52px; border-radius:50%; flex:none;
+    background:var(--ink-950); color:var(--clay-600);
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px; font-weight:800;
+  }
+  .sm-name{ font-size:18px; font-weight:800; color:var(--ink-950); }
+  .sm-phone{ font-size:12.5px; font-weight:600; color:var(--ink-600); font-variant-numeric:tabular-nums; margin-top:2px; }
+  .sm-stats{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:10px;
+    margin-bottom:18px;
+  }
+  .sm-stat{ background:var(--paper-000); border-radius:var(--r-md); padding:12px 10px; text-align:center; }
+  .sm-stat .lbl{ font-size:10.5px; font-weight:600; color:var(--ink-600); margin-bottom:6px; }
+  .sm-stat .val{ font-size:16px; font-weight:800; color:var(--ink-950); font-variant-numeric:tabular-nums; }
+  .sm-actions{ display:flex; gap:10px; margin-bottom:22px; }
+  .sm-actions .btn{ flex:1; justify-content:center; }
+  .sm-section-title{ font-size:12.5px; font-weight:800; color:var(--ink-950); margin:0 0 4px; }
+  .sm-list{ max-height:150px; overflow-y:auto; margin-bottom:18px; }
+  .sm-list:last-child{ margin-bottom:0; }
+  .sm-item{
+    display:flex; justify-content:space-between; gap:10px;
+    padding:9px 0; border-top:1px solid var(--line-soft);
+    font-size:12.5px;
+  }
+  .sm-item:first-child{ border-top:none; }
+  .sm-item-main{ font-weight:700; color:var(--ink-950); }
+  .sm-item-sub{ font-weight:500; color:var(--ink-600); font-size:11px; margin-top:2px; }
+  .sm-item-amt{ font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .sm-item-amt.good{ color:var(--good-600); }
+  .sm-item-amt.crit{ color:var(--crit-600); }
+
+  /* ---------- Filters row (checkins) ---------- */
+  .filter-row{
+    display:flex; gap:10px; flex-wrap:wrap;
+    padding:15px 20px; border-bottom:1px solid var(--line);
+  }
+  .filter-row input, .filter-row select{
+    border:1px solid var(--line);
+    background:var(--paper-000);
+    border-radius:var(--r-pill);
+    padding:9px 14px;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-950);
+    font-family:inherit;
+  }
+  .filter-row input:focus, .filter-row select:focus{ outline:1.5px solid var(--clay-600); outline-offset:1px; }
+  .filter-row input[type="search"]{ flex:1; min-width:160px; }
+  .result-good{ color:var(--good-600); font-weight:700; }
+  .result-crit{ color:var(--crit-600); font-weight:700; }
+
+  /* ---------- Adjust hours ---------- */
+  .adjust-shell{ display:grid; grid-template-columns:360px 1fr; gap:16px; align-items:start; }
+  @media (max-width: 900px){ .adjust-shell{ grid-template-columns:1fr; } }
+  .adjust-form{ padding:24px 24px 26px; }
+  .adjust-form h2{ font-size:16px; font-weight:800; margin:0 0 18px; color:var(--ink-950); }
+  .type-toggle{ display:flex; gap:8px; margin-bottom:16px; }
+  .type-btn{
+    flex:1; padding:11px; border-radius:var(--r-md); border:1.5px solid var(--line);
+    background:var(--paper-000); color:var(--ink-600); font-weight:800; font-size:13.5px;
+    cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px;
+  }
+  .type-btn.active.add{ background:var(--good-100); border-color:var(--good-600); color:var(--good-600); }
+  .type-btn.active.sub{ background:var(--crit-100); border-color:var(--crit-600); color:var(--crit-600); }
+  .adjust-form textarea{
+    width:100%; border:1px solid var(--line); background:var(--paper-000);
+    border-radius:var(--r-md); padding:10px 13px; font-size:13px; font-weight:500;
+    color:var(--ink-950); font-family:inherit; resize:vertical; min-height:70px;
+  }
+  .adjust-form textarea:focus, .adjust-form select:focus{ outline:1.5px solid var(--clay-600); outline-offset:1px; }
+  .adjust-preview{
+    background:var(--clay-100); border-radius:var(--r-md); padding:14px 16px;
+    font-size:12.5px; font-weight:600; color:var(--ink-800); margin-bottom:18px; line-height:1.6;
+  }
+  .adjust-preview b{ color:var(--ink-950); font-weight:800; }
+  .toast-ok{
+    display:none; align-items:center; gap:8px;
+    background:var(--good-100); color:var(--good-600); font-weight:700; font-size:12.5px;
+    padding:10px 14px; border-radius:var(--r-md); margin-top:14px;
+  }
+  .toast-ok.show{ display:flex; }
+
+  .adj-search-note{ font-size:12.5px; font-weight:500; color:var(--ink-600); margin:0 0 16px; line-height:1.6; }
+  .adj-pick-list{ max-height:340px; overflow-y:auto; margin-top:14px; }
+  .adj-pick-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 6px; border-top:1px solid var(--line-soft); cursor:pointer;
+    background:none; border-left:none; border-right:none; border-bottom:none; width:100%;
+    text-align:left; font-family:inherit;
+  }
+  .adj-pick-row:first-child{ border-top:none; }
+  .adj-pick-row:hover{ background:var(--paper-000); }
+  .adj-pick-name{ font-weight:700; font-size:13.5px; color:var(--ink-950); }
+  .adj-pick-phone{ font-size:11.5px; font-weight:500; color:var(--ink-600); margin-top:2px; }
+  .adj-pick-hours{ font-size:13px; font-weight:800; color:var(--ink-950); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .adj-pick-empty{ padding:24px 6px; text-align:center; font-size:12.5px; color:var(--ink-400); }
+
+  .adj-selected-bar{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    background:var(--clay-100); border-radius:var(--r-md); padding:12px 14px; margin-bottom:18px;
+  }
+  .adj-selected-name{ font-weight:800; font-size:14px; color:var(--ink-950); }
+  .adj-selected-sub{ font-size:11.5px; font-weight:600; color:var(--ink-600); margin-top:2px; }
+  .adj-change-btn{
+    font-size:12px; font-weight:700; color:var(--ink-950); text-decoration:underline;
+    text-underline-offset:2px; cursor:pointer; background:none; border:none; font-family:inherit;
+    white-space:nowrap; flex:none;
+  }
+
+  /* ---------- Login ---------- */
+  .login-screen{
+    position:fixed; inset:0; z-index:100;
+    background:var(--page-bg);
+    display:flex; align-items:center; justify-content:center;
+    padding:24px;
+  }
+  .login-card{
+    background:var(--paper-card);
+    border-radius:var(--r-xl);
+    box-shadow:var(--shell-shadow);
+    padding:44px 38px 34px;
+    max-width:380px; width:100%;
+  }
+  .login-brand{ display:flex; flex-direction:column; align-items:center; gap:14px; margin-bottom:26px; text-align:center; }
+  .login-mark{
+    width:52px; height:52px; border-radius:16px; background:var(--clay-600); color:var(--on-accent);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .login-mark svg{ width:26px; height:26px; display:block; }
+  .login-title{ font-size:19px; font-weight:800; color:var(--ink-950); }
+  .login-sub{ font-size:12.5px; font-weight:500; color:var(--ink-600); margin-top:2px; }
+  .login-form{ text-align:left; display:flex; flex-direction:column; gap:14px; margin-bottom:6px; }
+  .login-field label{ display:block; font-size:12px; font-weight:600; color:var(--ink-600); margin-bottom:6px; }
+  .login-field input{
+    width:100%; border:1px solid var(--line); background:var(--paper-000);
+    border-radius:var(--r-md); padding:11px 14px; font-size:13.5px; font-weight:500;
+    color:var(--ink-950); font-family:inherit;
+  }
+  .login-field input:focus{ outline:1.5px solid var(--clay-600); outline-offset:1px; }
+  .login-row{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:12px; font-weight:600; color:var(--ink-600); margin:4px 0 20px;
+  }
+  .login-row label{ display:flex; align-items:center; gap:7px; cursor:pointer; }
+  .login-submit{ width:100%; justify-content:center; padding:13px; font-size:14px; }
+  .login-hint{ font-size:11px; font-weight:500; color:var(--ink-400); margin-top:18px; line-height:1.6; text-align:center; }
+</style>
+
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-mark">
+        <svg viewBox="0 0 34 34" fill="none">
+          <path d="M17 3.2C10 2.6 4 8 3.4 15c-.6 7.4 5 14 12.4 14.9 7 .8 13.8-4.3 14.7-11.6C31.4 10.8 25.7 3.9 17 3.2Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M11.5 17.3c1.6-3.4 4.2-5.1 7.4-4.6 3 .5 4.6 3 4.1 6.2-.5 3-3.3 4.9-6.4 4.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="login-title">課程資訊後台</div>
+        <div class="login-sub">管理員登入</div>
+      </div>
+    </div>
+
+    <form class="login-form" id="login-form">
+      <div class="login-field">
+        <label>統一編號（帳號）</label>
+        <input type="text" inputmode="numeric" maxlength="8" value="84204302" required>
+      </div>
+      <div class="login-field">
+        <label>密碼</label>
+        <input type="password" value="84204302" required>
+      </div>
+      <div class="login-row">
+        <label><input type="checkbox" checked> 記住我</label>
+        <span class="link-btn" style="color:var(--ink-600); text-decoration:none;">忘記密碼？</span>
+      </div>
+      <button type="submit" class="btn primary login-submit">登入</button>
+    </form>
+    <p class="login-hint">帳號＝統一編號，初始密碼＝統一編號（登入後建議修改）。Demo 已預先填好，直接按「登入」即可。</p>
+  </div>
+</div>
+<script>
+  // Runs immediately on parse so an already-logged-in visitor doesn't see the login
+  // screen flash on refresh — session is valid for 12 hours of inactivity.
+  (function(){
+    try {
+      var raw = localStorage.getItem('rc_auth_session');
+      if (raw) {
+        var s = JSON.parse(raw);
+        if (s && s.loggedIn && (Date.now() - s.lastActive) < 12 * 60 * 60 * 1000) {
+          document.getElementById('login-screen').style.display = 'none';
+        } else {
+          localStorage.removeItem('rc_auth_session');
+        }
+      }
+    } catch (e) {}
+  })();
+</script>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-text">
+        <div class="brand-title">課程資訊後台</div>
+      </div>
+    </div>
+
+    <nav class="navlist" id="navlist">
+      <div class="nav-group-label">總覽</div>
+      <button class="navitem active" data-view="dashboard">
+        <span class="ico">&#9673;</span> 儀表板
+      </button>
+
+      <div class="nav-group-label">日常作業</div>
+      <button class="navitem" data-view="courses">
+        <span class="ico">&#9636;</span> 課程場次
+      </button>
+      <button class="navitem" data-view="import">
+        <span class="ico">&#8615;</span> 匯入名單
+      </button>
+      <button class="navitem" data-view="checkins">
+        <span class="ico">&#10003;</span> 報到紀錄
+      </button>
+
+      <div class="nav-group-label">學生與時數</div>
+      <button class="navitem" data-view="students">
+        <span class="ico">&#9662;</span> 學生管理
+      </button>
+      <button class="navitem" data-view="adjust">
+        <span class="ico">&#177;</span> 時數調整
+      </button>
+
+      <div class="nav-group-label">學生自助</div>
+      <button class="navitem" data-view="student-query">
+        <span class="ico">&#9737;</span> 查詢我的時數
+      </button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="avatar">管</div>
+      <div>
+        <div>櫃台管理員</div>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div class="topbar-actions" style="margin-left:auto;">
+        <button class="icon-pill" id="theme-toggle" title="切換深色模式" aria-label="切換深色/淺色模式">☾</button>
+        <button class="icon-pill" title="通知">🔔</button>
+        <button class="icon-pill" id="btn-logout" title="登出">⏻</button>
+        <div class="date-chip"><span class="dot-badge">3</span> Sat, 26 Aug</div>
+      </div>
+    </div>
+
+    <!-- ===================== DASHBOARD ===================== -->
+    <section class="view active" id="view-dashboard">
+      <div class="topline">
+        <div>
+          <p class="eyebrow">2026年8月26日・星期三</p>
+          <h1>今日總覽</h1>
+        </div>
+        <div class="topline-meta">
+          上次同步 <b>2 分鐘前</b> ・ 目前在校學生 <b>184</b> 位
+        </div>
+      </div>
+
+      <div class="live-now-panel">
+        <div class="live-now-head">
+          <div class="live-now-title" id="live-now-title"><span class="live-dot"></span> 現在上課中</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="live-now-count" id="live-now-count">1 場正在進行</div>
+            <span class="live-now-toggle-label">模擬無課程</span>
+            <label class="switch" title="模擬目前無進行中課程">
+              <input type="checkbox" id="live-now-toggle">
+              <span class="switch-track"><span class="switch-thumb"></span></span>
+            </label>
+          </div>
+        </div>
+
+        <div id="live-now-state-live">
+          <div class="live-card" data-name="成人流動瑜珈" data-sub="王老師・教室 A" data-cap="18" data-checked="4" data-date="今天" data-start="19:30" data-end="20:30">
+            <div>
+              <div class="live-card-name">成人流動瑜珈</div>
+              <div class="live-card-sub">19:30–20:30・王老師・教室 A</div>
+            </div>
+            <div class="live-card-progress">
+              <div class="live-card-bar"><div class="live-card-bar-fill" style="width:22%"></div></div>
+              <div class="live-card-count"><b>4</b> / 18 已報到</div>
+            </div>
+            <div class="sess-actions">
+              <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+              <button class="qr-btn" title="查看 QR Code">▦</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="live-now-state-next" style="display:none;">
+          <div class="next-card" data-name="親子烹飪體驗" data-sub="周老師・料理教室" data-cap="10" data-checked="0" data-date="今天" data-start="20:45" data-end="21:30">
+            <div>
+              <div class="next-card-eyebrow">目前沒有進行中的課程・下一堂課</div>
+              <div class="next-card-name">親子烹飪體驗</div>
+              <div class="next-card-sub">20:45–21:30・周老師・料理教室</div>
+            </div>
+            <div class="next-card-countdown">15 分鐘後開始</div>
+            <div class="sess-actions">
+              <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+              <button class="qr-btn" title="查看 QR Code">▦</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat-card" style="--stat-accent:var(--clay-600)">
+          <div class="stat-icon">📚</div>
+          <div class="stat-label">今日課程</div>
+          <div class="stat-value">5 <small>場</small></div>
+          <div class="stat-delta">最近一場 19:30 開始</div>
+        </div>
+        <div class="stat-card" style="--stat-accent:var(--good-100)">
+          <div class="stat-icon" style="background:var(--good-100); color:var(--good-600);">✓</div>
+          <div class="stat-label">今日報到人數</div>
+          <div class="stat-value">37 <small>人次</small></div>
+          <div class="stat-delta good">↗ 12 較昨日同時段</div>
+        </div>
+        <div class="stat-card" style="--stat-accent:var(--warn-100)">
+          <div class="stat-icon" style="background:var(--warn-100); color:var(--warn-600);">!</div>
+          <div class="stat-label">待處理異常</div>
+          <div class="stat-value">3 <small>件</small></div>
+          <div class="stat-delta warn">2 件時數不足・1 件查無學生</div>
+        </div>
+        <div class="stat-card" style="--stat-accent:var(--clay-100)">
+          <div class="stat-icon" style="background:var(--clay-100); color:var(--ink-950);">⏱</div>
+          <div class="stat-label">本月扣除時數</div>
+          <div class="stat-value">412 <small>小時</small></div>
+          <div class="stat-delta good">↗ 8% 較上月</div>
+        </div>
+      </div>
+
+      <div class="dash-row dash-row-course">
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">今日課程場次</div>
+            <div class="panel-link" data-goto="courses">查看全部場次 →</div>
+          </div>
+          <div class="panel-body">
+            <div class="course-row" data-name="成人流動瑜珈" data-sub="王老師・教室 A" data-cap="18" data-checked="4" data-date="今天" data-start="19:30" data-end="20:30">
+              <div class="course-time"><b>19:30</b>60 分鐘</div>
+              <div>
+                <div class="course-name">成人流動瑜珈</div>
+                <div class="course-sub">王老師・教室 A</div>
+              </div>
+              <div class="course-checkin"><b>4</b> / 18 已報到</div>
+              <span class="mark good">進行中</span>
+              <div class="sess-actions">
+                <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+                <button class="qr-btn" title="查看 QR Code">▦</button>
+              </div>
+            </div>
+            <div class="course-row" data-name="親子烹飪體驗" data-sub="周老師・料理教室" data-cap="10" data-checked="0" data-date="今天" data-start="20:45" data-end="21:30">
+              <div class="course-time"><b>20:45</b>45 分鐘</div>
+              <div>
+                <div class="course-name">親子烹飪體驗</div>
+                <div class="course-sub">周老師・料理教室</div>
+              </div>
+              <div class="course-checkin"><b>0</b> / 10 已報到</div>
+              <span class="mark neutral">未開始</span>
+              <div class="sess-actions">
+                <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+                <button class="qr-btn" title="查看 QR Code">▦</button>
+              </div>
+            </div>
+            <div class="course-row" data-name="瑞亞基礎瑜珈" data-sub="王老師・教室 A" data-cap="20" data-checked="18" data-date="今天" data-start="10:00" data-end="11:00">
+              <div class="course-time"><b>10:00</b>60 分鐘</div>
+              <div>
+                <div class="course-name">瑞亞基礎瑜珈</div>
+                <div class="course-sub">王老師・教室 A</div>
+              </div>
+              <div class="course-checkin"><b>18</b> / 20 已報到</div>
+              <span class="mark neutral">已結束</span>
+              <div class="sess-actions">
+                <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+                <button class="qr-btn" title="查看 QR Code">▦</button>
+              </div>
+            </div>
+            <div class="course-row" data-name="兒童美術創作班" data-sub="林老師・教室 B" data-cap="12" data-checked="11" data-date="今天" data-start="14:00" data-end="14:50">
+              <div class="course-time"><b>14:00</b>50 分鐘</div>
+              <div>
+                <div class="course-name">兒童美術創作班</div>
+                <div class="course-sub">林老師・教室 B</div>
+              </div>
+              <div class="course-checkin"><b>11</b> / 12 已報到</div>
+              <span class="mark neutral">已結束</span>
+              <div class="sess-actions">
+                <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+                <button class="qr-btn" title="查看 QR Code">▦</button>
+              </div>
+            </div>
+            <div class="course-row" data-name="兒童鋼琴一對一" data-sub="陳老師・鋼琴教室" data-cap="6" data-checked="4" data-date="今天" data-start="16:30" data-end="17:15">
+              <div class="course-time"><b>16:30</b>45 分鐘</div>
+              <div>
+                <div class="course-name">兒童鋼琴一對一</div>
+                <div class="course-sub">陳老師・鋼琴教室</div>
+              </div>
+              <div class="course-checkin"><b>4</b> / 6 已報到</div>
+              <span class="mark neutral">已結束</span>
+              <div class="sess-actions">
+                <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+                <button class="qr-btn" title="查看 QR Code">▦</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">課程數據</div>
+            <div class="panel-link" data-goto="courses">查看全部場次 →</div>
+          </div>
+          <div class="mini-stat-grid">
+            <div class="mini-stat">
+              <div class="mini-stat-top"><span class="mini-stat-icon">📚</span><span class="lbl">今日場次</span></div>
+              <div class="mini-stat-body">
+                <div class="val">5 <small>場</small></div>
+                <div class="mini-bars" title="已結束 3・進行中 1・未開始 1">
+                  <span class="b-ended" style="height:40%"></span>
+                  <span class="b-ended" style="height:60%"></span>
+                  <span class="b-ended" style="height:45%"></span>
+                  <span class="b-live" style="height:85%"></span>
+                  <span class="b-upcoming" style="height:30%"></span>
+                </div>
+              </div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-top"><span class="mini-stat-icon">✓</span><span class="lbl">平均出席率</span></div>
+              <div class="mini-stat-body">
+                <div class="val">56<small>%</small></div>
+                <div class="mini-ring" style="--pct:56"></div>
+              </div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-top"><span class="mini-stat-icon">⚠</span><span class="lbl">近滿場場次</span></div>
+              <div class="mini-stat-body">
+                <div class="val">2 <small>場</small></div>
+                <div class="mini-bars" title="兒童美術創作班 92%・瑞亞基礎瑜珈 90%">
+                  <span class="b-warn" style="height:55%"></span>
+                  <span class="b-warn" style="height:92%"></span>
+                  <span class="b-warn" style="height:90%"></span>
+                </div>
+              </div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-top"><span class="mini-stat-icon">🎟</span><span class="lbl">剩餘名額</span></div>
+              <div class="mini-stat-body" style="flex-direction:column; align-items:stretch; gap:8px;">
+                <div class="val">29 <small>／ 66 位</small></div>
+                <div class="mini-bar-h"><div style="width:44%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-row dash-row-3">
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">待處理異常</div>
+            <span class="tag">3 件</span>
+          </div>
+          <div class="panel-body">
+            <div class="feed-row">
+              <div class="feed-icon crit">✕</div>
+              <div class="feed-text">
+                <div><b>育誠工程有限公司</b> 掃碼報到失敗 — 時數不足</div>
+                <div class="feed-meta">兒童鋼琴一對一・16:32</div>
+              </div>
+              <div class="feed-action" data-goto="adjust">補時數</div>
+            </div>
+            <div class="feed-row">
+              <div class="feed-icon warn">?</div>
+              <div class="feed-text">
+                <div>統一編號 <b>00000021</b> 查無資料</div>
+                <div class="feed-meta">瑞亞基礎瑜珈・10:04</div>
+              </div>
+              <div class="feed-action" data-goto="students">建立學生</div>
+            </div>
+            <div class="feed-row">
+              <div class="feed-icon crit">✕</div>
+              <div class="feed-text">
+                <div><b>佳穎科技股份有限公司</b> 掃碼報到失敗 — 時數不足</div>
+                <div class="feed-meta">成人流動瑜珈・09:58</div>
+              </div>
+              <div class="feed-action" data-goto="adjust">補時數</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">最近時數異動</div>
+            <div class="panel-link" data-goto="adjust">查看全部 →</div>
+          </div>
+          <div class="panel-body">
+            <div class="feed-row">
+              <div class="feed-icon good">−</div>
+              <div class="feed-text">
+                <div><b>凱婷生技股份有限公司</b> 掃碼扣除 1.0 hr</div>
+                <div class="feed-meta">瑞亞基礎瑜珈報到・10:01</div>
+              </div>
+            </div>
+            <div class="feed-row">
+              <div class="feed-icon good">＋</div>
+              <div class="feed-text">
+                <div><b>傳啟資訊股份有限公司</b> 手動加時 5.0 hr</div>
+                <div class="feed-meta">原因：補購課程包・管理員操作・09:20</div>
+              </div>
+            </div>
+            <div class="feed-row">
+              <div class="feed-icon good">＋</div>
+              <div class="feed-text">
+                <div><b>姿蓉設計工作室有限公司</b> 名單匯入新增 10.0 hr</div>
+                <div class="feed-meta">首次購買・08:47</div>
+              </div>
+            </div>
+            <div class="feed-row">
+              <div class="feed-icon good">−</div>
+              <div class="feed-text">
+                <div><b>柏翰貿易股份有限公司</b> 手動扣回 0.5 hr</div>
+                <div class="feed-meta">原因：誤扣補回・管理員操作・昨日 21:14</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">學生狀態</div>
+            <div class="panel-link" data-goto="students">前往學生管理 →</div>
+          </div>
+          <div class="status-row-list">
+            <div class="status-row"><span class="mark good">正常</span><span class="count">4 位</span></div>
+            <div class="status-row"><span class="mark warn">時數偏低</span><span class="count">2 位</span></div>
+            <div class="status-row"><span class="mark crit">已用罄</span><span class="count">1 位</span></div>
+            <div class="status-row"><span class="mark neutral">已停用</span><span class="count">1 位</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-row dash-row-reverse">
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">目前上課中學員</div>
+            <div class="panel-link" data-goto="courses">成人流動瑜珈 →</div>
+          </div>
+          <div class="panel-body pad">
+            <div class="sm-list" style="margin-bottom:0; max-height:none;">
+              <div class="sm-item">
+                <div><div class="sm-item-main">傳啟資訊股份有限公司</div><div class="sm-item-sub">84204302</div></div>
+                <div class="sm-item-amt" style="color:var(--good-600); font-weight:700; font-size:11.5px;">✓ 已報到</div>
+              </div>
+              <div class="sm-item">
+                <div><div class="sm-item-main">佳穎科技股份有限公司</div><div class="sm-item-sub">23456789</div></div>
+                <div class="sm-item-amt" style="color:var(--good-600); font-weight:700; font-size:11.5px;">✓ 已報到</div>
+              </div>
+              <div class="sm-item">
+                <div><div class="sm-item-main">育誠工程有限公司</div><div class="sm-item-sub">34567890</div></div>
+                <div class="sm-item-amt" style="color:var(--good-600); font-weight:700; font-size:11.5px;">✓ 已報到</div>
+              </div>
+              <div class="sm-item">
+                <div><div class="sm-item-main">凱婷生技股份有限公司</div><div class="sm-item-sub">45678901</div></div>
+                <div class="sm-item-amt" style="color:var(--good-600); font-weight:700; font-size:11.5px;">✓ 已報到</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">學生剩餘時數快查</div>
+            <div class="panel-link" data-goto="students">前往學生管理 →</div>
+          </div>
+          <div class="search-row">
+            <input class="search-input" placeholder="輸入公司名稱或統一編號搜尋…">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>公司名稱</th><th>統一編號</th><th>剩餘時數</th><th>狀態</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="student-name">傳啟資訊股份有限公司</td>
+                  <td class="student-phone">84204302</td>
+                  <td class="hours-num">6.0 hr</td>
+                  <td><span class="mark good"><span class="dot"></span>正常</span></td>
+                </tr>
+                <tr>
+                  <td class="student-name">佳穎科技股份有限公司</td>
+                  <td class="student-phone">23456789</td>
+                  <td class="hours-num">1.0 hr</td>
+                  <td><span class="mark warn"><span class="dot"></span>時數偏低</span></td>
+                </tr>
+                <tr>
+                  <td class="student-name">育誠工程有限公司</td>
+                  <td class="student-phone">34567890</td>
+                  <td class="hours-num">0.0 hr</td>
+                  <td><span class="mark crit"><span class="dot"></span>已用罄</span></td>
+                </tr>
+                <tr>
+                  <td class="student-name">凱婷生技股份有限公司</td>
+                  <td class="student-phone">45678901</td>
+                  <td class="hours-num">14.5 hr</td>
+                  <td><span class="mark good"><span class="dot"></span>正常</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PLACEHOLDER VIEWS ===================== -->
+    <section class="view" id="view-import">
+      <div class="topline"><div><p class="eyebrow">日常作業</p><h1>匯入名單</h1></div></div>
+
+      <div class="steps" id="import-steps">
+        <div class="step current" data-step="1">
+          <div class="step-num">1</div>
+          <div class="step-label">連結 Google Sheets</div>
+        </div>
+        <div class="step-rule"></div>
+        <div class="step" data-step="2">
+          <div class="step-num">2</div>
+          <div class="step-label">預覽確認</div>
+        </div>
+        <div class="step-rule"></div>
+        <div class="step" data-step="3">
+          <div class="step-num">3</div>
+          <div class="step-label">匯入結果</div>
+        </div>
+      </div>
+
+      <!-- STEP 1: google sheets link -->
+      <div class="panel import-stage" id="import-stage-1">
+        <div class="import-card">
+          <h2>從 Google Sheets 匯入課程報名名單</h2>
+          <p>必要欄位：公司名稱、統一編號、購買時數。統一編號是判斷客戶是否重複的依據——統一編號不存在時新增客戶，統一編號已存在時累加購買時數。</p>
+
+          <div class="template-row">
+            <div class="template-info">
+              <div class="file-ico">▤</div>
+              <div>
+                <div class="template-name">學生名單匯入範本</div>
+                <div class="template-sub">公司名稱・統一編號・購買時數・備註・Email（選填）・課程名稱（選填）・到期日（選填）</div>
+              </div>
+            </div>
+            <button class="btn">複製範本試算表</button>
+          </div>
+
+          <div class="gs-import-box">
+            <label for="gs-link">Google Sheets 共用連結</label>
+            <div class="gs-input-row">
+              <input type="url" id="gs-link" placeholder="貼上 Google Sheets 共用連結，例如 https://docs.google.com/spreadsheets/d/…">
+              <button class="btn primary" id="gs-import-btn">匯入資料</button>
+            </div>
+            <p class="gs-error" id="gs-error"></p>
+            <p class="gs-hint">請先在 Google Sheets 右上角「共用」設為「知道連結的使用者」可檢視，並依範本欄位順序整理資料，再貼上連結。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: preview -->
+      <div class="panel import-stage" id="import-stage-2" style="display:none;">
+        <div class="preview-meta">
+          <div class="n-total"><b>8</b><span>總筆數</span></div>
+          <div class="n-good"><b>6</b><span>可匯入</span></div>
+          <div class="n-bad"><b>2</b><span>格式錯誤</span></div>
+          <div><b>2</b><span>已存在・將累加時數</span></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>公司名稱</th><th>統一編號</th><th>購買時數</th><th>課程名稱</th><th>狀態</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="student-name">傳啟資訊股份有限公司</td>
+                <td class="student-phone">84204302</td>
+                <td class="hours-num">10</td>
+                <td>瑞亞基礎瑜珈</td>
+                <td><span class="mark good"><span class="dot"></span>新增</span></td>
+              </tr>
+              <tr>
+                <td class="student-name">佳穎科技股份有限公司</td>
+                <td class="student-phone">23456789</td>
+                <td class="hours-num">5</td>
+                <td>—</td>
+                <td>
+                  <span class="mark warn"><span class="dot"></span>已存在</span>
+                  <div class="row-note">統一編號已建檔，將加購 5.0 hr</div>
+                </td>
+              </tr>
+              <tr>
+                <td class="student-name">姿蓉設計工作室有限公司</td>
+                <td class="student-phone">56789012</td>
+                <td class="hours-num">10</td>
+                <td>兒童美術創作班</td>
+                <td><span class="mark good"><span class="dot"></span>新增</span></td>
+              </tr>
+              <tr class="row-bad">
+                <td class="student-name">柏翰貿易股份有限公司</td>
+                <td class="student-phone">091188273</td>
+                <td class="hours-num">8</td>
+                <td>—</td>
+                <td>
+                  <span class="mark crit"><span class="dot"></span>失敗</span>
+                  <div class="row-reason">統一編號格式錯誤（8 碼）</div>
+                </td>
+              </tr>
+              <tr>
+                <td class="student-name">凱婷生技股份有限公司</td>
+                <td class="student-phone">45678901</td>
+                <td class="hours-num">6</td>
+                <td>—</td>
+                <td>
+                  <span class="mark warn"><span class="dot"></span>已存在</span>
+                  <div class="row-note">統一編號已建檔，將加購 6.0 hr</div>
+                </td>
+              </tr>
+              <tr>
+                <td class="student-name">育誠工程有限公司</td>
+                <td class="student-phone">34567890</td>
+                <td class="hours-num">12</td>
+                <td>成人流動瑜珈</td>
+                <td><span class="mark good"><span class="dot"></span>新增</span></td>
+              </tr>
+              <tr class="row-bad">
+                <td class="student-name">—</td>
+                <td class="student-phone">00966123</td>
+                <td class="hours-num">10</td>
+                <td>—</td>
+                <td>
+                  <span class="mark crit"><span class="dot"></span>失敗</span>
+                  <div class="row-reason">公司名稱為必填欄位</div>
+                </td>
+              </tr>
+              <tr>
+                <td class="student-name">承恩物流有限公司</td>
+                <td class="student-phone">78901234</td>
+                <td class="hours-num">4</td>
+                <td>親子烹飪體驗</td>
+                <td><span class="mark good"><span class="dot"></span>新增</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="import-card" style="padding-top:20px;">
+          <div class="import-actions">
+            <button class="btn" id="btn-reupload">重新輸入連結</button>
+            <button class="btn primary" id="btn-confirm-import">確認匯入 6 筆</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: result -->
+      <div class="panel import-stage" id="import-stage-3" style="display:none;">
+        <div class="import-card">
+          <div class="result-hero">
+            <div class="result-icon">&#10003;</div>
+            <div>
+              <h2>匯入完成</h2>
+              <p>2026年8月26日 10:42・操作人員：管理員</p>
+            </div>
+          </div>
+          <div class="result-stats">
+            <div class="result-stat"><div class="lbl">總筆數</div><div class="val">8</div></div>
+            <div class="result-stat new"><div class="lbl">成功匯入</div><div class="val">6</div></div>
+            <div class="result-stat"><div class="lbl">新增學生</div><div class="val">4</div></div>
+            <div class="result-stat bad"><div class="lbl">失敗筆數</div><div class="val">2</div></div>
+          </div>
+          <p style="margin:0 0 10px; font-size:13px; font-weight:500; color:var(--ink-950);">失敗原因</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>公司名稱</th><th>統一編號</th><th>失敗原因</th></tr></thead>
+              <tbody>
+                <tr><td class="student-name">柏翰貿易股份有限公司</td><td class="student-phone">091188273</td><td style="color:var(--crit-600);">統一編號格式錯誤（8 碼）</td></tr>
+                <tr><td class="student-name">—</td><td class="student-phone">00966123</td><td style="color:var(--crit-600);">公司名稱為必填欄位</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="import-actions">
+            <button class="btn" id="btn-reimport">再匯入一次</button>
+            <button class="btn primary" data-goto="students">前往學生管理 →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-courses">
+      <div class="topline"><div><p class="eyebrow">日常作業</p><h1>課程場次</h1></div></div>
+
+      <div class="courses-toolbar">
+        <div class="topline-meta">共 <b>9</b> 場・今日 <b>5</b> 場進行中或待報到</div>
+        <div class="courses-toolbar-actions">
+          <input type="search" id="courses-search" class="search-input" placeholder="搜尋課程名稱、老師、教室…">
+          <button class="btn primary" id="btn-new-session">＋ 新增場次</button>
+        </div>
+      </div>
+
+      <div id="session-list">
+        <div class="date-head">進行中・尚未開始</div>
+        <div class="sess-row" data-name="成人流動瑜珈" data-sub="王老師・教室 A" data-room="教室 A" data-teacher="王老師" data-hours="1.0" data-cap="18" data-checked="4" data-date="今天" data-iso="2026-08-27" data-start="19:30" data-end="20:30">
+          <div class="sess-main">
+            <div class="sess-name">成人流動瑜珈</div>
+            <div class="sess-time"><span class="sess-date">今天</span>19:30–20:30</div>
+            <div class="sess-sub">王老師・教室 A</div>
+          </div>
+          <div class="sess-meta">
+            <div class="sess-hours"><span class="lbl">扣除時數</span><b>1.0 hr</b></div>
+            <div class="sess-progress"><span class="lbl">已報到</span><b>4 / 18</b><span class="mark good">進行中</span></div>
+          </div>
+          <label class="switch" title="開放報到"><input type="checkbox" class="sess-toggle" checked><span class="switch-track"><span class="switch-thumb"></span></span></label>
+          <div class="sess-actions">
+            <button class="edit-pencil" title="編輯課程場次">✎</button>
+            <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+            <button class="duplicate-btn" title="複製課程場次"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+            <button class="qr-btn" title="查看 QR Code">▦</button>
+          </div>
+        </div>
+
+        <div class="sess-row" data-name="親子烹飪體驗" data-sub="周老師・料理教室" data-room="料理教室" data-teacher="周老師" data-hours="1.0" data-cap="10" data-checked="0" data-date="今天" data-iso="2026-08-27" data-start="20:45" data-end="21:30">
+          <div class="sess-main">
+            <div class="sess-name">親子烹飪體驗</div>
+            <div class="sess-time"><span class="sess-date">今天</span>20:45–21:30</div>
+            <div class="sess-sub">周老師・料理教室</div>
+          </div>
+          <div class="sess-meta">
+            <div class="sess-hours"><span class="lbl">扣除時數</span><b>1.0 hr</b></div>
+            <div class="sess-progress"><span class="lbl">已報到</span><b>0 / 10</b><span class="mark neutral">未開始</span></div>
+          </div>
+          <label class="switch" title="開放報到"><input type="checkbox" class="sess-toggle" checked><span class="switch-track"><span class="switch-thumb"></span></span></label>
+          <div class="sess-actions">
+            <button class="edit-pencil" title="編輯課程場次">✎</button>
+            <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+            <button class="duplicate-btn" title="複製課程場次"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+            <button class="qr-btn" title="查看 QR Code">▦</button>
+          </div>
+        </div>
+
+        <div class="sess-row" data-name="瑞亞基礎瑜珈" data-sub="王老師・教室 A" data-room="教室 A" data-teacher="王老師" data-hours="1.0" data-cap="20" data-checked="0" data-date="明天" data-iso="2026-08-28" data-start="09:00" data-end="10:00">
+          <div class="sess-main">
+            <div class="sess-name">瑞亞基礎瑜珈</div>
+            <div class="sess-time"><span class="sess-date">明天</span>09:00–10:00</div>
+            <div class="sess-sub">王老師・教室 A</div>
+          </div>
+          <div class="sess-meta">
+            <div class="sess-hours"><span class="lbl">扣除時數</span><b>1.0 hr</b></div>
+            <div class="sess-progress"><span class="lbl">已報到</span><b>0 / 20</b><span class="mark neutral">未開始</span></div>
+          </div>
+          <label class="switch" title="開放報到"><input type="checkbox" class="sess-toggle" checked><span class="switch-track"><span class="switch-thumb"></span></span></label>
+          <div class="sess-actions">
+            <button class="edit-pencil" title="編輯課程場次">✎</button>
+            <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+            <button class="duplicate-btn" title="複製課程場次"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+            <button class="qr-btn" title="查看 QR Code">▦</button>
+          </div>
+        </div>
+
+        <div class="sess-row" data-name="兒童美術創作班" data-sub="林老師・教室 B" data-room="教室 B" data-teacher="林老師" data-hours="1.0" data-cap="12" data-checked="0" data-date="明天" data-iso="2026-08-28" data-start="14:00" data-end="14:50">
+          <div class="sess-main">
+            <div class="sess-name">兒童美術創作班</div>
+            <div class="sess-time"><span class="sess-date">明天</span>14:00–14:50</div>
+            <div class="sess-sub">林老師・教室 B</div>
+          </div>
+          <div class="sess-meta">
+            <div class="sess-hours"><span class="lbl">扣除時數</span><b>1.0 hr</b></div>
+            <div class="sess-progress"><span class="lbl">已報到</span><b>0 / 12</b><span class="mark neutral">未開始</span></div>
+          </div>
+          <label class="switch" title="開放報到"><input type="checkbox" class="sess-toggle" checked><span class="switch-track"><span class="switch-thumb"></span></span></label>
+          <div class="sess-actions">
+            <button class="edit-pencil" title="編輯課程場次">✎</button>
+            <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+            <button class="duplicate-btn" title="複製課程場次"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+            <button class="qr-btn" title="查看 QR Code">▦</button>
+          </div>
+        </div>
+
+        <div class="sess-row" data-name="成人流動瑜珈" data-sub="王老師・教室 A" data-room="教室 A" data-teacher="王老師" data-hours="1.0" data-cap="18" data-checked="0" data-date="明天" data-iso="2026-08-28" data-start="19:30" data-end="20:30">
+          <div class="sess-main">
+            <div class="sess-name">成人流動瑜珈</div>
+            <div class="sess-time"><span class="sess-date">明天</span>19:30–20:30</div>
+            <div class="sess-sub">王老師・教室 A</div>
+          </div>
+          <div class="sess-meta">
+            <div class="sess-hours"><span class="lbl">扣除時數</span><b>1.0 hr</b></div>
+            <div class="sess-progress"><span class="lbl">已報到</span><b>0 / 18</b><span class="mark neutral">未開始</span></div>
+          </div>
+          <label class="switch" title="開放報到"><input type="checkbox" class="sess-toggle" checked><span class="switch-track"><span class="switch-thumb"></span></span></label>
+          <div class="sess-actions">
+            <button class="edit-pencil" title="編輯課程場次">✎</button>
+            <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+            <button class="duplicate-btn" title="複製課程場次"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+            <button class="qr-btn" title="查看 QR Code">▦</button>
+          </div>
+        </div>
+
+        <div class="date-head">已結束</div>
+
+        <div class="sess-row" data-name="瑞亞基礎瑜珈" data-sub="王老師・教室 A" data-room="教室 A" data-teacher="王老師" data-hours="1.0" data-cap="20" data-checked="18" data-date="今天" data-iso="2026-08-27" data-start="10:00" data-end="11:00">
+          <div class="sess-main">
+            <div class="sess-name">瑞亞基礎瑜珈</div>
+            <div class="sess-time"><span class="sess-date">今天</span>10:00–11:00</div>
+            <div class="sess-sub">王老師・教室 A</div>
+          </div>
+          <div class="sess-meta">
+            <div class="sess-hours"><span class="lbl">扣除時數</span><b>1.0 hr</b></div>
+            <div class="sess-progress"><span class="lbl">已報到</span><b>18 / 20</b><span class="mark neutral">已結束</span></div>
+          </div>
+          <label class="switch" title="開放報到"><input type="checkbox" class="sess-toggle"><span class="switch-track"><span class="switch-thumb"></span></span></label>
+          <div class="sess-actions">
+            <button class="edit-pencil" title="編輯課程場次">✎</button>
+            <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+            <button class="duplicate-btn" title="複製課程場次"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+            <button class="qr-btn" title="查看 QR Code">▦</button>
+          </div>
+        </div>
+
+        <div class="sess-row" data-name="兒童美術創作班" data-sub="林老師・教室 B" data-room="教室 B" data-teacher="林老師" data-hours="1.0" data-cap="12" data-checked="11" data-date="今天" data-iso="2026-08-27" data-start="14:00" data-end="14:50">
+          <div class="sess-main">
+            <div class="sess-name">兒童美術創作班</div>
+            <div class="sess-time"><span class="sess-date">今天</span>14:00–14:50</div>
+            <div class="sess-sub">林老師・教室 B</div>
+          </div>
+          <div class="sess-meta">
+            <div class="sess-hours"><span class="lbl">扣除時數</span><b>1.0 hr</b></div>
+            <div class="sess-progress"><span class="lbl">已報到</span><b>11 / 12</b><span class="mark neutral">已結束</span></div>
+          </div>
+          <label class="switch" title="開放報到"><input type="checkbox" class="sess-toggle"><span class="switch-track"><span class="switch-thumb"></span></span></label>
+          <div class="sess-actions">
+            <button class="edit-pencil" title="編輯課程場次">✎</button>
+            <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+            <button class="duplicate-btn" title="複製課程場次"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+            <button class="qr-btn" title="查看 QR Code">▦</button>
+          </div>
+        </div>
+
+        <div class="sess-row" data-name="兒童鋼琴一對一" data-sub="陳老師・鋼琴教室" data-room="鋼琴教室" data-teacher="陳老師" data-hours="0.75" data-cap="6" data-checked="4" data-date="今天" data-iso="2026-08-27" data-start="16:30" data-end="17:15">
+          <div class="sess-main">
+            <div class="sess-name">兒童鋼琴一對一</div>
+            <div class="sess-time"><span class="sess-date">今天</span>16:30–17:15</div>
+            <div class="sess-sub">陳老師・鋼琴教室</div>
+          </div>
+          <div class="sess-meta">
+            <div class="sess-hours"><span class="lbl">扣除時數</span><b>0.75 hr</b></div>
+            <div class="sess-progress"><span class="lbl">已報到</span><b>4 / 6</b><span class="mark neutral">已結束</span></div>
+          </div>
+          <label class="switch" title="開放報到"><input type="checkbox" class="sess-toggle"><span class="switch-track"><span class="switch-thumb"></span></span></label>
+          <div class="sess-actions">
+            <button class="edit-pencil" title="編輯課程場次">✎</button>
+            <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+            <button class="duplicate-btn" title="複製課程場次"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+            <button class="qr-btn" title="查看 QR Code">▦</button>
+          </div>
+        </div>
+
+        <div class="sess-row" data-name="深夜修復瑜珈" data-sub="王老師・教室 A" data-room="教室 A" data-teacher="王老師" data-hours="1.0" data-cap="10" data-checked="0" data-date="昨天" data-iso="2026-08-26" data-start="20:00" data-end="21:00">
+          <div class="sess-main">
+            <div class="sess-name">深夜修復瑜珈</div>
+            <div class="sess-time"><span class="sess-date">昨天</span>20:00–21:00</div>
+            <div class="sess-sub">王老師・教室 A</div>
+          </div>
+          <div class="sess-meta">
+            <div class="sess-hours"><span class="lbl">扣除時數</span><b>1.0 hr</b></div>
+            <div class="sess-progress"><span class="lbl">已報到</span><b>0 / 10</b><span class="mark crit">已關閉・場地維修</span></div>
+          </div>
+          <label class="switch" title="開放報到"><input type="checkbox" class="sess-toggle"><span class="switch-track"><span class="switch-thumb"></span></span></label>
+          <div class="sess-actions">
+            <button class="edit-pencil" title="編輯課程場次">✎</button>
+            <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+            <button class="duplicate-btn" title="複製課程場次"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+            <button class="qr-btn" title="查看 QR Code">▦</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-checkin-preview">
+      <div class="topline">
+        <div>
+          <p class="eyebrow"><span class="back-link" data-goto="courses">← 返回課程場次</span></p>
+          <h1>學生報到體驗（模擬）</h1>
+        </div>
+        <div class="topline-meta">這是學生掃碼後看到的畫面，用來測試各種報到情境</div>
+      </div>
+
+      <div class="checkin-shell">
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="ci-course">
+              <div class="ci-course-name" id="ci-course-name">瑞亞基礎瑜珈</div>
+              <div class="ci-course-sub" id="ci-course-sub">8月26日（三）10:00・王老師・教室 A</div>
+            </div>
+
+            <div class="ci-state" id="ci-state-input">
+              <div class="ci-icon">📱</div>
+              <p class="ci-instruct">請輸入統一編號完成報到</p>
+              <input class="ci-input" id="ci-phone" placeholder="12345678" inputmode="numeric" maxlength="8">
+              <button class="btn primary ci-submit" id="ci-submit">報到</button>
+            </div>
+
+            <div class="ci-state" id="ci-state-success" style="display:none;">
+              <div class="ci-result-icon good">✓</div>
+              <h3>報到成功</h3>
+              <p><b id="ci-success-name">傳啟資訊股份有限公司</b>，歡迎上課！</p>
+              <div class="ci-hours-box">
+                <div><span>本次扣除</span><b id="ci-deduct">1.0 hr</b></div>
+                <div><span>剩餘時數</span><b id="ci-remain">5.0 hr</b></div>
+              </div>
+              <button class="btn ci-reset">再測一次</button>
+            </div>
+
+            <div class="ci-state" id="ci-state-insufficient" style="display:none;">
+              <div class="ci-result-icon crit">✕</div>
+              <h3>時數不足</h3>
+              <p>您目前剩餘 <b id="ci-insuff-remain">0.3</b> hr，這堂課需要 <b id="ci-insuff-need">1.0</b> hr，請洽櫃台加購時數。</p>
+              <button class="btn ci-reset">重新輸入</button>
+            </div>
+
+            <div class="ci-state" id="ci-state-notfound" style="display:none;">
+              <div class="ci-result-icon crit">?</div>
+              <h3>查無資料</h3>
+              <p>查無此統一編號的學生資料。如果是第一次來，可以現場報名參加今天這堂課。</p>
+              <div class="ci-form-actions" style="width:100%;">
+                <button class="btn primary" id="ci-goto-onsite">現場報名並報到</button>
+                <button class="btn ci-reset">重新輸入</button>
+              </div>
+            </div>
+
+            <div class="ci-state" id="ci-state-notregistered" style="display:none;">
+              <div class="ci-result-icon warn">!</div>
+              <h3>尚未報名這堂課</h3>
+              <p><b id="ci-notreg-name">傳啟資訊股份有限公司</b> 目前剩餘 <b id="ci-notreg-remain">6.0</b> hr，但還沒有報名這堂課。</p>
+              <div class="ci-form-actions" style="width:100%;">
+                <button class="btn primary" id="ci-goto-register">現場報名這堂課並報到</button>
+                <button class="btn ci-reset">重新輸入</button>
+              </div>
+            </div>
+
+            <div class="ci-state" id="ci-state-onsite" style="display:none;">
+              <div class="ci-icon">📝</div>
+              <p class="ci-instruct">現場報名・完成後直接報到今天這堂課</p>
+              <form class="ci-form" id="ci-onsite-form">
+                <div class="ci-form-field">
+                  <label>統一編號</label>
+                  <div class="ci-static" id="ci-onsite-phone-display">00000000</div>
+                </div>
+                <div class="ci-form-field">
+                  <label>公司名稱</label>
+                  <input type="text" id="ci-onsite-name" placeholder="請輸入公司名稱" required>
+                </div>
+                <div class="ci-form-field">
+                  <label>報名方案</label>
+                  <select id="ci-onsite-plan">
+                    <option value="trial">單堂體驗（本堂課程）・NT$500</option>
+                  </select>
+                </div>
+                <div class="ci-form-field">
+                  <label>付款方式</label>
+                  <select id="ci-onsite-payment">
+                    <option value="現金">現金</option>
+                    <option value="行動支付">行動支付</option>
+                    <option value="信用卡">信用卡</option>
+                  </select>
+                </div>
+                <p class="ci-form-note">送出後會建立學員資料、以本次繳費金額計入時數，並直接完成今天這堂課的報到。</p>
+                <div class="ci-form-actions">
+                  <button type="submit" class="btn primary" style="width:100%; justify-content:center;">完成報名並報到</button>
+                  <button type="button" class="btn ci-reset">取消</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="ci-state" id="ci-state-onsite-success" style="display:none;">
+              <div class="ci-result-icon good">✓</div>
+              <h3>報名成功，歡迎加入！</h3>
+              <p><b id="ci-onsite-success-name">陳小華</b> 已完成現場報名，並完成今天這堂課的報到。</p>
+              <div class="ci-hours-box">
+                <div><span>本次繳費</span><b id="ci-onsite-paid">NT$500</b></div>
+                <div><span>付款方式</span><b id="ci-onsite-method">現金</b></div>
+              </div>
+              <button class="btn ci-reset">再測一次</button>
+            </div>
+
+            <div class="ci-state" id="ci-state-duplicate" style="display:none;">
+              <div class="ci-result-icon warn">i</div>
+              <h3>報名名額已全數報到</h3>
+              <p><b id="ci-dup-name">凱婷生技股份有限公司</b> 報名這堂課的名額都已經完成報到<span id="ci-dup-time"></span>，不會重複扣除時數。</p>
+              <button class="btn ci-reset">重新輸入</button>
+            </div>
+
+            <div class="ci-state" id="ci-state-closed" style="display:none;">
+              <div class="ci-result-icon crit">⏻</div>
+              <h3>此課程目前不可報到</h3>
+              <p>課程 QR Code 已過期或場次已關閉，請洽櫃台確認。</p>
+              <button class="btn ci-reset">重新輸入</button>
+            </div>
+
+            <div class="ci-state" id="ci-state-write-error" style="display:none;">
+              <div class="ci-result-icon crit">✕</div>
+              <h3>報名／報到寫入失敗</h3>
+              <p id="ci-write-error-msg">資料庫連線異常，尚未完成報到，時數也還沒有扣除，請重新再試一次。</p>
+              <button class="btn ci-reset">重新輸入</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkin-side">
+          <div class="panel-title" style="margin-bottom:12px;">快速測試情境</div>
+          <div class="ci-demo-chips">
+            <button class="chip-btn" data-demo="success">✓&nbsp; 時數足夠・報到成功</button>
+            <button class="chip-btn" data-demo="insufficient">✕&nbsp; 時數不足</button>
+            <button class="chip-btn" data-demo="notfound">?&nbsp; 統一編號查無學生資料</button>
+            <button class="chip-btn" data-demo="duplicate">↻&nbsp; 同堂課重複報到</button>
+            <button class="chip-btn" data-demo="closed">⏻&nbsp; 場次已關閉／過期</button>
+          </div>
+          <p class="ci-hint">點一下情境會自動帶入對應的測試統一編號，再按畫面上的「報到」查看結果；也可以直接手動輸入號碼測試。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-checkins">
+      <div class="topline">
+        <div><p class="eyebrow">日常作業</p><h1>報到紀錄</h1></div>
+        <div class="topline-meta">共 <b>9</b> 筆・今日 <b>7</b> 筆</div>
+      </div>
+
+      <div class="panel">
+        <div class="filter-row">
+          <input type="search" id="ckr-search" placeholder="搜尋學生公司名稱或統一編號…">
+          <select id="ckr-course">
+            <option value="">全部課程</option>
+            <option>瑞亞基礎瑜珈</option>
+            <option>兒童美術創作班</option>
+            <option>兒童鋼琴一對一</option>
+            <option>成人流動瑜珈</option>
+            <option>親子烹飪體驗</option>
+          </select>
+          <select id="ckr-result">
+            <option value="">全部結果</option>
+            <option value="ok">報到成功</option>
+            <option value="fail">報到失敗</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>時間</th><th>學生</th><th>統一編號</th><th>課程</th><th>結果</th><th>扣除時數</th></tr>
+            </thead>
+            <tbody id="ckr-tbody">
+              <tr data-course="瑞亞基礎瑜珈" data-result="ok">
+                <td class="student-phone">08/26 10:01</td>
+                <td class="student-name">傳啟資訊股份有限公司</td>
+                <td class="student-phone">84204302</td>
+                <td>瑞亞基礎瑜珈</td>
+                <td><span class="result-good">✓ 報到成功</span></td>
+                <td class="hours-num">-1.0 hr</td>
+              </tr>
+              <tr data-course="瑞亞基礎瑜珈" data-result="ok">
+                <td class="student-phone">08/26 10:01</td>
+                <td class="student-name">凱婷生技股份有限公司</td>
+                <td class="student-phone">45678901</td>
+                <td>瑞亞基礎瑜珈</td>
+                <td><span class="result-good">✓ 報到成功</span></td>
+                <td class="hours-num">-1.0 hr</td>
+              </tr>
+              <tr data-course="瑞亞基礎瑜珈" data-result="fail">
+                <td class="student-phone">08/26 10:04</td>
+                <td class="student-name">—</td>
+                <td class="student-phone">00000021</td>
+                <td>瑞亞基礎瑜珈</td>
+                <td><span class="result-crit">✕ 查無資料</span></td>
+                <td class="hours-num">—</td>
+              </tr>
+              <tr data-course="兒童美術創作班" data-result="ok">
+                <td class="student-phone">08/26 14:03</td>
+                <td class="student-name">姿蓉設計工作室有限公司</td>
+                <td class="student-phone">56789012</td>
+                <td>兒童美術創作班</td>
+                <td><span class="result-good">✓ 報到成功</span></td>
+                <td class="hours-num">-1.0 hr</td>
+              </tr>
+              <tr data-course="兒童鋼琴一對一" data-result="fail">
+                <td class="student-phone">08/26 16:32</td>
+                <td class="student-name">育誠工程有限公司</td>
+                <td class="student-phone">34567890</td>
+                <td>兒童鋼琴一對一</td>
+                <td><span class="result-crit">✕ 時數不足</span></td>
+                <td class="hours-num">—</td>
+              </tr>
+              <tr data-course="成人流動瑜珈" data-result="fail">
+                <td class="student-phone">08/26 09:58</td>
+                <td class="student-name">佳穎科技股份有限公司</td>
+                <td class="student-phone">23456789</td>
+                <td>成人流動瑜珈</td>
+                <td><span class="result-crit">✕ 時數不足</span></td>
+                <td class="hours-num">—</td>
+              </tr>
+              <tr data-course="成人流動瑜珈" data-result="ok">
+                <td class="student-phone">08/26 19:34</td>
+                <td class="student-name">柏翰貿易股份有限公司</td>
+                <td class="student-phone">67890123</td>
+                <td>成人流動瑜珈</td>
+                <td><span class="result-good">✓ 報到成功</span></td>
+                <td class="hours-num">-1.0 hr</td>
+              </tr>
+              <tr data-course="瑞亞基礎瑜珈" data-result="ok">
+                <td class="student-phone">08/19 19:34</td>
+                <td class="student-name">傳啟資訊股份有限公司</td>
+                <td class="student-phone">84204302</td>
+                <td>成人流動瑜珈</td>
+                <td><span class="result-good">✓ 報到成功</span></td>
+                <td class="hours-num">-1.0 hr</td>
+              </tr>
+              <tr data-course="親子烹飪體驗" data-result="ok">
+                <td class="student-phone">08/12 20:48</td>
+                <td class="student-name">承恩物流有限公司</td>
+                <td class="student-phone">78901234</td>
+                <td>親子烹飪體驗</td>
+                <td><span class="result-good">✓ 報到成功</span></td>
+                <td class="hours-num">-1.0 hr</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-students">
+      <div class="topline">
+        <div><p class="eyebrow">學生與時數</p><h1>學生管理</h1></div>
+        <div class="topline-meta">共 <b>8</b> 位學生・<b>1</b> 位已停用</div>
+      </div>
+
+      <div class="panel">
+        <div class="search-row">
+          <input class="search-input" id="stu-search" placeholder="輸入公司名稱或統一編號搜尋…">
+          <button class="btn" id="btn-export-students" style="flex:none; white-space:nowrap;">⭳ 匯出 CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>公司名稱</th><th>統一編號</th><th>剩餘時數</th><th>狀態</th><th>最近上課</th><th></th></tr>
+            </thead>
+            <tbody id="students-tbody">
+              <tr data-key="wang">
+                <td class="student-name"><span class="stu-row-name">傳啟資訊股份有限公司</span></td>
+                <td class="student-phone">84204302</td>
+                <td class="hours-num">6.0 hr</td>
+                <td><span class="mark good"><span class="dot"></span>正常</span></td>
+                <td class="student-phone">08/26</td>
+                <td><button class="link-btn stu-view">查看詳情</button></td>
+              </tr>
+              <tr data-key="li">
+                <td class="student-name"><span class="stu-row-name">佳穎科技股份有限公司</span></td>
+                <td class="student-phone">23456789</td>
+                <td class="hours-num">1.0 hr</td>
+                <td><span class="mark warn"><span class="dot"></span>時數偏低</span></td>
+                <td class="student-phone">08/19</td>
+                <td><button class="link-btn stu-view">查看詳情</button></td>
+              </tr>
+              <tr data-key="zhang">
+                <td class="student-name"><span class="stu-row-name">育誠工程有限公司</span></td>
+                <td class="student-phone">34567890</td>
+                <td class="hours-num">0.0 hr</td>
+                <td><span class="mark crit"><span class="dot"></span>已用罄</span></td>
+                <td class="student-phone">08/20</td>
+                <td><button class="link-btn stu-view">查看詳情</button></td>
+              </tr>
+              <tr data-key="xu">
+                <td class="student-name"><span class="stu-row-name">凱婷生技股份有限公司</span></td>
+                <td class="student-phone">45678901</td>
+                <td class="hours-num">14.5 hr</td>
+                <td><span class="mark good"><span class="dot"></span>正常</span></td>
+                <td class="student-phone">08/26</td>
+                <td><button class="link-btn stu-view">查看詳情</button></td>
+              </tr>
+              <tr data-key="wu">
+                <td class="student-name"><span class="stu-row-name">姿蓉設計工作室有限公司</span></td>
+                <td class="student-phone">56789012</td>
+                <td class="hours-num">9.0 hr</td>
+                <td><span class="mark good"><span class="dot"></span>正常</span></td>
+                <td class="student-phone">08/14</td>
+                <td><button class="link-btn stu-view">查看詳情</button></td>
+              </tr>
+              <tr data-key="zhou">
+                <td class="student-name"><span class="stu-row-name">柏翰貿易股份有限公司</span></td>
+                <td class="student-phone">67890123</td>
+                <td class="hours-num">3.5 hr</td>
+                <td><span class="mark good"><span class="dot"></span>正常</span></td>
+                <td class="student-phone">08/25</td>
+                <td><button class="link-btn stu-view">查看詳情</button></td>
+              </tr>
+              <tr data-key="you">
+                <td class="student-name"><span class="stu-row-name">承恩物流有限公司</span></td>
+                <td class="student-phone">78901234</td>
+                <td class="hours-num">0.5 hr</td>
+                <td><span class="mark warn"><span class="dot"></span>時數偏低</span></td>
+                <td class="student-phone">08/12</td>
+                <td><button class="link-btn stu-view">查看詳情</button></td>
+              </tr>
+              <tr data-key="lin">
+                <td class="student-name"><span class="stu-row-name">珮珊行銷顧問股份有限公司</span></td>
+                <td class="student-phone">89012345</td>
+                <td class="hours-num">2.0 hr</td>
+                <td><span class="mark neutral">已停用</span></td>
+                <td class="student-phone">05/02</td>
+                <td><button class="link-btn stu-view">查看詳情</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-adjust">
+      <div class="topline"><div><p class="eyebrow">學生與時數</p><h1>時數調整</h1></div></div>
+
+      <div class="adjust-shell">
+        <div class="panel adjust-form">
+          <h2>手動加減時數</h2>
+
+          <!-- STAGE 1: search & pick student -->
+          <div id="adj-search-stage">
+            <p class="adj-search-note">請先用統一編號或公司名稱搜尋要調整時數的學生，選好之後才能進行加減時數。</p>
+            <input class="search-input" id="adj-search-input" placeholder="輸入公司名稱或統一編號搜尋…" style="width:100%;">
+            <div class="adj-pick-list" id="adj-pick-list"></div>
+          </div>
+
+          <!-- STAGE 2: adjustment form (hidden until a student is picked) -->
+          <div id="adj-form-stage" style="display:none;">
+            <div class="adj-selected-bar">
+              <div>
+                <div class="adj-selected-name" id="adj-selected-name">傳啟資訊股份有限公司</div>
+                <div class="adj-selected-sub" id="adj-selected-sub">84204302・剩餘 6.0 hr</div>
+              </div>
+              <button type="button" class="adj-change-btn" id="adj-change-student">更換學生</button>
+            </div>
+
+            <div class="type-toggle">
+              <button type="button" class="type-btn add active" id="adj-type-add">＋ 增加時數</button>
+              <button type="button" class="type-btn sub" id="adj-type-sub">− 扣除時數</button>
+            </div>
+
+            <div class="form-field" style="margin-bottom:16px;">
+              <label>調整時數</label>
+              <input type="number" id="adj-amount" step="0.5" min="0.5" value="1">
+            </div>
+
+            <div class="form-field" style="margin-bottom:10px;">
+              <label>原因（必填）</label>
+              <select id="adj-reason-preset" style="margin-bottom:8px;">
+                <option value="補購課程包">補購課程包</option>
+                <option value="誤扣補回">誤扣補回</option>
+                <option value="活動贈送時數">活動贈送時數</option>
+                <option value="客訴補償">客訴補償</option>
+                <option value="其他（請於下方說明）">其他（請於下方說明）</option>
+              </select>
+              <textarea id="adj-note" placeholder="補充說明（選填）"></textarea>
+            </div>
+
+            <div class="adjust-preview" id="adj-preview">
+              將為 <b>傳啟資訊股份有限公司</b> <b>增加 1 hr</b>，調整後剩餘 <b>7 hr</b>
+            </div>
+
+            <button class="btn primary" id="adj-submit" style="width:100%; justify-content:center;">送出調整</button>
+            <div class="toast-ok" id="adj-toast">✓ 已完成調整，紀錄已加入右側清單</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">最近調整紀錄</div>
+          </div>
+          <div class="panel-body" id="adj-history">
+            <div class="feed-row">
+              <div class="feed-icon good">＋</div>
+              <div class="feed-text">
+                <div><b>傳啟資訊股份有限公司</b> 手動加時 5.0 hr</div>
+                <div class="feed-meta">原因：補購課程包・管理員操作・08/26 09:20</div>
+              </div>
+            </div>
+            <div class="feed-row">
+              <div class="feed-icon crit">−</div>
+              <div class="feed-text">
+                <div><b>柏翰貿易股份有限公司</b> 手動扣回 0.5 hr</div>
+                <div class="feed-meta">原因：誤扣補回・管理員操作・昨日 21:14</div>
+              </div>
+            </div>
+            <div class="feed-row">
+              <div class="feed-icon crit">−</div>
+              <div class="feed-text">
+                <div><b>育誠工程有限公司</b> 手動扣回 0.5 hr</div>
+                <div class="feed-meta">原因：誤扣補回・管理員操作・08/10 11:02</div>
+              </div>
+            </div>
+            <div class="feed-row">
+              <div class="feed-icon good">＋</div>
+              <div class="feed-text">
+                <div><b>珮珊行銷顧問股份有限公司</b> 手動加時 2.0 hr</div>
+                <div class="feed-meta">原因：客訴補償・管理員操作・05/20 15:40</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== STUDENT SELF-QUERY ===================== -->
+    <section class="view" id="view-student-query">
+      <div class="topline">
+        <div>
+          <p class="eyebrow">學生自助</p>
+          <h1>查詢我的時數</h1>
+        </div>
+        <div class="topline-meta">這是學生自己查詢剩餘時數與上課紀錄的畫面</div>
+      </div>
+
+      <div class="checkin-shell">
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="ci-state" id="sq-state-input">
+              <div class="ci-icon">🔍</div>
+              <p class="ci-instruct">輸入統一編號查詢剩餘時數與上課紀錄</p>
+              <input class="ci-input" id="sq-phone" placeholder="12345678" inputmode="numeric" maxlength="8">
+              <button class="btn primary ci-submit" id="sq-submit">查詢</button>
+            </div>
+
+            <div class="ci-state" id="sq-state-result" style="display:none; text-align:left; align-items:stretch;">
+              <div style="text-align:center; margin-bottom:18px;">
+                <div class="sm-avatar" id="sq-avatar" style="margin:0 auto 10px;">王</div>
+                <div class="sm-name" id="sq-name">傳啟資訊股份有限公司</div>
+                <div class="sm-phone" id="sq-phone-display">84204302</div>
+              </div>
+              <div class="ci-hours-box" style="margin-bottom:20px;">
+                <div><span>剩餘時數</span><b id="sq-hours">6.0 hr</b></div>
+                <div><span>累計上課</span><b id="sq-attended">10 堂</b></div>
+              </div>
+              <p class="sm-section-title">最近上課紀錄</p>
+              <div class="sm-list" id="sq-checkins"></div>
+              <p class="sm-section-title">最近時數異動</p>
+              <div class="sm-list" id="sq-adjustments" style="margin-bottom:20px;"></div>
+              <button class="btn ci-reset" id="sq-reset" style="width:100%; justify-content:center;">重新查詢</button>
+            </div>
+
+            <div class="ci-state" id="sq-state-inactive" style="display:none;">
+              <div class="ci-result-icon warn">i</div>
+              <h3>帳號已停用</h3>
+              <p>您的帳號目前已停用，請洽櫃台協助確認狀態。</p>
+              <button class="btn ci-reset" style="width:100%; justify-content:center;">重新查詢</button>
+            </div>
+
+            <div class="ci-state" id="sq-state-notfound" style="display:none;">
+              <div class="ci-result-icon crit">?</div>
+              <h3>查無資料</h3>
+              <p>查無此統一編號的學生資料，請確認號碼或洽櫃台協助。</p>
+              <button class="btn ci-reset" style="width:100%; justify-content:center;">重新查詢</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkin-side">
+          <div class="panel-title" style="margin-bottom:12px;">快速測試</div>
+          <div class="ci-demo-chips">
+            <button class="chip-btn" data-sq-demo="84204302">傳啟資訊股份有限公司・正常帳號</button>
+            <button class="chip-btn" data-sq-demo="89012345">珮珊行銷顧問股份有限公司・已停用帳號</button>
+            <button class="chip-btn" data-sq-demo="00000000">未註冊的統一編號</button>
+          </div>
+          <p class="ci-hint">客戶輸入公司統一編號即可查詢，不需要密碼、不用登入帳號。</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="overlay" id="session-form-overlay">
+  <div class="qr-modal student-modal" style="max-width:460px;">
+    <h2 id="sf-title" style="font-size:17px; font-weight:800; margin:0 0 18px; color:var(--ink-950);">新增課程場次</h2>
+    <div class="form-grid">
+      <div class="form-field span2">
+        <label>課程名稱</label>
+        <input type="text" id="sf-name" placeholder="例如：瑞亞基礎瑜珈">
+      </div>
+      <div class="form-field span2">
+        <label>日期</label>
+        <input type="date" id="sf-date">
+      </div>
+      <div class="form-field">
+        <label>開始時間</label>
+        <input type="time" id="sf-start">
+      </div>
+      <div class="form-field">
+        <label>結束時間</label>
+        <input type="time" id="sf-end">
+      </div>
+      <div class="form-field">
+        <label>扣除時數</label>
+        <input type="number" step="0.5" id="sf-hours">
+      </div>
+      <div class="form-field">
+        <label>人數上限</label>
+        <input type="number" id="sf-cap">
+      </div>
+      <div class="form-field">
+        <label>教室</label>
+        <input type="text" id="sf-room">
+      </div>
+      <div class="form-field">
+        <label>授課老師</label>
+        <input type="text" id="sf-teacher">
+      </div>
+    </div>
+    <div class="import-actions">
+      <button class="btn" id="btn-cancel-session-form">取消</button>
+      <button class="btn primary" id="btn-submit-session-form">建立場次並產生 QR Code</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="qr-overlay">
+  <div class="qr-modal">
+    <p class="eyebrow" id="qr-date">8月26日（三）10:00</p>
+    <h3 id="qr-name">瑞亞基礎瑜珈</h3>
+    <div class="qr-sub" id="qr-sub">王老師・教室 A</div>
+    <div class="qr-graphic">
+      <svg viewBox="0 0 29 29" shape-rendering="crispEdges">
+        <rect width="29" height="29" fill="var(--paper-000)"/>
+        <g fill="var(--ink-950)" id="qr-dots"></g>
+        <g fill="var(--ink-950)">
+          <rect x="0" y="0" width="7" height="7"/><rect x="1" y="1" width="5" height="5" fill="var(--paper-000)"/><rect x="2" y="2" width="3" height="3"/>
+          <rect x="22" y="0" width="7" height="7"/><rect x="23" y="1" width="5" height="5" fill="var(--paper-000)"/><rect x="24" y="2" width="3" height="3"/>
+          <rect x="0" y="22" width="7" height="7"/><rect x="1" y="23" width="5" height="5" fill="var(--paper-000)"/><rect x="2" y="24" width="3" height="3"/>
+        </g>
+      </svg>
+    </div>
+    <div class="qr-progress">目前已報到 <b id="qr-checked">18</b> / <span id="qr-cap">20</span> 人・扣除 <b id="qr-hours">1.0</b> hr／人次</div>
+    <div class="qr-actions">
+      <button class="btn" id="btn-close-qr">關閉</button>
+      <button class="btn" id="btn-preview-checkin">體驗學生報到</button>
+      <button class="btn primary">下載 QR Code</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="roster-overlay">
+  <div class="qr-modal student-modal">
+    <button class="sm-close" id="btn-close-roster">✕</button>
+    <div class="sm-header">
+      <div>
+        <div class="sm-name" id="roster-course">瑞亞基礎瑜珈</div>
+        <div class="sm-phone" id="roster-meta">今天 10:00・已報到 18 / 20 人</div>
+      </div>
+    </div>
+    <p class="sm-section-title">學員名單</p>
+    <div class="sm-list" id="roster-items" style="max-height:340px; margin-bottom:0;"></div>
+  </div>
+</div>
+
+<div class="overlay" id="student-overlay">
+  <div class="qr-modal student-modal">
+    <button class="sm-close" id="btn-close-student">✕</button>
+    <div class="sm-header">
+      <div class="sm-avatar" id="sm-avatar">王</div>
+      <div>
+        <div class="sm-name" id="sm-name">傳啟資訊股份有限公司</div>
+        <div class="sm-phone" id="sm-phone">84204302</div>
+      </div>
+    </div>
+    <div class="sm-stats">
+      <div class="sm-stat"><div class="lbl">剩餘時數</div><div class="val" id="sm-hours">6.0</div></div>
+      <div class="sm-stat"><div class="lbl">累計購買</div><div class="val" id="sm-purchased">16</div></div>
+      <div class="sm-stat"><div class="lbl">累計上課</div><div class="val" id="sm-attended">10</div></div>
+      <div class="sm-stat"><div class="lbl">加入日期</div><div class="val" id="sm-joined" style="font-size:12.5px;">26/03/12</div></div>
+    </div>
+    <div class="sm-actions">
+      <button class="btn primary" data-goto="adjust">調整時數</button>
+      <button class="btn" id="sm-toggle-status">停用學生</button>
+    </div>
+    <p class="sm-section-title">報到紀錄</p>
+    <div class="sm-list" id="sm-checkins"></div>
+    <p class="sm-section-title">時數異動紀錄</p>
+    <div class="sm-list" id="sm-adjustments"></div>
+  </div>
+</div>
+
+<script>
+  /* ---------- Supabase (real database) ---------- */
+  // Falls back to the built-in demo data everywhere below if this isn't available
+  // (e.g. blocked by the Artifact CSP, or offline).
+  let SB = null;
+  try {
+    if (window.supabase && window.supabase.createClient) {
+      SB = window.supabase.createClient(
+        'https://lmkhyfpuenvojdtrynvq.supabase.co',
+        'sb_publishable___pD-7D_NgrEXInF4Nyx0Q_357GEjPf'
+      );
+    }
+  } catch (e) { SB = null; }
+
+  // key -> { name, phone, hours, purchased, attended, joined, active, checkins:[], adjustments:[] }
+  // Populated from Supabase when reachable; same shape as the built-in `studentData` below
+  // so the rest of the app (openStudent, etc.) can treat both stores the same way.
+  let liveStudentMap = {};
+  let liveReady = false;
+
+  function fmtDateTime(iso){
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d)) return iso;
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  function fmtDateOnly(iso){
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d)) return iso;
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())}`;
+  }
+  function studentStatusMark(hours, active){
+    if (!active) return { label:'已停用', cls:'neutral' };
+    if (hours <= 0) return { label:'已用罄', cls:'crit' };
+    if (hours < 1.5) return { label:'時數偏低', cls:'warn' };
+    return { label:'正常', cls:'good' };
+  }
+
+  async function loadLiveStudents(){
+    if (!SB) return false;
+    try {
+      const [{ data: students, error: e1 }, { data: checkins, error: e2 }, { data: adjustments, error: e3 }] = await Promise.all([
+        SB.from('students').select('*').order('name'),
+        SB.from('checkins').select('student_id, hours_deducted, result, checked_in_at, course_sessions(name)').eq('result', 'success'),
+        SB.from('hour_adjustments').select('*').order('created_at', { ascending:false })
+      ]);
+      if (e1 || !students) throw e1 || new Error('no students');
+
+      const map = {};
+      students.forEach(s => {
+        map[s.id] = {
+          id: s.id,
+          name: s.name,
+          phone: s.phone,
+          hours: Number(s.remaining_hours).toString(),
+          purchased: Number(s.purchased_hours).toString(),
+          attended: String(s.attended_count),
+          joined: (s.joined_at || '').replaceAll('-', '/'),
+          active: s.is_active,
+          checkins: [],
+          adjustments: []
+        };
+      });
+      (checkins || []).forEach(c => {
+        const s = map[c.student_id];
+        if (!s) return;
+        s.checkins.push({
+          main: (c.course_sessions && c.course_sessions.name) || '課程',
+          sub: fmtDateTime(c.checked_in_at),
+          amt: `-${Number(c.hours_deducted).toFixed(2).replace(/\.?0+$/,'')} hr`
+        });
+        if (!s.lastCheckinIso || c.checked_in_at > s.lastCheckinIso) s.lastCheckinIso = c.checked_in_at;
+      });
+      (adjustments || []).forEach(a => {
+        const s = map[a.student_id];
+        if (!s) return;
+        const amt = Number(a.amount);
+        s.adjustments.push({
+          main: a.reason,
+          sub: `${a.note ? a.note + '・' : ''}${a.operator || ''}操作・${fmtDateTime(a.created_at)}`,
+          amt: `${amt >= 0 ? '+' : ''}${amt} hr`,
+          good: amt >= 0
+        });
+      });
+
+      liveStudentMap = map;
+      liveReady = true;
+      return true;
+    } catch (e) {
+      console.warn('Supabase students load failed, using demo data instead.', e);
+      return false;
+    }
+  }
+
+  function renderStudentsTableLive(){
+    const tbody = document.getElementById('students-tbody');
+    const list = Object.values(liveStudentMap).sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+    const activeCount = list.filter(s => s.active).length;
+
+    const metaEl = document.querySelector('#view-students .topline-meta');
+    if (metaEl) metaEl.innerHTML = `共 <b>${list.length}</b> 位學生・<b>${list.length - activeCount}</b> 位已停用・已連接 Supabase`;
+
+    tbody.innerHTML = list.map(s => {
+      const mark = studentStatusMark(Number(s.hours), s.active);
+      const lastDate = s.lastCheckinIso ? fmtDateOnly(s.lastCheckinIso).slice(5) : '—';
+      return `
+        <tr data-key="${s.id}">
+          <td class="student-name"><span class="stu-row-name">${s.name}</span></td>
+          <td class="student-phone">${s.phone}</td>
+          <td class="hours-num">${s.hours} hr</td>
+          <td><span class="mark ${mark.cls}">${mark.cls === 'neutral' ? '' : '<span class="dot"></span>'}${mark.label}</span></td>
+          <td class="student-phone">${lastDate}</td>
+          <td><button class="link-btn stu-view">查看詳情</button></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function initLiveStudents(){
+    const ok = await loadLiveStudents();
+    if (ok) {
+      renderStudentsTableLive();
+      if (typeof renderAdjustStudentOptions === 'function') renderAdjustStudentOptions();
+      if (typeof renderAdjustHistoryLive === 'function') renderAdjustHistoryLive();
+    }
+    return ok;
+  }
+  // Try once on page load so data is ready by the time the user clicks in.
+  initLiveStudents();
+
+  /* ---------- Sync course_sessions ids from Supabase ----------
+     #session-list starts as static demo markup (name/date/time only, no real id).
+     If Supabase is reachable, match each row to its real row by name+date once on
+     load and stamp the id onto data-id. After that, edits/toggles/check-in/roster
+     all read/write through the stable id instead of re-matching by name+date every
+     time — a session whose name or date gets edited later is still found correctly. */
+  async function syncSessionIds(){
+    if (!SB) return;
+    try {
+      const { data, error } = await SB.from('course_sessions').select('id, name, session_date, start_time');
+      if (error) throw error;
+      const byKey = {};
+      (data || []).forEach(s => { byKey[s.name + '|' + s.session_date + '|' + s.start_time.slice(0, 5)] = s.id; });
+      document.querySelectorAll('#session-list .sess-row').forEach(row => {
+        const id = byKey[row.dataset.name + '|' + row.dataset.iso + '|' + row.dataset.start];
+        if (id) row.dataset.id = id;
+      });
+    } catch (e) { console.warn('Session id sync failed.', e); }
+  }
+  syncSessionIds();
+
+  /* ---------- Theme toggle ---------- */
+  (function initTheme(){
+    const root = document.documentElement;
+    const btn = document.getElementById('theme-toggle');
+    let stored = null;
+    try { stored = localStorage.getItem('theme'); } catch (e) {}
+
+    function currentTheme(){
+      return root.getAttribute('data-theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    }
+    function applyTheme(t){
+      if (t) root.setAttribute('data-theme', t); else root.removeAttribute('data-theme');
+      btn.textContent = currentTheme() === 'dark' ? '☀' : '☾';
+    }
+    applyTheme(stored);
+    btn.addEventListener('click', () => {
+      const next = currentTheme() === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+    });
+  })();
+
+  const navItems = document.querySelectorAll('.navitem');
+  const views = document.querySelectorAll('.view');
+
+  function showView(key){
+    navItems.forEach(n => n.classList.toggle('active', n.dataset.view === key));
+    views.forEach(v => v.classList.toggle('active', v.id === 'view-' + key));
+  }
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      showView(item.dataset.view);
+      if (item.dataset.view === 'students' || item.dataset.view === 'adjust') initLiveStudents();
+    });
+  });
+
+  document.querySelectorAll('[data-goto]').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.overlay.open').forEach(o => o.classList.remove('open'));
+      showView(el.dataset.goto);
+    });
+  });
+
+  /* ---------- Import flow ---------- */
+  const importStages = document.querySelectorAll('.import-stage');
+  const importSteps = document.querySelectorAll('#import-steps .step');
+
+  function goToImportStage(n){
+    importStages.forEach((el, i) => { el.style.display = (i === n - 1) ? '' : 'none'; });
+    importSteps.forEach(step => {
+      const s = Number(step.dataset.step);
+      step.classList.toggle('current', s === n);
+      step.classList.toggle('done', s < n);
+    });
+  }
+
+  const gsLink = document.getElementById('gs-link');
+  const gsError = document.getElementById('gs-error');
+  const gsBtn = document.getElementById('gs-import-btn');
+
+  function resetGsImport(){
+    gsLink.value = '';
+    gsLink.classList.remove('error');
+    gsError.classList.remove('show');
+    gsError.textContent = '';
+    gsBtn.disabled = false;
+    gsBtn.textContent = '匯入資料';
+  }
+
+  gsBtn.addEventListener('click', () => {
+    const url = gsLink.value.trim();
+    if (!url) {
+      gsLink.classList.add('error');
+      gsError.textContent = '請先貼上 Google Sheets 共用連結。';
+      gsError.classList.add('show');
+      return;
+    }
+    if (!/^https?:\/\/(docs|sheets)\.google\.com\//i.test(url)) {
+      gsLink.classList.add('error');
+      gsError.textContent = '看起來不是有效的 Google Sheets 連結，請確認網址是否正確。';
+      gsError.classList.add('show');
+      return;
+    }
+    gsLink.classList.remove('error');
+    gsError.classList.remove('show');
+    gsBtn.disabled = true;
+    gsBtn.textContent = '讀取中…';
+    setTimeout(() => {
+      gsBtn.disabled = false;
+      gsBtn.textContent = '匯入資料';
+      goToImportStage(2);
+    }, 800);
+  });
+
+  document.getElementById('btn-reupload').addEventListener('click', () => { resetGsImport(); goToImportStage(1); });
+  document.getElementById('btn-confirm-import').addEventListener('click', () => goToImportStage(3));
+  document.getElementById('btn-reimport').addEventListener('click', () => { resetGsImport(); goToImportStage(1); });
+
+  document.querySelectorAll('.navitem').forEach(item => {
+    item.addEventListener('click', () => { if (item.dataset.view === 'import') { resetGsImport(); goToImportStage(1); } });
+  });
+
+  /* ---------- Courses / QR ---------- */
+  // deterministic pseudo-QR speckle, purely decorative
+  (function drawQrDots(){
+    const g = document.getElementById('qr-dots');
+    let seed = 42;
+    const rand = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+    let cells = '';
+    for (let y = 0; y < 29; y++){
+      for (let x = 0; x < 29; x++){
+        const inFinder = (x < 8 && y < 8) || (x > 20 && y < 8) || (x < 8 && y > 20);
+        if (inFinder) continue;
+        if (rand() > 0.58) cells += `<rect x="${x}" y="${y}" width="1" height="1"/>`;
+      }
+    }
+    g.innerHTML = cells;
+  })();
+
+  const qrOverlay = document.getElementById('qr-overlay');
+  let currentQrRow = null;
+  function openQrFor(row){
+    currentQrRow = row;
+    document.getElementById('qr-name').textContent = row.dataset.name;
+    document.getElementById('qr-sub').textContent = row.dataset.sub;
+    document.getElementById('qr-checked').textContent = row.dataset.checked;
+    document.getElementById('qr-cap').textContent = row.dataset.cap;
+    document.getElementById('qr-hours').textContent = row.dataset.hours;
+    document.getElementById('qr-date').textContent = `${row.dataset.date}・${row.dataset.start}–${row.dataset.end}`;
+    qrOverlay.classList.add('open');
+  }
+  document.getElementById('btn-close-qr').addEventListener('click', () => qrOverlay.classList.remove('open'));
+  qrOverlay.addEventListener('click', (e) => { if (e.target === qrOverlay) qrOverlay.classList.remove('open'); });
+
+  /* ---------- Roster (學員名單) ---------- */
+  const rosterOverlay = document.getElementById('roster-overlay');
+  const rosterPool = [
+    {name:'傳啟資訊股份有限公司', phone:'84204302'}, {name:'佳穎科技股份有限公司', phone:'23456789'},
+    {name:'育誠工程有限公司', phone:'34567890'}, {name:'凱婷生技股份有限公司', phone:'45678901'},
+    {name:'姿蓉設計工作室有限公司', phone:'56789012'}, {name:'柏翰貿易股份有限公司', phone:'67890123'},
+    {name:'承恩物流有限公司', phone:'78901234'}, {name:'珮珊行銷顧問股份有限公司', phone:'89012345'},
+    {name:'柏安建設股份有限公司', phone:'11223344'}, {name:'宜庭餐飲有限公司', phone:'22334455'},
+    {name:'冠霖能源股份有限公司', phone:'33445566'}, {name:'雅筑教育顧問有限公司', phone:'44556677'}
+  ];
+  async function openRoster(row){
+    const checked = Number(row.dataset.checked) || 0;
+    const cap = row.dataset.cap;
+    document.getElementById('roster-course').textContent = row.dataset.name;
+    document.getElementById('roster-meta').textContent =
+      `${row.dataset.date}・${row.dataset.start}–${row.dataset.end}・已報到 ${checked} / ${cap} 人`;
+    const list = document.getElementById('roster-items');
+    list.innerHTML = '<div class="sm-item" style="color:var(--ink-400);">載入中…</div>';
+    rosterOverlay.classList.add('open');
+
+    // 名單以真實報名記錄（course_registrations）為準；SB 無法連線或資料表尚未建立時
+    // 退回舊版示範名單，不讓畫面壞掉。
+    let regs = null;
+    if (SB) {
+      try {
+        let sessionId = row.dataset.id || null;
+        if (!sessionId) {
+          const iso = row.dataset.iso || new Date().toISOString().slice(0, 10);
+          let query = SB.from('course_sessions').select('id')
+            .eq('name', row.dataset.name).eq('session_date', iso);
+          if (row.dataset.start) query = query.eq('start_time', row.dataset.start);
+          const { data: sessionRow } = await query.limit(1).maybeSingle();
+          sessionId = sessionRow ? sessionRow.id : null;
+        }
+        if (sessionId) {
+          const { data, error } = await SB.from('course_registrations')
+            .select('seats_total, seats_checked_in, students(name, phone)')
+            .eq('session_id', sessionId);
+          if (error) throw error;
+          regs = data || [];
+        }
+      } catch (e) { console.warn('Roster lookup failed, falling back to demo list.', e); regs = null; }
+    }
+
+    if (regs) {
+      if (!regs.length) {
+        list.innerHTML = '<div class="sm-item" style="color:var(--ink-400);">目前尚無人報名</div>';
+      } else {
+        list.innerHTML = regs.map(r => {
+          const full = r.seats_checked_in >= r.seats_total;
+          return `
+            <div class="sm-item">
+              <div><div class="sm-item-main">${r.students?.name || '—'}</div><div class="sm-item-sub">${r.students?.phone || ''}・${r.seats_checked_in} / ${r.seats_total} 位已報到</div></div>
+              <div class="sm-item-amt" style="color:${full ? 'var(--good-600)' : 'var(--warn-600)'}; font-weight:700; font-size:11.5px;">${full ? '✓ 已報到' : '報到中'}</div>
+            </div>`;
+        }).join('');
+      }
+      return;
+    }
+
+    if (checked === 0) {
+      list.innerHTML = '<div class="sm-item" style="color:var(--ink-400);">目前尚無人報到</div>';
+    } else {
+      let html = '';
+      for (let i = 0; i < checked; i++){
+        const p = rosterPool[i % rosterPool.length];
+        html += `
+          <div class="sm-item">
+            <div><div class="sm-item-main">${p.name}</div><div class="sm-item-sub">${p.phone}</div></div>
+            <div class="sm-item-amt" style="color:var(--good-600); font-weight:700; font-size:11.5px;">✓ 已報到</div>
+          </div>`;
+      }
+      list.innerHTML = html;
+    }
+  }
+  document.getElementById('btn-close-roster').addEventListener('click', () => rosterOverlay.classList.remove('open'));
+  rosterOverlay.addEventListener('click', (e) => { if (e.target === rosterOverlay) rosterOverlay.classList.remove('open'); });
+
+  /* ---------- Dashboard: live-now card + today's course list ---------- */
+  document.getElementById('view-dashboard').addEventListener('click', (e) => {
+    const card = e.target.closest('.live-card, .next-card, .course-row');
+    if (!card) return;
+    if (e.target.closest('.roster-btn')) { openRoster(card); return; }
+    if (e.target.closest('.qr-btn')) { openQrFor(card); return; }
+  });
+
+  /* ---------- Dashboard: "no live course -> show next" demo toggle ---------- */
+  (function(){
+    const panel = document.querySelector('.live-now-panel');
+    const countEl = document.getElementById('live-now-count');
+    const toggle = document.getElementById('live-now-toggle');
+    const liveState = document.getElementById('live-now-state-live');
+    const nextState = document.getElementById('live-now-state-next');
+    toggle.addEventListener('change', () => {
+      const showingNext = toggle.checked;
+      panel.classList.toggle('is-empty', showingNext);
+      liveState.style.display = showingNext ? 'none' : '';
+      nextState.style.display = showingNext ? '' : 'none';
+      countEl.textContent = showingNext ? '目前無進行中場次' : '1 場正在進行';
+    });
+  })();
+
+  /* ---------- Session form (create / edit) ---------- */
+  const sessionFormOverlay = document.getElementById('session-form-overlay');
+  const sfTitle = document.getElementById('sf-title');
+  const sfSubmit = document.getElementById('btn-submit-session-form');
+  let sessionFormRow = null;
+
+  function openSessionForm(row){
+    sessionFormRow = row || null;
+    if (row) {
+      sfTitle.textContent = '編輯課程場次';
+      sfSubmit.textContent = '儲存變更';
+      document.getElementById('sf-name').value = row.dataset.name;
+      document.getElementById('sf-date').value = row.dataset.iso || '';
+      document.getElementById('sf-start').value = row.dataset.start;
+      document.getElementById('sf-end').value = row.dataset.end;
+      document.getElementById('sf-hours').value = row.dataset.hours;
+      document.getElementById('sf-cap').value = row.dataset.cap;
+      document.getElementById('sf-room').value = row.dataset.room || '';
+      document.getElementById('sf-teacher').value = row.dataset.teacher || '';
+    } else {
+      sfTitle.textContent = '新增課程場次';
+      sfSubmit.textContent = '建立場次並產生 QR Code';
+      document.getElementById('sf-name').value = '瑞亞基礎瑜珈';
+      document.getElementById('sf-date').value = '2026-08-29';
+      document.getElementById('sf-start').value = '10:00';
+      document.getElementById('sf-end').value = '11:00';
+      document.getElementById('sf-hours').value = '1';
+      document.getElementById('sf-cap').value = '20';
+      document.getElementById('sf-room').value = '教室 A';
+      document.getElementById('sf-teacher').value = '王老師';
+    }
+    sessionFormOverlay.classList.add('open');
+  }
+  function closeSessionForm(){ sessionFormOverlay.classList.remove('open'); }
+
+  function openDuplicateSessionForm(row){
+    sessionFormRow = null; // submitting always creates a new row, never overwrites the source
+    sfTitle.textContent = '複製課程場次';
+    sfSubmit.textContent = '建立場次並產生 QR Code';
+    document.getElementById('sf-name').value = row.dataset.name;
+    document.getElementById('sf-date').value = row.dataset.iso || '';
+    document.getElementById('sf-start').value = row.dataset.start;
+    document.getElementById('sf-end').value = row.dataset.end;
+    document.getElementById('sf-hours').value = row.dataset.hours;
+    document.getElementById('sf-cap').value = row.dataset.cap;
+    document.getElementById('sf-room').value = row.dataset.room || '';
+    document.getElementById('sf-teacher').value = row.dataset.teacher || '';
+    sessionFormOverlay.classList.add('open');
+  }
+
+  document.getElementById('btn-new-session').addEventListener('click', () => openSessionForm(null));
+  document.getElementById('btn-cancel-session-form').addEventListener('click', closeSessionForm);
+  // Intentionally no close-on-backdrop-click and no X button — only 取消 / 儲存變更 dismiss this modal.
+
+  function fmtDateLabel(iso){
+    if (!iso) return '新場次';
+    const parts = iso.split('-');
+    return `${Number(parts[1])}/${Number(parts[2])}`;
+  }
+
+  function buildSessionRowHTML(name, sub, hours, cap, checked, dateLabel, start, end, statusText, statusClass, toggled){
+    return `
+      <div class="sess-main">
+        <div class="sess-name">${name}</div>
+        <div class="sess-time"><span class="sess-date">${dateLabel}</span>${start}–${end}</div>
+        <div class="sess-sub">${sub}</div>
+      </div>
+      <div class="sess-meta">
+        <div class="sess-hours"><span class="lbl">扣除時數</span><b>${hours} hr</b></div>
+        <div class="sess-progress"><span class="lbl">已報到</span><b>${checked} / ${cap}</b><span class="mark ${statusClass}">${statusText}</span></div>
+      </div>
+      <label class="switch" title="開放報到"><input type="checkbox" class="sess-toggle" ${toggled ? 'checked' : ''}><span class="switch-track"><span class="switch-thumb"></span></span></label>
+      <div class="sess-actions">
+        <button class="edit-pencil" title="編輯課程場次">✎</button>
+        <button class="roster-btn" title="查看學員名單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></button>
+        <button class="duplicate-btn" title="複製課程場次"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+        <button class="qr-btn" title="查看 QR Code">▦</button>
+      </div>
+    `;
+  }
+
+  sfSubmit.addEventListener('click', async () => {
+    const name = document.getElementById('sf-name').value.trim() || '新課程場次';
+    const iso = document.getElementById('sf-date').value;
+    const start = document.getElementById('sf-start').value || '10:00';
+    const end = document.getElementById('sf-end').value || '11:00';
+    const hours = document.getElementById('sf-hours').value || '1';
+    const cap = document.getElementById('sf-cap').value || '10';
+    const room = document.getElementById('sf-room').value.trim() || '教室 A';
+    const teacher = document.getElementById('sf-teacher').value.trim() || '';
+    const sub = [teacher, room].filter(Boolean).join('・');
+    const dateLabel = fmtDateLabel(iso);
+
+    if (sessionFormRow) {
+      const row = sessionFormRow;
+      const originalName = row.dataset.name;
+      const originalIso = row.dataset.iso;
+      row.dataset.name = name;
+      row.dataset.sub = sub;
+      row.dataset.room = room;
+      row.dataset.teacher = teacher;
+      row.dataset.hours = hours;
+      row.dataset.cap = cap;
+      row.dataset.date = dateLabel;
+      row.dataset.iso = iso;
+      row.dataset.start = start;
+      row.dataset.end = end;
+      row.querySelector('.sess-time').innerHTML = `<span class="sess-date">${dateLabel}</span>${start}–${end}`;
+      row.querySelector('.sess-name').textContent = name;
+      row.querySelector('.sess-sub').textContent = sub;
+      row.querySelector('.sess-hours').innerHTML = `<span class="lbl">扣除時數</span><b>${hours} hr</b>`;
+      const progressEl = row.querySelector('.sess-progress');
+      const markEl = progressEl.querySelector('.mark');
+      progressEl.innerHTML = `<span class="lbl">已報到</span><b>${row.dataset.checked} / ${cap}</b><span class="${markEl.className}">${markEl.textContent}</span>`;
+      closeSessionForm();
+
+      if (SB) {
+        try {
+          let id = row.dataset.id;
+          if (!id) {
+            const { data } = await SB.from('course_sessions').select('id')
+              .eq('name', originalName).eq('session_date', originalIso).limit(1).maybeSingle();
+            id = data ? data.id : null;
+          }
+          if (id) {
+            const { error } = await SB.from('course_sessions').update({
+              name, session_date: iso, start_time: start, end_time: end,
+              teacher, room, hours_per_checkin: Number(hours), capacity: Number(cap)
+            }).eq('id', id);
+            if (error) throw error;
+            row.dataset.id = id;
+          }
+        } catch (e) { console.warn('Session update failed, kept local only.', e); }
+      }
+      return;
+    }
+
+    const row = document.createElement('div');
+    row.className = 'sess-row';
+    row.dataset.name = name;
+    row.dataset.sub = sub;
+    row.dataset.room = room;
+    row.dataset.teacher = teacher;
+    row.dataset.hours = hours;
+    row.dataset.cap = cap;
+    row.dataset.checked = '0';
+    row.dataset.date = dateLabel;
+    row.dataset.iso = iso;
+    row.dataset.start = start;
+    row.dataset.end = end;
+    row.innerHTML = buildSessionRowHTML(name, sub, hours, cap, 0, dateLabel, start, end, '未開始', 'neutral', true);
+
+    const list = document.getElementById('session-list');
+    const firstDateHead = list.querySelector('.date-head');
+    firstDateHead.insertAdjacentElement('afterend', row);
+
+    closeSessionForm();
+    openQrFor(row);
+
+    if (SB) {
+      try {
+        const { data: inserted, error } = await SB.from('course_sessions').insert({
+          name, session_date: iso, start_time: start, end_time: end,
+          teacher, room, hours_per_checkin: Number(hours), capacity: Number(cap), is_open: true
+        }).select().single();
+        if (error) throw error;
+        row.dataset.id = inserted.id;
+      } catch (e) { console.warn('Session create failed, kept local only.', e); }
+    }
+  });
+
+  /* ---------- Session list delegated actions ---------- */
+  document.getElementById('session-list').addEventListener('click', (e) => {
+    const editBtn = e.target.closest('.edit-pencil');
+    if (editBtn) { openSessionForm(editBtn.closest('.sess-row')); return; }
+    const rosterBtn = e.target.closest('.roster-btn');
+    if (rosterBtn) { openRoster(rosterBtn.closest('.sess-row')); return; }
+    const dupBtn = e.target.closest('.duplicate-btn');
+    if (dupBtn) { openDuplicateSessionForm(dupBtn.closest('.sess-row')); return; }
+    const qrBtn = e.target.closest('.qr-btn');
+    if (qrBtn) { openQrFor(qrBtn.closest('.sess-row')); return; }
+  });
+
+  document.getElementById('session-list').addEventListener('change', (e) => {
+    if (!e.target.classList.contains('sess-toggle')) return;
+    const row = e.target.closest('.sess-row');
+    const markEl = row.querySelector('.sess-progress .mark');
+    const isOpen = e.target.checked;
+    if (isOpen) {
+      const prevText = row.dataset.prevStatus || '未開始';
+      const prevClass = row.dataset.prevStatusClass || 'neutral';
+      markEl.textContent = prevText;
+      markEl.className = 'mark ' + prevClass;
+    } else {
+      row.dataset.prevStatus = markEl.textContent;
+      row.dataset.prevStatusClass = markEl.className.replace('mark', '').trim();
+      markEl.textContent = '已關閉';
+      markEl.className = 'mark crit';
+    }
+    if (SB && row.dataset.id) {
+      SB.from('course_sessions').update({ is_open: isOpen }).eq('id', row.dataset.id)
+        .then(({ error }) => { if (error) console.warn('is_open sync failed.', error); });
+    }
+  });
+
+  /* ---------- Course search (name / teacher / room) ---------- */
+  document.getElementById('courses-search').addEventListener('input', (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll('#session-list .sess-row').forEach(row => {
+      const haystack = [row.dataset.name, row.dataset.teacher, row.dataset.room].join(' ').toLowerCase();
+      row.style.display = haystack.includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('#session-list .date-head').forEach(head => {
+      let el = head.nextElementSibling;
+      let anyVisible = false;
+      while (el && !el.classList.contains('date-head')) {
+        if (el.style.display !== 'none') anyVisible = true;
+        el = el.nextElementSibling;
+      }
+      head.style.display = anyVisible ? '' : 'none';
+    });
+  });
+
+  /* ---------- Student check-in preview ----------
+     系統核心邏輯（報到 / 時數扣除）：
+     1. 每個帳號（公司）擁有：剩餘時數 + 報名的課程場次清單（course_registrations）。
+     2. 每筆報名記錄包含：報名場次(session_id)、報名名額(seats_total)、已報到名額(seats_checked_in)。
+        → 同一堂課可以報名多個名額（例如一家公司派兩位員工上課）。
+     3. 帳號擁有一組固定不變的 QR Code（依帳號 ID 產生），學員每次到現場出示此 QR Code，
+        QR Code 內容不會因報到次數而改變。
+     4. 櫃台掃描 QR Code（本畫面用手動輸入統一編號模擬掃描）時，會搭配「目前這堂課」
+        （由課程場次頁面點擊 QR／體驗學生報到 帶入）：
+        - 查詢該帳號是否有此場次的報名記錄，且 seats_checked_in < seats_total：
+            → 是：seats_checked_in +1、扣除該場次時數、寫入報到紀錄 checkins。
+                 若 seats_total > 1，同一組 QR Code 可以被掃描多次（每次對應一位到場人員），
+                 直到用完所有已報名名額。
+            → 已達名額上限（seats_checked_in >= seats_total）：顯示「報名名額已全數報到」，
+                 不再重複扣時數。
+            → 查無報名記錄（帳號存在但沒報這堂課）：顯示「尚未報名這堂課」，可現場報名
+                 這堂課並立即報到（建立新的 course_registrations）。
+            → 查無帳號：顯示「查無資料」，可現場完整報名（建立新帳號 + 報名記錄）。
+     5. 學員專區（前台）只負責顯示帳號的專屬 QR Code與已報名課程資訊，不提供自行報到按鈕──
+        實際扣時數的報到動作，一律由這裡（後台櫃台掃碼）觸發。
+  ---------------------------------------------------------------- */
+  const ciStates = document.querySelectorAll('.ci-state');
+  const ciSession = { name: '瑞亞基礎瑜珈', sub: '8月26日（三）10:00・王老師・教室 A', hours: '1.0', isoDate: '', startTime: '', isOpen: true, rowId: null, sessionId: null, ready: Promise.resolve() };
+  let pendingStudent = null;
+
+  function fmtHours(n){
+    let s = n.toFixed(2);
+    s = s.replace(/0+$/, '').replace(/\.$/, '');
+    return s;
+  }
+  function showCiState(key){
+    ciStates.forEach(el => { el.style.display = (el.id === 'ci-state-' + key) ? '' : 'none'; });
+  }
+
+  async function resolveCiSessionId(){
+    ciSession.sessionId = null;
+    if (!SB) return;
+    if (ciSession.rowId) { ciSession.sessionId = ciSession.rowId; return; }
+    if (!ciSession.isoDate) return;
+    try {
+      // Fallback for rows syncSessionIds() didn't manage to id-stamp (e.g. Supabase was
+      // unreachable at page load). Name+date+start_time narrows same-day-same-name collisions
+      // but still isn't a true unique key — kept only as a best-effort fallback.
+      let query = SB.from('course_sessions').select('id')
+        .eq('name', ciSession.name).eq('session_date', ciSession.isoDate);
+      if (ciSession.startTime) query = query.eq('start_time', ciSession.startTime);
+      const { data } = await query.limit(1).maybeSingle();
+      ciSession.sessionId = data ? data.id : null;
+    } catch (e) { ciSession.sessionId = null; }
+  }
+
+  document.getElementById('btn-preview-checkin').addEventListener('click', () => {
+    ciSession.name = document.getElementById('qr-name').textContent;
+    ciSession.sub = document.getElementById('qr-date').textContent + '・' + document.getElementById('qr-sub').textContent;
+    ciSession.hours = document.getElementById('qr-hours').textContent;
+    ciSession.isoDate = currentQrRow ? (currentQrRow.dataset.iso || '') : new Date().toISOString().slice(0,10);
+    ciSession.startTime = currentQrRow ? (currentQrRow.dataset.start || '') : '';
+    ciSession.rowId = currentQrRow ? (currentQrRow.dataset.id || null) : null;
+    const toggle = currentQrRow ? currentQrRow.querySelector('.sess-toggle') : null;
+    ciSession.isOpen = toggle ? toggle.checked : true;
+    ciSession.ready = resolveCiSessionId();
+    document.getElementById('ci-course-name').textContent = ciSession.name;
+    document.getElementById('ci-course-sub').textContent = ciSession.sub;
+    qrOverlay.classList.remove('open');
+    document.getElementById('ci-phone').value = '';
+    pendingStudent = null;
+    showCiState('input');
+    showView('checkin-preview');
+  });
+
+  const demoPhones = {
+    success: '84204302',
+    insufficient: '23456789',
+    notfound: '00000099',
+    duplicate: '45678901',
+    closed: '00000000'
+  };
+  document.querySelectorAll('.chip-btn[data-demo]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.getElementById('ci-phone').value = demoPhones[chip.dataset.demo];
+      showCiState('input');
+    });
+  });
+
+  document.getElementById('ci-submit').addEventListener('click', async () => {
+    const phone = document.getElementById('ci-phone').value.replace(/[^0-9]/g, '');
+    if (!phone) return;
+
+    if (!ciSession.isOpen) { showCiState('closed'); return; }
+
+    // Supabase unavailable (e.g. Artifact CSP) — fall back to canned demo scenarios
+    if (!SB) {
+      const need = Number(ciSession.hours);
+      if (phone === demoPhones.duplicate) {
+        document.getElementById('ci-dup-name').textContent = '凱婷生技股份有限公司';
+        document.getElementById('ci-dup-time').textContent = '';
+        showCiState('duplicate');
+        return;
+      }
+      if (phone === demoPhones.insufficient) {
+        document.getElementById('ci-insuff-remain').textContent = '0.3';
+        document.getElementById('ci-insuff-need').textContent = fmtHours(need);
+        showCiState('insufficient');
+        return;
+      }
+      if (phone === demoPhones.success) {
+        const before = 6.0;
+        document.getElementById('ci-success-name').textContent = '傳啟資訊股份有限公司';
+        document.getElementById('ci-deduct').textContent = fmtHours(need) + ' hr';
+        document.getElementById('ci-remain').textContent = fmtHours(before - need) + ' hr';
+        showCiState('success');
+        return;
+      }
+      showCiState('notfound');
+      return;
+    }
+
+    await ciSession.ready;
+    const need = Number(ciSession.hours) || 1;
+
+    try {
+      const { data: student } = await SB.from('students').select('*').eq('phone', phone).maybeSingle();
+      if (!student) { showCiState('notfound'); return; }
+
+      if (!ciSession.sessionId) {
+        // this course session row isn't wired to a real Supabase session yet
+        pendingStudent = student;
+        document.getElementById('ci-notreg-name').textContent = student.name;
+        document.getElementById('ci-notreg-remain').textContent = fmtHours(Number(student.remaining_hours));
+        showCiState('notregistered');
+        return;
+      }
+
+      const { data: reg } = await SB.from('course_registrations').select('*')
+        .eq('student_id', student.id).eq('session_id', ciSession.sessionId).maybeSingle();
+
+      if (!reg) {
+        pendingStudent = student;
+        document.getElementById('ci-notreg-name').textContent = student.name;
+        document.getElementById('ci-notreg-remain').textContent = fmtHours(Number(student.remaining_hours));
+        showCiState('notregistered');
+        return;
+      }
+
+      if (reg.seats_checked_in >= reg.seats_total) {
+        document.getElementById('ci-dup-name').textContent = student.name;
+        document.getElementById('ci-dup-time').textContent = ` (${reg.seats_checked_in}/${reg.seats_total} 位)`;
+        showCiState('duplicate');
+        return;
+      }
+
+      if (Number(student.remaining_hours) < need) {
+        document.getElementById('ci-insuff-remain').textContent = fmtHours(Number(student.remaining_hours));
+        document.getElementById('ci-insuff-need').textContent = fmtHours(need);
+        showCiState('insufficient');
+        return;
+      }
+
+      const after = Math.max(0, Number(student.remaining_hours) - need);
+      try {
+        const { error: e1 } = await SB.from('course_registrations').update({ seats_checked_in: reg.seats_checked_in + 1 }).eq('id', reg.id);
+        if (e1) throw e1;
+        const { error: e2 } = await SB.from('students').update({ remaining_hours: after, attended_count: Number(student.attended_count) + 1 }).eq('id', student.id);
+        if (e2) throw e2;
+        const { error: e3 } = await SB.from('checkins').insert({ student_id: student.id, session_id: ciSession.sessionId, phone_used: phone, result: 'success', hours_deducted: need });
+        if (e3) throw e3;
+      } catch (writeErr) {
+        console.warn('Check-in write failed.', writeErr);
+        document.getElementById('ci-write-error-msg').textContent =
+          `${student.name} 的報到寫入失敗，尚未完成報到，時數也還沒有扣除，請重新再試一次。`;
+        showCiState('write-error');
+        return;
+      }
+
+      document.getElementById('ci-success-name').textContent = student.name;
+      document.getElementById('ci-deduct').textContent = fmtHours(need) + ' hr';
+      document.getElementById('ci-remain').textContent = fmtHours(after) + ' hr';
+      showCiState('success');
+      await initLiveStudents();
+    } catch (e) {
+      console.warn('Check-in lookup failed.', e);
+      showCiState('notfound');
+    }
+  });
+
+  document.querySelectorAll('.ci-reset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('ci-phone').value = '';
+      pendingStudent = null;
+      showCiState('input');
+    });
+  });
+
+  /* ---------- On-site: registered account checking into a session it hasn't registered for ---------- */
+  document.getElementById('ci-goto-register').addEventListener('click', async () => {
+    if (!pendingStudent || !SB) return;
+    const need = Number(ciSession.hours) || 1;
+    const remain = Number(pendingStudent.remaining_hours);
+    if (remain < need) {
+      document.getElementById('ci-insuff-remain').textContent = fmtHours(remain);
+      document.getElementById('ci-insuff-need').textContent = fmtHours(need);
+      showCiState('insufficient');
+      return;
+    }
+    try {
+      if (ciSession.sessionId) {
+        const { error: regErr } = await SB.from('course_registrations').insert({
+          student_id: pendingStudent.id, session_id: ciSession.sessionId, seats_total: 1, seats_checked_in: 1
+        });
+        if (regErr) throw regErr;
+        const { error: ciErr } = await SB.from('checkins').insert({
+          student_id: pendingStudent.id, session_id: ciSession.sessionId,
+          phone_used: pendingStudent.phone, result: 'success', hours_deducted: need
+        });
+        if (ciErr) throw ciErr;
+      }
+      const after = Math.max(0, remain - need);
+      const { error: stuErr } = await SB.from('students').update({ remaining_hours: after, attended_count: Number(pendingStudent.attended_count) + 1 }).eq('id', pendingStudent.id);
+      if (stuErr) throw stuErr;
+      document.getElementById('ci-success-name').textContent = pendingStudent.name;
+      document.getElementById('ci-deduct').textContent = fmtHours(need) + ' hr';
+      document.getElementById('ci-remain').textContent = fmtHours(after) + ' hr';
+      showCiState('success');
+      await initLiveStudents();
+    } catch (e) {
+      console.warn('On-site registration for existing account failed.', e);
+      document.getElementById('ci-write-error-msg').textContent =
+        `${pendingStudent.name} 的現場報名寫入失敗，尚未完成報到，時數也還沒有扣除，請重新再試一次。`;
+      showCiState('write-error');
+    }
+  });
+
+  /* ---------- Onsite (walk-in) registration: brand new account ---------- */
+  function fmtPhoneDisplay(digits){
+    return digits;
+  }
+
+  document.getElementById('ci-goto-onsite').addEventListener('click', () => {
+    const phone = document.getElementById('ci-phone').value.replace(/[^0-9]/g, '');
+    document.getElementById('ci-onsite-phone-display').textContent = fmtPhoneDisplay(phone);
+    document.getElementById('ci-onsite-name').value = '';
+    showCiState('onsite');
+  });
+
+  document.getElementById('ci-onsite-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const phoneDigits = document.getElementById('ci-phone').value.replace(/[^0-9]/g, '');
+    const name = document.getElementById('ci-onsite-name').value.trim();
+    if (!name) { document.getElementById('ci-onsite-name').focus(); return; }
+    const planEl = document.getElementById('ci-onsite-plan');
+    const planLabel = planEl.options[planEl.selectedIndex].text;
+    const priceMatch = planLabel.match(/NT\$(\d+)/);
+    const price = priceMatch ? priceMatch[1] : '0';
+    const payment = document.getElementById('ci-onsite-payment').value;
+    const need = Number(ciSession.hours) || 1;
+
+    document.getElementById('ci-onsite-success-name').textContent = name;
+    document.getElementById('ci-onsite-paid').textContent = `NT$${price}`;
+    document.getElementById('ci-onsite-method').textContent = payment;
+
+    if (!SB) {
+      // Offline demo fallback (e.g. Artifact CSP blocks Supabase) — nothing to write, show success directly.
+      showCiState('onsite-success');
+      return;
+    }
+
+    // Wait for every write to actually succeed before telling the front desk it worked —
+    // showing "報名成功" before the database confirms it would silently lose the check-in.
+    try {
+      const { data: inserted, error } = await SB.from('students').insert({
+        name, phone: phoneDigits,
+        purchased_hours: need, remaining_hours: 0, attended_count: 1,
+        is_active: true, joined_at: new Date().toISOString().slice(0,10),
+        note: `現場報名・${planLabel}・付款方式：${payment}`
+      }).select().single();
+      if (error) throw error;
+
+      const { error: adjErr } = await SB.from('hour_adjustments').insert({
+        student_id: inserted.id, amount: need, reason: '現場報名購買時數',
+        note: `${planLabel}・${payment}`, operator: '管理員'
+      });
+      if (adjErr) throw adjErr;
+
+      await ciSession.ready;
+      const matchedSessionId = ciSession.sessionId;
+      if (matchedSessionId) {
+        const { error: ciErr } = await SB.from('checkins').insert({
+          student_id: inserted.id, session_id: matchedSessionId,
+          phone_used: phoneDigits, result: 'success', hours_deducted: need
+        });
+        if (ciErr) throw ciErr;
+        const { error: regErr } = await SB.from('course_registrations').insert({
+          student_id: inserted.id, session_id: matchedSessionId, seats_total: 1, seats_checked_in: 1
+        });
+        if (regErr) throw regErr;
+      }
+      showCiState('onsite-success');
+      await initLiveStudents();
+    } catch (err) {
+      console.warn('Supabase onsite registration failed.', err);
+      document.getElementById('ci-write-error-msg').textContent =
+        `${name} 的現場報名寫入失敗，尚未建立學員資料，請重新再試一次。`;
+      showCiState('write-error');
+    }
+  });
+
+  /* ---------- Students ---------- */
+  const studentData = {
+    wang: { name:'傳啟資訊股份有限公司', phone:'84204302', hours:'6.0', purchased:'16', attended:'10', joined:'2026/03/12', active:true,
+      checkins:[
+        {main:'瑞亞基礎瑜珈', sub:'2026/08/26 10:01', amt:'-1.0 hr'},
+        {main:'成人流動瑜珈', sub:'2026/08/19 19:34', amt:'-1.0 hr'},
+        {main:'瑞亞基礎瑜珈', sub:'2026/08/12 10:03', amt:'-1.0 hr'}
+      ],
+      adjustments:[
+        {main:'手動加時', sub:'補購課程包・管理員操作・08/26 09:20', amt:'+5.0 hr', good:true},
+        {main:'名單匯入新增', sub:'首次購買・03/12', amt:'+10.0 hr', good:true}
+      ]
+    },
+    li: { name:'佳穎科技股份有限公司', phone:'23456789', hours:'1.0', purchased:'8', attended:'7', joined:'2026/05/02', active:true,
+      checkins:[
+        {main:'成人流動瑜珈', sub:'2026/08/19 09:58', amt:'-1.0 hr'},
+        {main:'瑞亞基礎瑜珈', sub:'2026/08/05 10:02', amt:'-1.0 hr'}
+      ],
+      adjustments:[
+        {main:'名單匯入新增', sub:'加購時數・05/02', amt:'+5.0 hr', good:true}
+      ]
+    },
+    zhang: { name:'育誠工程有限公司', phone:'34567890', hours:'0.0', purchased:'12', attended:'12', joined:'2026/02/18', active:true,
+      checkins:[
+        {main:'兒童鋼琴一對一', sub:'2026/08/20 16:35', amt:'-0.75 hr'},
+        {main:'兒童鋼琴一對一', sub:'2026/08/13 16:31', amt:'-0.75 hr'}
+      ],
+      adjustments:[
+        {main:'手動扣回', sub:'誤扣補回・管理員操作・08/10', amt:'-0.5 hr', good:false}
+      ]
+    },
+    xu: { name:'凱婷生技股份有限公司', phone:'45678901', hours:'14.5', purchased:'20', attended:'6', joined:'2026/06/01', active:true,
+      checkins:[
+        {main:'瑞亞基礎瑜珈', sub:'2026/08/26 10:01', amt:'-1.0 hr'},
+        {main:'兒童美術創作班', sub:'2026/08/18 14:03', amt:'-1.0 hr'}
+      ],
+      adjustments:[
+        {main:'名單匯入新增', sub:'首次購買・06/01', amt:'+20.0 hr', good:true}
+      ]
+    },
+    wu: { name:'姿蓉設計工作室有限公司', phone:'56789012', hours:'9.0', purchased:'10', attended:'1', joined:'2026/08/26', active:true,
+      checkins:[
+        {main:'兒童美術創作班', sub:'2026/08/14 14:05', amt:'-1.0 hr'}
+      ],
+      adjustments:[
+        {main:'名單匯入新增', sub:'首次購買・08/26', amt:'+10.0 hr', good:true}
+      ]
+    },
+    zhou: { name:'柏翰貿易股份有限公司', phone:'67890123', hours:'3.5', purchased:'12', attended:'8', joined:'2026/04/09', active:true,
+      checkins:[
+        {main:'深夜修復瑜珈', sub:'2026/08/25 20:02', amt:'-1.0 hr'}
+      ],
+      adjustments:[
+        {main:'手動扣回', sub:'誤扣補回・管理員操作・昨日 21:14', amt:'-0.5 hr', good:false},
+        {main:'名單匯入新增', sub:'加購時數・04/09', amt:'+12.0 hr', good:true}
+      ]
+    },
+    you: { name:'承恩物流有限公司', phone:'78901234', hours:'0.5', purchased:'6', attended:'5', joined:'2026/07/03', active:true,
+      checkins:[
+        {main:'親子烹飪體驗', sub:'2026/08/12 20:48', amt:'-1.0 hr'}
+      ],
+      adjustments:[
+        {main:'名單匯入新增', sub:'首次購買・07/03', amt:'+6.0 hr', good:true}
+      ]
+    },
+    lin: { name:'珮珊行銷顧問股份有限公司', phone:'89012345', hours:'2.0', purchased:'8', attended:'6', joined:'2026/05/02', active:false,
+      checkins:[
+        {main:'瑞亞基礎瑜珈', sub:'2026/05/20 10:01', amt:'-1.0 hr'}
+      ],
+      adjustments:[
+        {main:'手動加時', sub:'客訴補償・管理員操作・05/20', amt:'+2.0 hr', good:true}
+      ]
+    }
+  };
+
+  const studentOverlay = document.getElementById('student-overlay');
+  let currentStudentKey = null;
+
+  function renderSmList(containerId, items){
+    const el = document.getElementById(containerId);
+    if (!items.length) { el.innerHTML = '<div class="sm-item" style="color:var(--ink-400);">尚無紀錄</div>'; return; }
+    el.innerHTML = items.map(it => `
+      <div class="sm-item">
+        <div><div class="sm-item-main">${it.main}</div><div class="sm-item-sub">${it.sub}</div></div>
+        <div class="sm-item-amt ${it.good === undefined ? '' : (it.good ? 'good' : 'crit')}">${it.amt}</div>
+      </div>
+    `).join('');
+  }
+
+  function openStudent(key){
+    const s = liveStudentMap[key] || studentData[key];
+    if (!s) return;
+    currentStudentKey = key;
+    document.getElementById('sm-avatar').textContent = s.name.charAt(0);
+    document.getElementById('sm-name').textContent = s.name;
+    document.getElementById('sm-phone').textContent = s.phone;
+    document.getElementById('sm-hours').textContent = s.hours;
+    document.getElementById('sm-purchased').textContent = s.purchased;
+    document.getElementById('sm-attended').textContent = s.attended;
+    document.getElementById('sm-joined').textContent = s.joined;
+    document.getElementById('sm-toggle-status').textContent = s.active ? '停用學生' : '啟用學生';
+    renderSmList('sm-checkins', s.checkins);
+    renderSmList('sm-adjustments', s.adjustments);
+    studentOverlay.classList.add('open');
+  }
+
+  document.getElementById('students-tbody').addEventListener('click', (e) => {
+    if (!e.target.closest('.stu-view')) return;
+    const row = e.target.closest('tr');
+    openStudent(row.dataset.key);
+  });
+  document.getElementById('btn-close-student').addEventListener('click', () => studentOverlay.classList.remove('open'));
+  studentOverlay.addEventListener('click', (e) => { if (e.target === studentOverlay) studentOverlay.classList.remove('open'); });
+
+  document.getElementById('sm-toggle-status').addEventListener('click', async () => {
+    if (!currentStudentKey) return;
+    const isLive = !!liveStudentMap[currentStudentKey];
+    const s = liveStudentMap[currentStudentKey] || studentData[currentStudentKey];
+    s.active = !s.active;
+    document.getElementById('sm-toggle-status').textContent = s.active ? '停用學生' : '啟用學生';
+    const row = document.querySelector(`#students-tbody tr[data-key="${currentStudentKey}"]`);
+    const markCell = row.children[3];
+    const mark = studentStatusMark(Number(s.hours), s.active);
+    markCell.innerHTML = `<span class="mark ${mark.cls}">${mark.cls === 'neutral' ? '' : '<span class="dot"></span>'}${mark.label}</span>`;
+    if (isLive && SB) {
+      try { await SB.from('students').update({ is_active: s.active }).eq('id', currentStudentKey); }
+      catch (e) { console.warn('Supabase status update failed.', e); }
+    }
+  });
+
+  document.getElementById('stu-search').addEventListener('input', (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll('#students-tbody tr').forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(q) ? '' : 'none';
+    });
+  });
+
+  document.getElementById('btn-export-students').addEventListener('click', () => {
+    const rows = [...document.querySelectorAll('#students-tbody tr')].filter(r => r.style.display !== 'none');
+    const header = ['公司名稱', '統一編號', '剩餘時數', '狀態', '最近上課'];
+    const lines = [header, ...rows.map(row => {
+      const cells = row.querySelectorAll('td');
+      return [0, 1, 2, 3, 4].map(i => cells[i].textContent.trim());
+    })];
+    const csv = lines.map(cols => cols.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    a.href = url;
+    a.download = `學生名單_${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  /* ---------- Login / logout ---------- */
+  const loginScreen = document.getElementById('login-screen');
+  const AUTH_KEY = 'rc_auth_session';
+  const IDLE_LIMIT_MS = 12 * 60 * 60 * 1000; // 12 小時未操作才自動登出
+
+  function saveSession(){
+    try { localStorage.setItem(AUTH_KEY, JSON.stringify({ loggedIn: true, lastActive: Date.now() })); } catch (e) {}
+  }
+  function readSession(){
+    try {
+      const raw = localStorage.getItem(AUTH_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+  function clearSession(){
+    try { localStorage.removeItem(AUTH_KEY); } catch (e) {}
+  }
+  function isLoggedIn(){ return loginScreen.style.display === 'none'; }
+
+  document.getElementById('login-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    loginScreen.style.display = 'none';
+    saveSession();
+  });
+  document.getElementById('btn-logout').addEventListener('click', () => {
+    document.querySelectorAll('.overlay.open').forEach(o => o.classList.remove('open'));
+    showView('dashboard');
+    loginScreen.style.display = 'flex';
+    clearSession();
+  });
+
+  // Refresh the "last active" timestamp while the user is around, so an open tab
+  // only signs out after truly sitting idle for the full 12 hours.
+  let lastActivityWrite = 0;
+  function markActivity(){
+    if (!isLoggedIn()) return;
+    const now = Date.now();
+    if (now - lastActivityWrite > 60 * 1000) {
+      saveSession();
+      lastActivityWrite = now;
+    }
+  }
+  ['click', 'keydown', 'mousemove', 'scroll', 'touchstart'].forEach(evt => {
+    document.addEventListener(evt, markActivity, { passive: true });
+  });
+
+  // Periodically check whether the session has sat idle past the limit while
+  // this tab stayed open, and sign out automatically if so.
+  setInterval(() => {
+    if (!isLoggedIn()) return;
+    const session = readSession();
+    if (!session || Date.now() - session.lastActive > IDLE_LIMIT_MS) {
+      clearSession();
+      document.querySelectorAll('.overlay.open').forEach(o => o.classList.remove('open'));
+      showView('dashboard');
+      loginScreen.style.display = 'flex';
+    }
+  }, 5 * 60 * 1000);
+
+  /* ---------- Check-in records filters ---------- */
+  function filterCkr(){
+    const q = document.getElementById('ckr-search').value.trim().toLowerCase();
+    const course = document.getElementById('ckr-course').value;
+    const result = document.getElementById('ckr-result').value;
+    document.querySelectorAll('#ckr-tbody tr').forEach(row => {
+      const matchesText = row.textContent.toLowerCase().includes(q);
+      const matchesCourse = !course || row.dataset.course === course;
+      const matchesResult = !result || row.dataset.result === result;
+      row.style.display = (matchesText && matchesCourse && matchesResult) ? '' : 'none';
+    });
+  }
+  document.getElementById('ckr-search').addEventListener('input', filterCkr);
+  document.getElementById('ckr-course').addEventListener('change', filterCkr);
+  document.getElementById('ckr-result').addEventListener('change', filterCkr);
+
+  /* ---------- Adjust hours ---------- */
+  const adjTypeAdd = document.getElementById('adj-type-add');
+  const adjTypeSub = document.getElementById('adj-type-sub');
+  let adjType = 'add';
+  let currentAdjStudent = null; // { id, name, phone, hours, isLive }
+
+  const staticAdjustStudents = [
+    { id:'傳啟資訊股份有限公司', name:'傳啟資訊股份有限公司', phone:'84204302', hours:'6.0' },
+    { id:'佳穎科技股份有限公司', name:'佳穎科技股份有限公司', phone:'23456789', hours:'1.0' },
+    { id:'育誠工程有限公司', name:'育誠工程有限公司', phone:'34567890', hours:'0.0' },
+    { id:'凱婷生技股份有限公司', name:'凱婷生技股份有限公司', phone:'45678901', hours:'14.5' },
+    { id:'姿蓉設計工作室有限公司', name:'姿蓉設計工作室有限公司', phone:'56789012', hours:'9.0' },
+    { id:'柏翰貿易股份有限公司', name:'柏翰貿易股份有限公司', phone:'67890123', hours:'3.5' },
+    { id:'承恩物流有限公司', name:'承恩物流有限公司', phone:'78901234', hours:'0.5' }
+  ];
+
+  function getAdjustPickList(){
+    if (Object.keys(liveStudentMap).length) {
+      return Object.values(liveStudentMap)
+        .filter(s => s.active)
+        .sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'))
+        .map(s => ({ id: s.id, name: s.name, phone: s.phone, hours: s.hours, isLive: true }));
+    }
+    return staticAdjustStudents.map(s => ({ ...s, isLive: false }));
+  }
+
+  function renderAdjustPickList(query){
+    const q = (query || '').trim().toLowerCase();
+    const list = getAdjustPickList().filter(s =>
+      !q || s.name.toLowerCase().includes(q) || s.phone.replace(/-/g, '').includes(q.replace(/-/g, ''))
+    );
+    const el = document.getElementById('adj-pick-list');
+    if (!list.length) {
+      el.innerHTML = '<div class="adj-pick-empty">找不到符合的學生</div>';
+      return;
+    }
+    el.innerHTML = list.map((s, i) => `
+      <button type="button" class="adj-pick-row" data-idx="${i}">
+        <div>
+          <div class="adj-pick-name">${s.name}</div>
+          <div class="adj-pick-phone">${s.phone}</div>
+        </div>
+        <div class="adj-pick-hours">${s.hours} hr</div>
+      </button>
+    `).join('');
+    el.querySelectorAll('.adj-pick-row').forEach((btn, i) => {
+      btn.addEventListener('click', () => selectAdjStudent(list[i]));
+    });
+  }
+
+  function selectAdjStudent(s){
+    currentAdjStudent = s;
+    document.getElementById('adj-selected-name').textContent = s.name;
+    document.getElementById('adj-selected-sub').textContent = `${s.phone}・剩餘 ${s.hours} hr`;
+    document.getElementById('adj-search-stage').style.display = 'none';
+    document.getElementById('adj-form-stage').style.display = '';
+    updateAdjPreview();
+  }
+
+  function backToAdjSearch(){
+    document.getElementById('adj-form-stage').style.display = 'none';
+    document.getElementById('adj-search-stage').style.display = '';
+    document.getElementById('adj-search-input').value = '';
+    renderAdjustPickList('');
+  }
+
+  document.getElementById('adj-search-input').addEventListener('input', (e) => renderAdjustPickList(e.target.value));
+  document.getElementById('adj-change-student').addEventListener('click', backToAdjSearch);
+  renderAdjustPickList('');
+
+  function renderAdjustStudentOptions(){
+    // Refresh the pick list (and the currently-selected student's remaining hours, if any) with live data.
+    if (document.getElementById('adj-search-stage').style.display !== 'none') {
+      renderAdjustPickList(document.getElementById('adj-search-input').value);
+    }
+    if (currentAdjStudent && currentAdjStudent.isLive && liveStudentMap[currentAdjStudent.id]) {
+      currentAdjStudent = { ...currentAdjStudent, hours: liveStudentMap[currentAdjStudent.id].hours };
+      document.getElementById('adj-selected-sub').textContent = `${currentAdjStudent.phone}・剩餘 ${currentAdjStudent.hours} hr`;
+      updateAdjPreview();
+    }
+  }
+
+  function renderAdjustHistoryLive(){
+    const all = [];
+    Object.values(liveStudentMap).forEach(s => {
+      s.adjustments.forEach(a => all.push({ ...a, name: s.name }));
+    });
+    if (!all.length) return; // keep the static demo history
+    const history = document.getElementById('adj-history');
+    history.innerHTML = all.slice(0, 12).map(a => `
+      <div class="feed-row">
+        <div class="feed-icon ${a.good ? 'good' : 'crit'}">${a.good ? '＋' : '−'}</div>
+        <div class="feed-text">
+          <div><b>${a.name}</b> ${a.main} ${a.amt}</div>
+          <div class="feed-meta">${a.sub}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function updateAdjPreview(){
+    if (!currentAdjStudent) return;
+    const amt = Number(document.getElementById('adj-amount').value) || 0;
+    const before = Number(currentAdjStudent.hours);
+    const after = adjType === 'add' ? before + amt : Math.max(0, before - amt);
+    const verb = adjType === 'add' ? '增加' : '扣除';
+    document.getElementById('adj-preview').innerHTML =
+      `將為 <b>${currentAdjStudent.name}</b> <b>${verb} ${fmtHours(amt)} hr</b>，調整後剩餘 <b>${fmtHours(after)} hr</b>`;
+  }
+  adjTypeAdd.addEventListener('click', () => {
+    adjType = 'add';
+    adjTypeAdd.classList.add('active'); adjTypeSub.classList.remove('active');
+    updateAdjPreview();
+  });
+  adjTypeSub.addEventListener('click', () => {
+    adjType = 'sub';
+    adjTypeSub.classList.add('active'); adjTypeAdd.classList.remove('active');
+    updateAdjPreview();
+  });
+  document.getElementById('adj-amount').addEventListener('input', updateAdjPreview);
+
+  document.getElementById('adj-submit').addEventListener('click', async () => {
+    if (!currentAdjStudent) return;
+    const { id, name, isLive } = currentAdjStudent;
+    const before = Number(currentAdjStudent.hours);
+    const amt = Number(document.getElementById('adj-amount').value) || 0;
+    const reason = document.getElementById('adj-reason-preset').value;
+    const note = document.getElementById('adj-note').value.trim();
+    const signedAmt = adjType === 'add' ? amt : -amt;
+    const after = Math.max(0, before + signedAmt);
+    const now = '剛剛';
+
+    const row = document.createElement('div');
+    row.className = 'feed-row';
+    row.innerHTML = `
+      <div class="feed-icon ${adjType === 'add' ? 'good' : 'crit'}">${adjType === 'add' ? '＋' : '−'}</div>
+      <div class="feed-text">
+        <div><b>${name}</b> 手動${adjType === 'add' ? '加時' : '扣時'} ${fmtHours(amt)} hr</div>
+        <div class="feed-meta">原因：${reason}・管理員操作・${now}</div>
+      </div>
+    `;
+    const history = document.getElementById('adj-history');
+    history.insertBefore(row, history.firstChild);
+
+    currentAdjStudent.hours = String(after);
+    document.getElementById('adj-selected-sub').textContent = `${currentAdjStudent.phone}・剩餘 ${after} hr`;
+    updateAdjPreview();
+
+    const toast = document.getElementById('adj-toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2600);
+
+    if (isLive && SB && id) {
+      try {
+        await SB.from('hour_adjustments').insert({
+          student_id: id, amount: signedAmt, reason, note: note || null, operator: '管理員'
+        });
+        await SB.from('students').update({ remaining_hours: after }).eq('id', id);
+        await initLiveStudents();
+      } catch (e) {
+        console.warn('Supabase adjustment write failed.', e);
+      }
+    }
+  });
+
+  /* ---------- Student self-query ---------- */
+  const phoneToKey = {
+    '84204302':'wang', '23456789':'li', '34567890':'zhang', '45678901':'xu',
+    '56789012':'wu', '67890123':'zhou', '78901234':'you', '89012345':'lin'
+  };
+  function showSqState(key){
+    document.querySelectorAll('#view-student-query .ci-state').forEach(el => {
+      el.style.display = (el.id === 'sq-state-' + key) ? '' : 'none';
+    });
+  }
+  function runStudentQuery(){
+    const phone = document.getElementById('sq-phone').value.replace(/[^0-9]/g, '');
+    const key = phoneToKey[phone];
+    const s = key ? studentData[key] : null;
+    if (!s) { showSqState('notfound'); return; }
+    if (!s.active) { showSqState('inactive'); return; }
+    document.getElementById('sq-avatar').textContent = s.name.charAt(0);
+    document.getElementById('sq-name').textContent = s.name;
+    document.getElementById('sq-phone-display').textContent = s.phone;
+    document.getElementById('sq-hours').textContent = s.hours + ' hr';
+    document.getElementById('sq-attended').textContent = s.attended + ' 堂';
+    renderSmList('sq-checkins', s.checkins);
+    renderSmList('sq-adjustments', s.adjustments);
+    showSqState('result');
+  }
+  document.getElementById('sq-submit').addEventListener('click', runStudentQuery);
+  document.getElementById('sq-reset').addEventListener('click', () => {
+    document.getElementById('sq-phone').value = '';
+    showSqState('input');
+  });
+  document.querySelectorAll('#view-student-query .ci-reset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('sq-phone').value = '';
+      showSqState('input');
+    });
+  });
+  document.querySelectorAll('.chip-btn[data-sq-demo]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.getElementById('sq-phone').value = chip.dataset.sqDemo;
+      runStudentQuery();
+    });
+  });
+</script>
+
+
+</body>
+</html>
