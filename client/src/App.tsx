@@ -102,12 +102,13 @@ function FloatingButtons() {
         className="md:hidden flex items-center justify-center"
         style={{
           writingMode: "vertical-rl",
-          backgroundColor: "#1B3A6B",
+          backgroundColor: "#F37021",
           color: "#fff",
           fontSize: "13px",
           fontWeight: 700,
           letterSpacing: "3px",
-          padding: "10px 6px",
+          width: "52px",
+          padding: "10px 0",
           borderRadius: "12px",
           textDecoration: "none",
           boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
