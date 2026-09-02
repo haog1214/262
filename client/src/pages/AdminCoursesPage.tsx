@@ -2138,7 +2138,7 @@ export default function AdminCoursesPage() {
               { key: "ci-checkins" as const, label: "報到紀錄", Icon: CheckSquare },
             ] },
             { label: "學生與時數", items: [
-              { key: "ci-students" as const, label: "學生管理", Icon: Users },
+              { key: "ci-students" as const, label: "學員管理", Icon: Users },
               { key: "ci-adjust" as const, label: "時數調整", Icon: Scale },
             ] },
             { label: "學生自助", items: [{ key: "ci-selfquery" as const, label: "查詢我的時數", Icon: Search }] },

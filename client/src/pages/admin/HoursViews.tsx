@@ -620,7 +620,7 @@ export function StudentsView() {
   return (
     <div style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <h2 style={h2Style}>學生管理（共 {students.length} 位）</h2>
+        <h2 style={h2Style}>學員管理（共 {students.length} 位）</h2>
         <div style={a.card}>
           <input style={{ ...a.input, maxWidth: "280px" }} placeholder="搜尋姓名或電話..." value={q} onChange={e => setQ(e.target.value)} />
           <table style={a.table}>
