@@ -1766,8 +1766,9 @@ export default function AdminCoursesPage() {
   const closedCourses = config.courses.filter(c => !c.published);
   const [allSchedules, setAllSchedules] = useState<Schedule[]>([]);
   const [allEnrollments, setAllEnrollments] = useState<Enrollment[]>([]);
-  const [enrollCountMap, setEnrollCountMap] = useState<Record<string, number>>({});
   const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const registrationCountFor = (course: Course) =>
+    registrations.filter(r => r.course.includes(course.title.slice(0, 6))).length;
   const [regLoading, setRegLoading] = useState(false);
   const [regDetail, setRegDetail] = useState<Registration | null>(null);
   const [toast, setToast] = useState("");
@@ -1810,11 +1811,6 @@ export default function AdminCoursesPage() {
   useEffect(() => {
     getCoursesConfig().then(setConfig);
     fetchEnrollments().then(enrolls => {
-      const map: Record<string, number> = {};
-      for (const e of enrolls) {
-        map[e.courseId] = (map[e.courseId] ?? 0) + 1;
-      }
-      setEnrollCountMap(map);
       setAllEnrollments(enrolls);
     });
     // Load registrations from Apps Script sheet
@@ -2212,7 +2208,7 @@ export default function AdminCoursesPage() {
               openEditView={openEditView}
               deleteCourse={deleteCourse}
               openEnrollmentView={openEnrollmentView}
-              enrollCount={enrollCountMap[String(course.id)] ?? 0}
+              enrollCount={registrationCountFor(course)}
             />
           ))}
 
@@ -2246,7 +2242,7 @@ export default function AdminCoursesPage() {
               openEditView={openEditView}
               deleteCourse={deleteCourse}
               openEnrollmentView={openEnrollmentView}
-              enrollCount={enrollCountMap[String(course.id)] ?? 0}
+              enrollCount={registrationCountFor(course)}
             />
           ))}
 
