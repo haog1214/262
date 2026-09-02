@@ -95,7 +95,7 @@ function FloatingButtons() {
     >
       {/* 會員選課 — mobile only, vertical text */}
       <a
-        href="https://claude.ai/code/artifact/c9ea5aae-00c0-4212-b1a2-540d866a775f"
+        href="/member.html"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="會員選課"
