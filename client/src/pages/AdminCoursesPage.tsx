@@ -16,6 +16,12 @@ import {
   X,
   Save,
   CalendarDays,
+  LayoutDashboard,
+  Clock3,
+  CheckSquare,
+  Users,
+  Scale,
+  Search,
 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -84,6 +90,20 @@ const line = "#E7E8DD";
 const danger = "#CF4F39";
 const mono = "'SF Mono', ui-monospace, Menlo, Consolas, monospace";
 const bodyFont = "'Manrope', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif";
+
+// Non-course-management sections live in course-info-262x.html (Supabase→Sheets
+// hours system). Rather than reimplement ~4000 lines of QR/check-in/hours logic
+// natively, those sidebar items embed that page (?embed=1 hides its own chrome,
+// #<hash> deep-links straight to the matching view).
+const CI_HASH: Record<string, string> = {
+  "ci-dashboard": "dashboard",
+  "ci-sessions": "courses",
+  "ci-import": "import",
+  "ci-checkins": "checkins",
+  "ci-students": "students",
+  "ci-adjust": "adjust",
+  "ci-selfquery": "student-query",
+};
 
 // ── Styles ───────────────────────────────────────────────────────────────────
 const s = {
@@ -1763,7 +1783,8 @@ export default function AdminCoursesPage() {
   const [editingId, setEditingId] = useState<number | "new" | null>(null);
   const [enrollCourseId, setEnrollCourseId] = useState<number | null>(null);
   const [previewCourseId, setPreviewCourseId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"courses" | "closed">(() => {
+  type SidebarView = "courses" | "closed" | "ci-dashboard" | "ci-sessions" | "ci-import" | "ci-checkins" | "ci-students" | "ci-adjust" | "ci-selfquery";
+  const [activeTab, setActiveTab] = useState<SidebarView>(() => {
     const tab = new URLSearchParams(window.location.search).get("tab");
     return tab === "closed" ? "closed" : "courses";
   });
@@ -2123,38 +2144,53 @@ export default function AdminCoursesPage() {
         </div>
       </div>
 
-      <div style={s.main}>
-        {/* Tabs */}
-        <div style={{ display: "flex", gap: "0", marginBottom: "4px", borderBottom: `1px solid ${line}` }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: "28px", maxWidth: "1280px", margin: "0 auto", padding: "32px 16px" }}>
+        {/* Sidebar — same grouping/labels as course-info-262x.html's own nav */}
+        <aside style={{ width: "200px", flexShrink: 0, position: "sticky", top: "20px" }}>
           {([
-            { key: "courses" as const, label: "課程管理", Icon: BookOpen },
-            { key: "closed" as const, label: "已關閉課程", Icon: Archive },
-          ]).map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "10px 20px",
-                border: "none",
-                borderBottom: activeTab === tab.key ? `2px solid ${accent}` : "2px solid transparent",
-                marginBottom: "-1px",
-                background: "transparent",
-                color: activeTab === tab.key ? accent : inkSoft,
-                fontWeight: 600,
-                fontSize: "13px",
-                letterSpacing: "0.03em",
-                cursor: "pointer",
-              }}
-            >
-              <tab.Icon size={15} strokeWidth={1.5} />
-              {tab.label}
-            </button>
+            { label: "總覽", items: [{ key: "ci-dashboard" as const, label: "儀表板", Icon: LayoutDashboard }] },
+            { label: "課程專區", items: [
+              { key: "courses" as const, label: "課程管理", Icon: BookOpen },
+              { key: "closed" as const, label: "已關閉課程", Icon: Archive },
+            ] },
+            { label: "日常作業", items: [
+              { key: "ci-sessions" as const, label: "課程場次", Icon: Clock3 },
+              { key: "ci-import" as const, label: "匯入名單", Icon: Upload },
+              { key: "ci-checkins" as const, label: "報到紀錄", Icon: CheckSquare },
+            ] },
+            { label: "學生與時數", items: [
+              { key: "ci-students" as const, label: "學生管理", Icon: Users },
+              { key: "ci-adjust" as const, label: "時數調整", Icon: Scale },
+            ] },
+            { label: "學生自助", items: [{ key: "ci-selfquery" as const, label: "查詢我的時數", Icon: Search }] },
+          ]).map(group => (
+            <div key={group.label} style={{ marginBottom: "18px" }}>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: inkSoft, letterSpacing: "0.05em", padding: "0 10px 6px" }}>
+                {group.label}
+              </div>
+              {group.items.map(item => (
+                <button
+                  key={item.key}
+                  onClick={() => setActiveTab(item.key)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: "10px", width: "100%",
+                    padding: "9px 10px", marginBottom: "2px", borderRadius: "10px",
+                    border: "none", cursor: "pointer", textAlign: "left",
+                    background: activeTab === item.key ? accent : "transparent",
+                    color: activeTab === item.key ? "#fff" : ink,
+                    fontWeight: activeTab === item.key ? 700 : 500,
+                    fontSize: "13px",
+                  }}
+                >
+                  <item.Icon size={15} strokeWidth={1.5} />
+                  {item.label}
+                </button>
+              ))}
+            </div>
           ))}
-        </div>
+        </aside>
 
+        <div style={{ flex: 1, minWidth: 0 }}>
         {activeTab === "courses" && (
         <>
         {/* Import panel */}
@@ -2255,10 +2291,21 @@ export default function AdminCoursesPage() {
         </div>
         )}
 
+        {CI_HASH[activeTab] && (
+          <div style={{ ...s.card, padding: 0, overflow: "hidden" }}>
+            <iframe
+              key={activeTab}
+              src={`/course-info-262x.html?embed=1#${CI_HASH[activeTab]}`}
+              title={activeTab}
+              style={{ width: "100%", height: "calc(100vh - 140px)", minHeight: "600px", border: "none", display: "block" }}
+            />
+          </div>
+        )}
 
         <p style={{ textAlign: "center", fontSize: "12px", color: "#D1D5DB", marginTop: "32px" }}>
           傳啓資訊後台管理系統 · 資料儲存於 Google Sheets
         </p>
+        </div>
       </div>
     </div>
   );

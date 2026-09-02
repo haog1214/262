@@ -1270,6 +1270,14 @@
   .login-row label{ display:flex; align-items:center; gap:7px; cursor:pointer; }
   .login-submit{ width:100%; justify-content:center; padding:13px; font-size:14px; }
   .login-hint{ font-size:11px; font-weight:500; color:var(--ink-400); margin-top:18px; line-height:1.6; text-align:center; }
+
+  /* Embedded inside another page's own shell/sidebar (?embed=1) — hide this
+     page's own chrome so only the view content shows. */
+  body.embed-mode .sidebar,
+  body.embed-mode .topbar,
+  body.embed-mode #login-screen{ display:none !important; }
+  body.embed-mode .view{ padding:20px 24px; }
+  body.embed-mode .app{ display:block; }
 </style>
 
 <div class="login-screen" id="login-screen">
@@ -1335,14 +1343,6 @@
       <div class="nav-group-label">總覽</div>
       <button class="navitem active" data-view="dashboard">
         <span class="ico">&#9673;</span> 儀表板
-      </button>
-
-      <div class="nav-group-label">課程上架</div>
-      <button class="navitem" data-view="course-manage">
-        <span class="ico">&#9776;</span> 課程管理
-      </button>
-      <button class="navitem" data-view="course-closed">
-        <span class="ico">&#8865;</span> 已關閉課程
       </button>
 
       <div class="nav-group-label">日常作業</div>
@@ -2616,16 +2616,6 @@
         </div>
       </div>
     </section>
-
-    <section class="view" id="view-course-manage">
-      <div class="topline"><div><p class="eyebrow">課程上架</p><h1>課程管理</h1></div></div>
-      <iframe src="/manage-courses-262x?tab=courses" title="課程管理" style="width:100%; height:calc(100vh - 160px); min-height:600px; border:none; display:block; border-radius:var(--r-lg); background:#fff;"></iframe>
-    </section>
-
-    <section class="view" id="view-course-closed">
-      <div class="topline"><div><p class="eyebrow">課程上架</p><h1>已關閉課程</h1></div></div>
-      <iframe src="/manage-courses-262x?tab=closed" title="已關閉課程" style="width:100%; height:calc(100vh - 160px); min-height:600px; border:none; display:block; border-radius:var(--r-lg); background:#fff;"></iframe>
-    </section>
   </main>
 </div>
 
@@ -2942,13 +2932,25 @@
   function showView(key){
     navItems.forEach(n => n.classList.toggle('active', n.dataset.view === key));
     views.forEach(v => v.classList.toggle('active', v.id === 'view-' + key));
+    if (key === 'students' || key === 'adjust') initLiveStudents();
   }
 
+  // Embedded inside another page's own shell (?embed=1) — hide our chrome and
+  // skip the decorative login screen; the parent page already gates access.
+  // #<key> in the URL picks which view shows first (defaults to dashboard).
+  (function initEmbedAndDeepLink(){
+    const params = new URLSearchParams(location.search);
+    if (params.get('embed') === '1') {
+      document.body.classList.add('embed-mode');
+      document.getElementById('login-screen').style.display = 'none';
+    }
+    const key = location.hash.replace('#', '');
+    const validKeys = Array.from(navItems).map(n => n.dataset.view);
+    if (key && validKeys.includes(key)) showView(key);
+  })();
+
   navItems.forEach(item => {
-    item.addEventListener('click', () => {
-      showView(item.dataset.view);
-      if (item.dataset.view === 'students' || item.dataset.view === 'adjust') initLiveStudents();
-    });
+    item.addEventListener('click', () => showView(item.dataset.view));
   });
 
   document.querySelectorAll('[data-goto]').forEach(el => {
