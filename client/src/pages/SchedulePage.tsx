@@ -6,6 +6,7 @@ import { Clock, MapPin, ArrowRight } from "lucide-react";
 import SEO from "@/components/SEO";
 import { getCoursesConfig } from "@/lib/coursesStorage";
 import { fetchSchedules, fetchEnrollments } from "@/lib/enrollmentsStorage";
+import { formatPrice } from "@/lib/utils";
 
 interface ScheduleItem {
   id: string;
@@ -112,8 +113,8 @@ export default function SchedulePage() {
         </div>
         <div className="flex md:flex-col items-center md:items-end justify-between px-5 py-4 gap-3 md:gap-2 flex-shrink-0 border-t md:border-t-0 md:border-l border-gray-100">
           <div className="text-right">
-            <p className="text-xs text-gray-300 line-through">{s.originalPrice}</p>
-            <p className="text-base font-black" style={{ color: "#1B3A6B" }}>{s.discountPrice}</p>
+            <p className="text-xs text-gray-300 line-through">{formatPrice(s.originalPrice)}</p>
+            <p className="text-base font-black" style={{ color: "#1B3A6B" }}>{formatPrice(s.discountPrice)}</p>
           </div>
           {s.isFull ? (
             <span className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap" style={{ background: "#e5e7eb", color: "#9ca3af" }}>已額滿</span>

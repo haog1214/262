@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
 import { getCoursesConfig } from "@/lib/coursesStorage";
+import { extractPriceDigits } from "@/lib/utils";
 import { fetchSchedules, type Schedule } from "@/lib/enrollmentsStorage";
 import type { Course } from "@/data/defaultCourses";
 
@@ -134,7 +135,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                   <div className="flex-shrink-0" style={{ marginLeft: schedules.length > 0 ? "40px" : 0 }}>
                     {course.discountPrice && (
                       <>
-                        <p className="text-3xl font-bold text-gray-900"><span style={{ fontSize: "18px" }}>NT：</span>{course.discountPrice.replace(/\s+/g, "")}</p>
+                        <p className="text-3xl font-bold text-gray-900"><span style={{ fontSize: "18px" }}>NT：</span>{extractPriceDigits(course.discountPrice)}</p>
                         {course.originalPrice && (
                           <p className="text-gray-400 line-through text-sm mb-3">{course.originalPrice}</p>
                         )}

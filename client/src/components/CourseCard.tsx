@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "wouter";
+import { formatPrice } from "@/lib/utils";
 
 /**
  * Course Card Component - 262學院
@@ -13,12 +14,6 @@ interface CourseSchedule {
   status?: string;
 }
 
-function formatPrice(raw: string): string {
-  if (!raw) return raw;
-  const digits = raw.replace(/[^\d]/g, "");
-  if (!digits) return raw;
-  return `NT$ ${Number(digits).toLocaleString()}`;
-}
 
 interface CourseCardProps {
   courseCode?: string;
