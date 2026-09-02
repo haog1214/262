@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Calendar } from "lucide-react";
 import { Link } from "wouter";
 import { formatPrice } from "@/lib/utils";
 
@@ -99,7 +99,8 @@ export default function CourseCard({
         <p className="text-[16px] font-light mb-2 text-gray-600 line-clamp-2">{tools}</p>
 
         {/* 最近上課日期 */}
-        <p className="text-[16px] font-light mb-3 flex-grow" style={{ marginTop: "15px", color: "#91270F" }}>
+        <p className="text-[16px] font-light mb-3 flex-grow flex items-center gap-1.5" style={{ marginTop: "15px", color: "#91270F" }}>
+          {nextSchedule && <Calendar className="w-4 h-4 flex-shrink-0" strokeWidth={1.5} />}
           {nextSchedule
             ? `${nextSchedule.date.replace(/-/g, ".")}${nextSchedule.time ? `    ${nextSchedule.time}` : ""}`
             : description}
