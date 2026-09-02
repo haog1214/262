@@ -290,6 +290,47 @@ export const raw = {
   createAdjustment: createAdjustmentRaw,
 };
 
+// Bridges a public website course booking into the front-desk hours system:
+// creates the matching session if the admin hasn't synced it yet, creates the
+// student account if this is their first booking (remaining hours = one
+// session's worth, since a public booking is "pay for this one class"), and
+// registers them for that session — so front-desk check-in recognizes them.
+export async function ensureEnrollmentInHours(params: {
+  phone: string;
+  name: string;
+  sessionId: string;
+  sessionIfMissing: Omit<HoursSession, "id" | "created_at">;
+}): Promise<void> {
+  if (!params.phone) return;
+  return withHoursLock(async () => {
+    const sessions = await readSessions();
+    if (!sessions.some(s => s.id === params.sessionId)) {
+      sessions.push({ ...params.sessionIfMissing, id: params.sessionId, created_at: nowIso() });
+      await writeSessions(sessions);
+    }
+
+    const students = await readStudents();
+    let student = students.find(s => s.phone === params.phone);
+    if (!student) {
+      student = {
+        id: newId(), name: params.name, phone: params.phone, email: "",
+        remaining_hours: params.sessionIfMissing.hours_per_checkin,
+        purchased_hours: params.sessionIfMissing.hours_per_checkin,
+        attended_count: 0, is_active: true, note: "網站報名自動建立",
+        joined_at: new Date().toISOString().slice(0, 10), created_at: nowIso(),
+      };
+      students.push(student);
+      await writeStudents(students);
+    }
+
+    const regs = await readRegistrations();
+    if (!regs.some(r => r.student_id === student!.id && r.session_id === params.sessionId)) {
+      regs.push({ id: newId(), student_id: student.id, session_id: params.sessionId, seats_total: 1, seats_checked_in: 0, created_at: nowIso() });
+      await writeRegistrations(regs);
+    }
+  });
+}
+
 // ── Seed (one-time migration from Supabase export) ────────────────────────────
 export async function seedAll(data: {
   students?: HoursStudent[];

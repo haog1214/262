@@ -12,18 +12,46 @@ import {
   readEnrollmentsFromSheet,
   writeEnrollmentsToSheet,
   readRegistrationsFromSheet,
+  type Course,
+  type Schedule,
+  type Enrollment,
 } from "./sheets.js";
 import { sendEnrollmentNotification } from "./email.js";
 import { isBot, getBotHtml } from "./botRenderer.js";
 import { uploadImageToDrive, driveIsConfigured } from "./drive.js";
 import * as hours from "./hoursSheets.js";
-import type { HoursStudent } from "./hoursSheets.js";
+import { ensureEnrollmentInHours, type HoursStudent, type HoursSession } from "./hoursSheets.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const ADMIN_PASSWORD = "84204302";
 const UPLOADS_DIR = path.resolve(__dirname, "..", "uploads");
+
+// Shared by the manual "sync all courses -> sessions" endpoint and the
+// enrollment->hours bridge, so a session built from the same course+schedule
+// always gets the same id/shape whichever path created it first.
+function deriveSessionFromSchedule(course: Course, sch: Schedule): HoursSession {
+  const [start, end] = sch.time.split("-").map(t => t.trim());
+  const startTime = /^\d{2}:\d{2}$/.test(start || "") ? `${start}:00` : (start || "00:00:00");
+  const endTime = /^\d{2}:\d{2}$/.test(end || "") ? `${end}:00` : (end || "00:00:00");
+  const [sh, sm] = startTime.split(":").map(Number);
+  const [eh, em] = endTime.split(":").map(Number);
+  const durationHours = Math.max(0.5, Math.round(((eh * 60 + em) - (sh * 60 + sm)) / 30) / 2);
+  return {
+    id: `course-${sch.courseId}-${sch.id}`,
+    name: course.title,
+    session_date: sch.date,
+    start_time: startTime,
+    end_time: endTime,
+    teacher: "",
+    room: course.location ?? "",
+    hours_per_checkin: durationHours,
+    capacity: Number(sch.maxCapacity) || 20,
+    is_open: sch.status !== "full",
+    created_at: new Date().toISOString(),
+  };
+}
 
 async function startServer() {
   const app = express();
@@ -134,7 +162,29 @@ async function startServer() {
       return res.status(401).json({ error: "Unauthorized" });
     }
     try {
-      await writeEnrollmentsToSheet(req.body);
+      const enrollments = req.body as Enrollment[];
+      await writeEnrollmentsToSheet(enrollments);
+
+      // Bridge into the front-desk hours system so check-in recognizes website
+      // bookings too — best-effort, never blocks the enrollment write itself.
+      try {
+        const [coursesConfig, schedules] = await Promise.all([readCoursesFromSheet(), readSchedulesFromSheet()]);
+        const coursesById = new Map(coursesConfig.courses.map(c => [String(c.id), c]));
+        const schedulesById = new Map(schedules.map(s => [s.id, s]));
+        for (const e of enrollments) {
+          const course = coursesById.get(e.courseId);
+          const sch = schedulesById.get(e.scheduleId);
+          if (!course || !sch || !e.phone) continue;
+          const built = deriveSessionFromSchedule(course, sch);
+          await ensureEnrollmentInHours({
+            phone: e.phone, name: e.name, sessionId: built.id,
+            sessionIfMissing: built,
+          });
+        }
+      } catch (err) {
+        console.error("Enrollment -> hours bridge failed (non-fatal):", err);
+      }
+
       res.json({ ok: true });
     } catch (err) {
       console.error("POST /api/enrollments error:", err);
@@ -451,41 +501,21 @@ async function startServer() {
 
   // Replace 課程場次 (hours_sessions) with rows derived from the real, admin-confirmed
   // course catalog (courses + schedules tabs) — discards whatever was there before
-  // (e.g. leftover template demo sessions), along with checkins/registrations that
-  // pointed at those discarded session ids.
+  // (e.g. leftover template demo sessions). Session ids are deterministic
+  // (course-<courseId>-<scheduleId>), the same scheme the enrollment->hours bridge
+  // uses, so this only touches the sessions table — existing checkins/registrations
+  // (real front-desk activity, or from website bookings) are left alone.
   app.post("/api/hours/sessions/sync-from-courses", async (req, res) => {
     if (!requireHoursAdmin(req, res)) return;
     try {
       const [coursesConfig, schedules] = await Promise.all([readCoursesFromSheet(), readSchedulesFromSheet()]);
       const coursesById = new Map(coursesConfig.courses.map(c => [String(c.id), c]));
 
-      const now = new Date().toISOString();
       const sessions = schedules
         .filter(sch => coursesById.get(sch.courseId)?.published === true)
-        .map(sch => {
-          const course = coursesById.get(sch.courseId)!;
-          const [start, end] = sch.time.split("-").map(t => t.trim());
-          const startTime = /^\d{2}:\d{2}$/.test(start || "") ? `${start}:00` : (start || "00:00:00");
-          const endTime = /^\d{2}:\d{2}$/.test(end || "") ? `${end}:00` : (end || "00:00:00");
-          const [sh, sm] = startTime.split(":").map(Number);
-          const [eh, em] = endTime.split(":").map(Number);
-          const durationHours = Math.max(0.5, Math.round(((eh * 60 + em) - (sh * 60 + sm)) / 30) / 2);
-          return {
-            id: `course-${sch.courseId}-${sch.id}`,
-            name: course.title,
-            session_date: sch.date,
-            start_time: startTime,
-            end_time: endTime,
-            teacher: "",
-            room: course.location ?? "",
-            hours_per_checkin: durationHours,
-            capacity: Number(sch.maxCapacity) || 20,
-            is_open: sch.status !== "full",
-            created_at: now,
-          };
-        });
+        .map(sch => deriveSessionFromSchedule(coursesById.get(sch.courseId)!, sch));
 
-      await hours.seedAll({ sessions, checkins: [], registrations: [] });
+      await hours.withHoursLock(() => hours.writeSessions(sessions));
       res.json({ ok: true, count: sessions.length });
     } catch (err) {
       res.status(500).json({ error: "Sync failed", detail: String(err) });
