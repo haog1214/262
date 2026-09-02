@@ -79,8 +79,9 @@ async function startServer() {
           const url = await uploadImageToDrive(req.body, safeName, ext);
           return res.json({ url });
         } catch (err) {
+          const detail = err instanceof Error ? err.message : String(err);
           console.error("Drive upload failed:", err);
-          return res.status(500).json({ error: "Failed to upload image to Drive" });
+          return res.status(500).json({ error: `Failed to upload image to Drive: ${detail}` });
         }
       }
       fs.writeFileSync(path.join(UPLOADS_DIR, safeName), req.body);
