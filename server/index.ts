@@ -203,6 +203,26 @@ async function startServer() {
     }
   });
 
+  // Admin — arbitrary fields (used by roster import), unlike the public self-register above.
+  app.post("/api/hours/students", async (req, res) => {
+    if (!requireHoursAdmin(req, res)) return;
+    try {
+      const body = req.body as Partial<HoursStudent> & { name: string; phone: string };
+      const created = await hours.createStudent({
+        name: body.name, phone: body.phone, email: body.email ?? "",
+        remaining_hours: Number(body.remaining_hours ?? 0),
+        purchased_hours: Number(body.purchased_hours ?? 0),
+        attended_count: Number(body.attended_count ?? 0),
+        is_active: body.is_active ?? true,
+        note: body.note ?? "",
+        joined_at: body.joined_at ?? new Date().toISOString().slice(0, 10),
+      });
+      res.json(created);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to create student", detail: String(err) });
+    }
+  });
+
   // Public, unauthenticated self-service — matches the old Supabase setup where the
   // member portal wrote directly with an anon key. Defaults are forced server-side
   // so a self-registration can't hand itself free hours.

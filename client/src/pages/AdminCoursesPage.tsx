@@ -51,6 +51,11 @@ import {
 } from "@/data/defaultCourses";
 import CourseCard from "@/components/CourseCard";
 import { formatPrice } from "@/lib/utils";
+import { ink, inkSoft, accent, paper, line, danger, mono, bodyFont } from "@/lib/adminTheme";
+import {
+  DashboardView, SessionsView, ImportRosterView, CheckinsView,
+  StudentsView, AdjustView, SelfQueryView,
+} from "./admin/HoursViews";
 
 const genId = () =>
   Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
@@ -78,32 +83,6 @@ function emptyCourseDraft(): Omit<Course, "id"> {
     published: true,
   };
 }
-
-// ── Design tokens — 日式簡約科技感（與課程上架頁一致）───────────────────────
-// Palette matches 課程資訊後台 (course-info-262x.html)'s :root tokens — ink-950,
-// ink-600, clay-600, page-bg, line — so the two admin surfaces read as one system.
-const ink = "#14150F";
-const inkSoft = "#71735F";
-const accent = "#FF5B22";
-const paper = "#EAECE4";
-const line = "#E7E8DD";
-const danger = "#CF4F39";
-const mono = "'SF Mono', ui-monospace, Menlo, Consolas, monospace";
-const bodyFont = "'Manrope', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif";
-
-// Non-course-management sections live in course-info-262x.html (Supabase→Sheets
-// hours system). Rather than reimplement ~4000 lines of QR/check-in/hours logic
-// natively, those sidebar items embed that page (?embed=1 hides its own chrome,
-// #<hash> deep-links straight to the matching view).
-const CI_HASH: Record<string, string> = {
-  "ci-dashboard": "dashboard",
-  "ci-sessions": "courses",
-  "ci-import": "import",
-  "ci-checkins": "checkins",
-  "ci-students": "students",
-  "ci-adjust": "adjust",
-  "ci-selfquery": "student-query",
-};
 
 // ── Styles ───────────────────────────────────────────────────────────────────
 const s = {
@@ -2291,16 +2270,13 @@ export default function AdminCoursesPage() {
         </div>
         )}
 
-        {CI_HASH[activeTab] && (
-          <div style={{ ...s.card, padding: 0, overflow: "hidden" }}>
-            <iframe
-              key={activeTab}
-              src={`/course-info-262x.html?embed=1#${CI_HASH[activeTab]}`}
-              title={activeTab}
-              style={{ width: "100%", height: "calc(100vh - 140px)", minHeight: "600px", border: "none", display: "block" }}
-            />
-          </div>
-        )}
+        {activeTab === "ci-dashboard" && <DashboardView />}
+        {activeTab === "ci-sessions" && <SessionsView />}
+        {activeTab === "ci-import" && <ImportRosterView />}
+        {activeTab === "ci-checkins" && <CheckinsView />}
+        {activeTab === "ci-students" && <StudentsView />}
+        {activeTab === "ci-adjust" && <AdjustView />}
+        {activeTab === "ci-selfquery" && <SelfQueryView />}
 
         <p style={{ textAlign: "center", fontSize: "12px", color: "#D1D5DB", marginTop: "32px" }}>
           傳啓資訊後台管理系統 · 資料儲存於 Google Sheets
