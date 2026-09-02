@@ -45,6 +45,7 @@ import {
   type CoursesConfig,
 } from "@/data/defaultCourses";
 import CourseCard from "@/components/CourseCard";
+import { formatPrice } from "@/lib/utils";
 
 const genId = () =>
   Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
@@ -1672,7 +1673,7 @@ function CourseRow({
           {course.title || "（無標題）"}
         </div>
         <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "2px", display: "flex", alignItems: "center", gap: "8px" }}>
-          <span>{course.discountPrice}</span>
+          <span>{formatPrice(course.discountPrice)}</span>
           <span style={{
             backgroundColor: "#EFF6FF",
             color: "#1D4ED8",
