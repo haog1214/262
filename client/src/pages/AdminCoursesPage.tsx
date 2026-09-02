@@ -611,14 +611,26 @@ function CourseForm({
             e.target.value = "";
           }}
         />
-        <div style={{ width: "72px", height: "72px", border: `1px solid ${line}`, overflow: "hidden", background: paper, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          {draft.backgroundImage ? (
-            <img
-              src={draft.backgroundImage}
-              alt="預覽"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              onError={e => ((e.target as HTMLImageElement).style.display = "none")}
-            />
+        <div style={{ position: "relative", width: "72px", height: "72px", border: `1px solid ${line}`, overflow: "hidden", background: paper, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {uploadingImage ? (
+            <span style={{ fontSize: "12px", color: line }}>上傳中</span>
+          ) : draft.backgroundImage ? (
+            <>
+              <img
+                src={draft.backgroundImage}
+                alt="預覽"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                onError={e => ((e.target as HTMLImageElement).style.display = "none")}
+              />
+              <button
+                type="button"
+                onClick={() => set("backgroundImage", "")}
+                title="移除圖片"
+                style={{ position: "absolute", top: "2px", right: "2px", width: "18px", height: "18px", borderRadius: "9999px", background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer", padding: 0 }}
+              >
+                <X size={12} strokeWidth={2} color="#fff" />
+              </button>
+            </>
           ) : (
             <ImageIcon size={22} strokeWidth={1.3} color={line} />
           )}
