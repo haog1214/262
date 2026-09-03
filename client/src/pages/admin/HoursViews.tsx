@@ -686,13 +686,13 @@ function StudentDetailModal({
 
   const statBoxStyle: React.CSSProperties = {
     flex: 1, textAlign: "center", background: "#F7F8F2",
-    border: `1px solid ${line}`, borderRadius: "16px", padding: "18px 10px",
+    border: `1px solid ${line}`, borderRadius: "12px", padding: "13px 8px",
   };
   const bigActionBtnStyle: React.CSSProperties = {
     display: "block", width: "100%", textAlign: "center",
-    fontSize: "18px", fontWeight: 700, padding: "16px", borderRadius: "14px",
+    fontSize: "14px", fontWeight: 700, padding: "12px", borderRadius: "11px",
     border: `2px solid ${line}`, background: "#fff", color: ink, cursor: "pointer",
-    marginTop: "12px",
+    marginTop: "9px",
   };
 
   return (
@@ -707,78 +707,78 @@ function StudentDetailModal({
     >
       <div style={{
         backgroundColor: "#fff",
-        borderRadius: "24px",
+        borderRadius: "18px",
         width: "100%",
-        maxWidth: "600px",
+        maxWidth: "450px",
         maxHeight: "90vh",
         overflowY: "auto",
         boxShadow: "0 12px 56px rgba(0,0,0,0.24)",
-        padding: "36px",
+        padding: "27px",
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           {editingName ? (
             <div style={{ flex: 1 }}>
-              <input style={{ ...a.input, fontSize: "20px", padding: "12px 16px" }} value={nameDraft} onChange={e => setNameDraft(e.target.value)} />
-              <div style={{ display: "flex", gap: "10px" }}>
-                <button style={{ ...a.btnPrimary, fontSize: "16px", padding: "12px 22px" }} onClick={saveName}>儲存</button>
-                <button style={{ ...a.btnGhost, fontSize: "16px", padding: "12px 22px" }} onClick={() => setEditingName(false)}>取消</button>
+              <input style={{ ...a.input, fontSize: "15px", padding: "9px 12px" }} value={nameDraft} onChange={e => setNameDraft(e.target.value)} />
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button style={{ ...a.btnPrimary, fontSize: "12px", padding: "9px 16px" }} onClick={saveName}>儲存</button>
+                <button style={{ ...a.btnGhost, fontSize: "12px", padding: "9px 16px" }} onClick={() => setEditingName(false)}>取消</button>
               </div>
             </div>
           ) : (
             <div>
-              <div style={{ fontWeight: 800, fontSize: "26px", color: ink, lineHeight: 1.3 }}>{student.name}</div>
-              <div style={{ fontSize: "17px", color: inkSoft, marginTop: "4px" }}>統編 {student.phone}</div>
+              <div style={{ fontWeight: 800, fontSize: "20px", color: ink, lineHeight: 1.3 }}>{student.name}</div>
+              <div style={{ fontSize: "13px", color: inkSoft, marginTop: "3px" }}>統編 {student.phone}</div>
             </div>
           )}
-          <div style={{ display: "flex", gap: "10px", flexShrink: 0, marginLeft: "12px" }}>
+          <div style={{ display: "flex", gap: "8px", flexShrink: 0, marginLeft: "10px" }}>
             {!editingName && (
               <button
-                style={{ ...a.btnGhost, fontSize: "16px", padding: "10px 20px" }}
+                style={{ ...a.btnGhost, fontSize: "12px", padding: "8px 15px" }}
                 onClick={() => { setNameDraft(student.name); setEditingName(true); }}
               >編輯</button>
             )}
             <button
-              style={{ ...iconBtnStyle, width: "44px", height: "44px", borderRadius: "50%" }}
+              style={{ ...iconBtnStyle, width: "33px", height: "33px", borderRadius: "50%" }}
               onClick={onClose} title="關閉"
             >
-              <X size={20} strokeWidth={2} />
+              <X size={15} strokeWidth={2} />
             </button>
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "12px", marginTop: "26px" }}>
+        <div style={{ display: "flex", gap: "9px", marginTop: "20px" }}>
           <div style={statBoxStyle}>
-            <div style={{ fontSize: "15px", color: inkSoft, fontWeight: 600, marginBottom: "6px" }}>剩餘時數</div>
-            <div style={{ fontSize: "34px", fontWeight: 800, color: accent, lineHeight: 1 }}>
+            <div style={{ fontSize: "11px", color: inkSoft, fontWeight: 600, marginBottom: "5px" }}>剩餘時數</div>
+            <div style={{ fontSize: "25px", fontWeight: 800, color: accent, lineHeight: 1 }}>
               {student.tier === "senior" ? "無限" : fmtHours(student.remaining_hours)}
-              {student.tier !== "senior" && <span style={{ fontSize: "16px", fontWeight: 700, marginLeft: "3px" }}>hr</span>}
+              {student.tier !== "senior" && <span style={{ fontSize: "12px", fontWeight: 700, marginLeft: "2px" }}>hr</span>}
             </div>
           </div>
           <div style={statBoxStyle}>
-            <div style={{ fontSize: "15px", color: inkSoft, fontWeight: 600, marginBottom: "6px" }}>累計購買</div>
-            <div style={{ fontSize: "34px", fontWeight: 800, color: ink, lineHeight: 1 }}>
-              {fmtHours(student.purchased_hours)}<span style={{ fontSize: "16px", fontWeight: 700, marginLeft: "3px" }}>hr</span>
+            <div style={{ fontSize: "11px", color: inkSoft, fontWeight: 600, marginBottom: "5px" }}>累計購買</div>
+            <div style={{ fontSize: "25px", fontWeight: 800, color: ink, lineHeight: 1 }}>
+              {fmtHours(student.purchased_hours)}<span style={{ fontSize: "12px", fontWeight: 700, marginLeft: "2px" }}>hr</span>
             </div>
           </div>
           <div style={statBoxStyle}>
-            <div style={{ fontSize: "15px", color: inkSoft, fontWeight: 600, marginBottom: "6px" }}>上課次數</div>
-            <div style={{ fontSize: "34px", fontWeight: 800, color: ink, lineHeight: 1 }}>
-              {student.attended_count}<span style={{ fontSize: "16px", fontWeight: 700, marginLeft: "3px" }}>次</span>
+            <div style={{ fontSize: "11px", color: inkSoft, fontWeight: 600, marginBottom: "5px" }}>上課次數</div>
+            <div style={{ fontSize: "25px", fontWeight: 800, color: ink, lineHeight: 1 }}>
+              {student.attended_count}<span style={{ fontSize: "12px", fontWeight: 700, marginLeft: "2px" }}>次</span>
             </div>
           </div>
         </div>
 
         <div style={{
-          marginTop: "20px", display: "flex", alignItems: "center", justifyContent: "space-between",
+          marginTop: "15px", display: "flex", alignItems: "center", justifyContent: "space-between",
           background: student.tier === "senior" ? "#FFF3EC" : "#F7F8F2",
           border: `1px solid ${student.tier === "senior" ? accent : line}`,
-          borderRadius: "14px", padding: "16px 20px",
+          borderRadius: "11px", padding: "12px 15px",
         }}>
-          <span style={{ fontSize: "17px", fontWeight: 700, color: ink }}>會員等級</span>
+          <span style={{ fontSize: "13px", fontWeight: 700, color: ink }}>會員等級</span>
           <span style={{
-            fontSize: "17px", fontWeight: 800, color: "#fff",
+            fontSize: "13px", fontWeight: 800, color: "#fff",
             background: student.tier === "senior" ? accent : inkSoft,
-            padding: "6px 16px", borderRadius: "999px",
+            padding: "5px 12px", borderRadius: "999px",
           }}>
             {student.tier === "senior" ? "資深學員・不扣時數" : "一般學員・扣時數"}
           </span>
@@ -790,46 +790,47 @@ function StudentDetailModal({
         >
           {student.tier === "senior" ? "改回一般學員" : "設為資深學員"}
         </button>
-        <button
-          style={{ ...bigActionBtnStyle, color: student.is_active ? danger : good, borderColor: student.is_active ? danger : good }}
-          onClick={toggleActive}
-        >
-          {student.is_active ? "停用此帳號" : "啟用此帳號"}
-        </button>
 
-        <div style={{ marginTop: "30px", fontSize: "18px", fontWeight: 800, color: ink }}>上課紀錄</div>
-        <div style={{ marginTop: "8px" }}>
+        <div style={{ marginTop: "22px", fontSize: "14px", fontWeight: 800, color: ink }}>上課紀錄</div>
+        <div style={{ marginTop: "6px" }}>
           {checkins.map((c, i) => (
             <div key={c.id} style={{
-              display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px",
-              fontSize: "16px", color: ink, padding: "14px 12px",
-              background: i % 2 === 0 ? "#F7F8F2" : "transparent", borderRadius: "10px",
+              display: "flex", justifyContent: "space-between", alignItems: "center", gap: "9px",
+              fontSize: "12px", color: ink, padding: "10px 9px",
+              background: i % 2 === 0 ? "#F7F8F2" : "transparent", borderRadius: "8px",
             }}>
               <span style={{ fontWeight: 600 }}>{c.session_name || "課程"}</span>
               <span style={{ flexShrink: 0, color: danger, fontWeight: 700 }}>-{fmtHours(c.hours_deducted)} hr</span>
-              <span style={{ flexShrink: 0, color: inkSoft, fontSize: "14px" }}>{fmtDateTime(c.checked_in_at)}</span>
+              <span style={{ flexShrink: 0, color: inkSoft, fontSize: "11px" }}>{fmtDateTime(c.checked_in_at)}</span>
             </div>
           ))}
-          {checkins.length === 0 && <div style={{ fontSize: "16px", color: inkSoft, padding: "14px 12px" }}>尚無紀錄</div>}
+          {checkins.length === 0 && <div style={{ fontSize: "12px", color: inkSoft, padding: "10px 9px" }}>尚無紀錄</div>}
         </div>
 
-        <div style={{ marginTop: "24px", fontSize: "18px", fontWeight: 800, color: ink }}>時數異動</div>
-        <div style={{ marginTop: "8px" }}>
+        <div style={{ marginTop: "18px", fontSize: "14px", fontWeight: 800, color: ink }}>時數異動</div>
+        <div style={{ marginTop: "6px" }}>
           {adjustments.map((x, i) => (
             <div key={x.id} style={{
-              display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px",
-              fontSize: "16px", color: ink, padding: "14px 12px",
-              background: i % 2 === 0 ? "#F7F8F2" : "transparent", borderRadius: "10px",
+              display: "flex", justifyContent: "space-between", alignItems: "center", gap: "9px",
+              fontSize: "12px", color: ink, padding: "10px 9px",
+              background: i % 2 === 0 ? "#F7F8F2" : "transparent", borderRadius: "8px",
             }}>
               <span style={{ fontWeight: 600 }}>{x.reason}</span>
               <span style={{ flexShrink: 0, color: Number(x.amount) >= 0 ? good : danger, fontWeight: 700 }}>
                 {Number(x.amount) >= 0 ? "+" : ""}{x.amount} hr
               </span>
-              <span style={{ flexShrink: 0, color: inkSoft, fontSize: "14px" }}>{fmtDateTime(x.created_at)}</span>
+              <span style={{ flexShrink: 0, color: inkSoft, fontSize: "11px" }}>{fmtDateTime(x.created_at)}</span>
             </div>
           ))}
-          {adjustments.length === 0 && <div style={{ fontSize: "16px", color: inkSoft, padding: "14px 12px" }}>尚無紀錄</div>}
+          {adjustments.length === 0 && <div style={{ fontSize: "12px", color: inkSoft, padding: "10px 9px" }}>尚無紀錄</div>}
         </div>
+
+        <button
+          style={{ ...bigActionBtnStyle, marginTop: "22px", color: student.is_active ? danger : good, borderColor: student.is_active ? danger : good }}
+          onClick={toggleActive}
+        >
+          {student.is_active ? "停用此帳號" : "啟用此帳號"}
+        </button>
       </div>
     </div>
   );
