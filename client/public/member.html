@@ -593,14 +593,26 @@
     font-size:12px;
   }
 
-  .enroll-confirm-list{ margin-top:18px; text-align:left; max-height:38vh; overflow-y:auto; }
+  .enroll-confirm-list{ margin-top:18px; text-align:left; max-height:44vh; overflow-y:auto; }
   .enroll-confirm-item{
-    display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
     padding:12px 0; border-top:1px solid var(--line);
   }
   .enroll-confirm-item:first-child{ border-top:none; }
+  .enroll-confirm-item-info{ display:flex; flex-direction:column; gap:2px; min-width:0; }
   .enroll-confirm-item .n{ font-size:14px; font-weight:800; }
-  .enroll-confirm-item .d{ font-size:12px; font-weight:600; color:var(--text-2); flex:none; white-space:nowrap; }
+  .enroll-confirm-item .d{ font-size:12px; font-weight:600; color:var(--text-2); white-space:nowrap; }
+  .qty-stepper{
+    flex:none; display:flex; align-items:center; gap:10px;
+    background:var(--card-2); border-radius:var(--r-pill); padding:4px;
+  }
+  .qty-btn{
+    width:26px; height:26px; border-radius:50%; border:none; background:var(--card);
+    color:var(--text-1); font-size:15px; font-weight:800; line-height:1; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .qty-btn:active{ background:var(--orange); color:#fff; }
+  .qty-val{ min-width:16px; text-align:center; font-size:14px; font-weight:800; font-variant-numeric:tabular-nums; }
   .enroll-confirm-actions{ display:flex; gap:10px; margin-top:20px; }
   .enroll-confirm-actions .btn{ flex:1; }
 
@@ -1134,7 +1146,7 @@
     listSessions: () => hoursApi('/sessions'),
     listCheckins: () => hoursApi('/checkins'),
     listAdjustments: () => hoursApi('/adjustments'),
-    selfEnroll: (studentId, sessionIds) => hoursApi('/registrations/self', { method: 'POST', body: JSON.stringify({ studentId, sessionIds }) }),
+    selfEnroll: (studentId, items) => hoursApi('/registrations/self', { method: 'POST', body: JSON.stringify({ studentId, items }) }),
     selfCancel: (studentId, sessionId) => hoursApi('/registrations/self/cancel', { method: 'POST', body: JSON.stringify({ studentId, sessionId }) }),
   };
 
@@ -1694,8 +1706,10 @@
 
   /* ================= RENDER: COURSES ================= */
   /* ---- Multi-select enroll: pick sessions on the courses screen, then
-     confirm-and-add them to the account's registration list. ---- */
-  let selectedSessionIds = new Set();
+     confirm-and-add them to the account's registration list. Each selected
+     session carries a seat count (people attending), adjustable in the
+     confirm sheet — defaults to 1 as soon as it's checked. ---- */
+  let selectedSessions = new Map(); // sessionId -> seats
   const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"/></svg>';
 
   function renderCourses(){
@@ -1715,7 +1729,7 @@
         <div class="date-group-head">${dateIso === todayIso() ? '<span class="date-today-badge">今天</span>' : ''}${fmtDateLabel(dateIso)}</div>
         ${groups[dateIso].map(s => {
           const registered = registeredIds.has(s.id);
-          const selected = selectedSessionIds.has(s.id);
+          const selected = selectedSessions.has(s.id);
           const selectable = s.is_open && !registered;
           const cls = registered ? 'registered' : (!s.is_open ? 'disabled' : (selected ? 'checked' : ''));
           const course = courseForSession(s.id);
@@ -1770,8 +1784,8 @@
     const box = e.target.closest('.course-select[data-session-id]');
     if (!box) return;
     const id = box.dataset.sessionId;
-    if (selectedSessionIds.has(id)) selectedSessionIds.delete(id);
-    else selectedSessionIds.add(id);
+    if (selectedSessions.has(id)) selectedSessions.delete(id);
+    else selectedSessions.set(id, 1);
     renderCourses();
   });
 
@@ -1786,25 +1800,38 @@
 
   function updateSelectCta(){
     const cta = document.getElementById('select-cta');
-    const n = selectedSessionIds.size;
+    const n = selectedSessions.size;
     document.getElementById('select-cta-count').textContent = n;
     cta.classList.toggle('show', n > 0);
   }
 
   const enrollConfirmOverlay = document.getElementById('enroll-confirm-overlay');
-  function openEnrollConfirm(){
+  function renderEnrollConfirm(){
     const sessionsById = new Map(upcomingSessions.map(s => [s.id, s]));
-    const items = [...selectedSessionIds].map(id => sessionsById.get(id)).filter(Boolean);
-    if (!items.length) return;
-    document.getElementById('enroll-confirm-list').innerHTML = items.map(s => `
+    const items = [...selectedSessions.entries()].map(([id, seats]) => {
+      const s = sessionsById.get(id);
+      return s ? { s, seats } : null;
+    }).filter(Boolean);
+    document.getElementById('enroll-confirm-list').innerHTML = items.map(({ s, seats }) => `
       <div class="enroll-confirm-item">
-        <span class="n">${s.name}</span>
-        <span class="d">${fmtDateLabel(s.session_date)}・${s.start_time.slice(0,5)}・${fmtHours(s.hours_per_checkin)} hr</span>
+        <div class="enroll-confirm-item-info">
+          <span class="n">${s.name}</span>
+          <span class="d">${fmtDateLabel(s.session_date)}・${s.start_time.slice(0,5)}・${fmtHours(s.hours_per_checkin)} hr/人</span>
+        </div>
+        <div class="qty-stepper">
+          <button type="button" class="qty-btn" data-qty-minus="${s.id}">−</button>
+          <span class="qty-val">${seats}</span>
+          <button type="button" class="qty-btn" data-qty-plus="${s.id}">+</button>
+        </div>
       </div>
     `).join('');
-    const totalHours = items.reduce((sum, s) => sum + (Number(s.hours_per_checkin) || 0), 0);
+    const totalHours = items.reduce((sum, { s, seats }) => sum + (Number(s.hours_per_checkin) || 0) * seats, 0);
     document.getElementById('enroll-confirm-hint').textContent =
       `送出後會立即從你的目前時數扣除，共需 ${fmtHours(totalHours)} hr（目前時數 ${me ? fmtHours(me.remaining_hours) : '—'} hr）`;
+    return items.length;
+  }
+  function openEnrollConfirm(){
+    if (!renderEnrollConfirm()) return;
     enrollConfirmOverlay.classList.add('open');
   }
   document.getElementById('select-cta').addEventListener('click', openEnrollConfirm);
@@ -1812,14 +1839,26 @@
   document.getElementById('enroll-confirm-cancel').addEventListener('click', () => enrollConfirmOverlay.classList.remove('open'));
   enrollConfirmOverlay.addEventListener('click', e => { if (e.target === enrollConfirmOverlay) enrollConfirmOverlay.classList.remove('open'); });
 
+  document.getElementById('enroll-confirm-list').addEventListener('click', e => {
+    const minus = e.target.closest('[data-qty-minus]');
+    const plus = e.target.closest('[data-qty-plus]');
+    const id = minus ? minus.dataset.qtyMinus : (plus ? plus.dataset.qtyPlus : null);
+    if (!id) return;
+    const current = selectedSessions.get(id) || 1;
+    if (minus) selectedSessions.set(id, Math.max(1, current - 1));
+    if (plus) selectedSessions.set(id, Math.min(20, current + 1));
+    renderEnrollConfirm();
+  });
+
   document.getElementById('enroll-confirm-submit').addEventListener('click', async () => {
-    if (!me || !selectedSessionIds.size) return;
+    if (!me || !selectedSessions.size) return;
     const btn = document.getElementById('enroll-confirm-submit');
     btn.disabled = true;
     const originalLabel = btn.textContent;
     btn.textContent = '處理中...';
     try {
-      const result = await HoursAPI.selfEnroll(me.id, [...selectedSessionIds]);
+      const items = [...selectedSessions.entries()].map(([sessionId, seats]) => ({ sessionId, seats }));
+      const result = await HoursAPI.selfEnroll(me.id, items);
       if (!result.ok) {
         if (result.reason === 'insufficient') {
           showToast(`時數不足：需要 ${fmtHours(result.needed)} hr，目前時數 ${fmtHours(result.remaining)} hr`);
@@ -1829,7 +1868,7 @@
         return;
       }
       if (result.student) me = studentRowToMe(result.student, true);
-      selectedSessionIds.clear();
+      selectedSessions.clear();
       enrollConfirmOverlay.classList.remove('open');
       showToast('✅ 已加入選課，已扣除時數');
       await loadRegistrations();

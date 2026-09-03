@@ -373,9 +373,9 @@ async function startServer() {
   // code on the day of class (see comment near the top of member.html).
   app.post("/api/hours/registrations/self", async (req, res) => {
     try {
-      const { studentId, sessionIds } = req.body as { studentId: string; sessionIds: string[] };
-      if (!studentId || !Array.isArray(sessionIds) || sessionIds.length === 0) {
-        return res.status(400).json({ error: "Missing studentId or sessionIds" });
+      const { studentId, items } = req.body as { studentId: string; items: { sessionId: string; seats?: number }[] };
+      if (!studentId || !Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ error: "Missing studentId or items" });
       }
       const result = await hours.withHoursLock(async () => {
         const students = await hours.readStudents();
@@ -386,18 +386,19 @@ async function startServer() {
         const sessionById = new Map(sessions.map(s => [s.id, s]));
         const existingRegs = await hours.readRegistrations();
 
-        const toCreate: string[] = [];
+        const toCreate: { sessionId: string; seats: number }[] = [];
         const skipped: string[] = [];
         let needed = 0;
-        for (const sessionId of sessionIds) {
-          const session = sessionById.get(sessionId);
-          if (!session) { skipped.push(sessionId); continue; }
-          if (existingRegs.some(r => r.student_id === studentId && r.session_id === sessionId)) {
-            skipped.push(sessionId);
+        for (const item of items) {
+          const seats = Math.max(1, Math.min(20, Math.round(Number(item.seats)) || 1));
+          const session = sessionById.get(item.sessionId);
+          if (!session) { skipped.push(item.sessionId); continue; }
+          if (existingRegs.some(r => r.student_id === studentId && r.session_id === item.sessionId)) {
+            skipped.push(item.sessionId);
             continue;
           }
-          toCreate.push(sessionId);
-          needed += Number(session.hours_per_checkin) || 0;
+          toCreate.push({ sessionId: item.sessionId, seats });
+          needed += (Number(session.hours_per_checkin) || 0) * seats;
         }
 
         if (!toCreate.length) return { ok: true as const, created: [], skipped, student };
@@ -405,12 +406,12 @@ async function startServer() {
           return { ok: false as const, reason: "insufficient", needed, remaining: Number(student.remaining_hours) };
         }
 
-        for (const sessionId of toCreate) {
-          await hours.raw.createRegistration({ student_id: studentId, session_id: sessionId, seats_total: 1, seats_checked_in: 0 });
+        for (const { sessionId, seats } of toCreate) {
+          await hours.raw.createRegistration({ student_id: studentId, session_id: sessionId, seats_total: seats, seats_checked_in: 0 });
         }
         const after = Math.max(0, Number(student.remaining_hours) - needed);
         const updatedStudent = await hours.raw.updateStudent(studentId, { remaining_hours: after });
-        return { ok: true as const, created: toCreate, skipped, student: updatedStudent };
+        return { ok: true as const, created: toCreate.map(c => c.sessionId), skipped, student: updatedStudent };
       });
       res.json(result);
     } catch (err) {
@@ -439,7 +440,7 @@ async function startServer() {
 
         const sessions = await hours.readSessions();
         const session = sessions.find(s => s.id === sessionId);
-        const refund = Number(session?.hours_per_checkin) || 0;
+        const refund = (Number(session?.hours_per_checkin) || 0) * (Number(reg.seats_total) || 1);
 
         await hours.writeRegistrations(regs.filter(r => r.id !== reg.id));
         const updatedStudent = await hours.raw.updateStudent(studentId, {
