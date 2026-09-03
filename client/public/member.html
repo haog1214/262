@@ -518,8 +518,9 @@
     background:var(--glass-bg); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
     border:1px solid var(--glass-border); color:var(--text-1);
   }
-  .profile-stat .lbl{ font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.03em; color:var(--text-2); margin-bottom:6px; }
-  .profile-stat .val{ font-size:16px; font-weight:800; font-variant-numeric:tabular-nums; color:var(--orange); }
+  .profile-stat .lbl{ font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.03em; color:var(--text-2); opacity:.7; margin-bottom:10px; }
+  .profile-stat .val{ font-size:30px; font-weight:800; font-variant-numeric:tabular-nums; color:var(--orange); line-height:1; }
+  .profile-stat .val .unit{ font-size:13px; font-weight:700; color:var(--text-2); margin-left:2px; }
   .tab-row{ display:flex; gap:8px; margin-bottom:14px; }
   .tab-chip{
     flex:1; text-align:center; padding:10px; border-radius:var(--r-pill);
@@ -698,7 +699,8 @@
   }
   .pz-block.pz-dark .profile-stat{ background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.16); }
   .pz-block .profile-stat .lbl{ color:inherit; opacity:.65; }
-  .pz-block .profile-stat .val{ color:inherit; }
+  .pz-block .profile-stat .val{ color:var(--orange); }
+  .pz-block .profile-stat .val .unit{ color:inherit; opacity:.65; }
   .pz-block .next-class-card{ background:rgba(0,0,0,.05); color:inherit; border:1.5px solid var(--line); }
   .pz-block .next-class-date{ background:var(--orange); color:#fff; }
   .pz-block .next-class-sub{ color:inherit; opacity:.72; }
@@ -1043,9 +1045,9 @@
         <div class="pz-block pz-blue">
           <div class="pz-label pz-section-title">帳號時數</div>
           <div class="profile-stats" style="margin-bottom:0;">
-            <div class="profile-stat"><div class="lbl">剩餘時數</div><div class="val" id="pf-hours">0</div></div>
-            <div class="profile-stat"><div class="lbl">已購買</div><div class="val" id="pf-purchased">0</div></div>
-            <div class="profile-stat"><div class="lbl">累計上課</div><div class="val" id="pf-attended">0</div></div>
+            <div class="profile-stat"><div class="lbl">目前時數</div><div class="val"><span id="pf-hours">0</span><span class="unit">hr</span></div></div>
+            <div class="profile-stat"><div class="lbl">已購買</div><div class="val"><span id="pf-purchased">0</span><span class="unit">hr</span></div></div>
+            <div class="profile-stat"><div class="lbl">累計上課時數</div><div class="val"><span id="pf-attended">0</span><span class="unit">hr</span></div></div>
           </div>
         </div>
 
@@ -2015,7 +2017,12 @@
     document.getElementById('pf-since').textContent = me.joined_at ? `加入於 ${String(me.joined_at).replaceAll('-', '/')}` : '';
     document.getElementById('pf-hours').textContent = fmtHours(me.remaining_hours);
     document.getElementById('pf-purchased').textContent = fmtHours(me.purchased_hours);
-    document.getElementById('pf-attended').textContent = me.attended_count;
+    // Same logic as the home screen's 累計上課時數: sum of hours from actual
+    // check-ins, not attended_count (a session count) and not a
+    // purchased-minus-remaining guess that would include not-yet-attended
+    // self-enrolled reservations.
+    const attendedHours = myCheckins.reduce((sum, c) => sum + (Number(c.hours_per_checkin) || 0), 0);
+    document.getElementById('pf-attended').textContent = fmtHours(attendedHours);
     applyAvatarToUI();
 
     const ciEl = document.getElementById('hist-checkins');
