@@ -682,6 +682,8 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
   const [lookupErr, setLookupErr] = useState("");
   const [name, setName] = useState("");
   const [representative, setRepresentative] = useState("");
+  const [contactPerson, setContactPerson] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
   const [address, setAddress] = useState("");
   const [found, setFound] = useState(false);
   const [source, setSource] = useState("");
@@ -723,7 +725,12 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
         purchased_hours: INITIAL_HOURS,
         is_active: true,
         joined_at: new Date().toISOString().slice(0, 10),
-        note: [representative && `負責人：${representative}`, address && `登記地址：${address}`].filter(Boolean).join("｜"),
+        note: [
+          representative && `負責人：${representative}`,
+          contactPerson && `聯絡人：${contactPerson}`,
+          contactPhone && `聯絡電話：${contactPhone}`,
+          address && `登記地址：${address}`,
+        ].filter(Boolean).join("｜"),
       });
       onCreated();
     } catch (err) {
@@ -778,8 +785,19 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
         <label style={a.label}>公司名稱</label>
         <input style={a.input} value={name} onChange={e => setName(e.target.value)} placeholder="查詢後自動帶入，或手動輸入" />
 
-        <label style={a.label}>負責人姓名</label>
-        <input style={a.input} value={representative} onChange={e => setRepresentative(e.target.value)} placeholder="（選填）" />
+        <div style={{ display: "flex", gap: "10px" }}>
+          <div style={{ flex: 1 }}>
+            <label style={a.label}>負責人姓名</label>
+            <input style={a.input} value={representative} onChange={e => setRepresentative(e.target.value)} placeholder="（選填）" />
+          </div>
+          <div style={{ flex: 1 }}>
+            <label style={a.label}>聯絡人</label>
+            <input style={a.input} value={contactPerson} onChange={e => setContactPerson(e.target.value)} placeholder="（選填）" />
+          </div>
+        </div>
+
+        <label style={a.label}>聯絡電話</label>
+        <input style={a.input} value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="（選填）" />
 
         <label style={a.label}>登記地址</label>
         <input style={a.input} value={address} onChange={e => setAddress(e.target.value)} placeholder="（選填）" />
