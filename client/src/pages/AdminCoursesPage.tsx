@@ -89,6 +89,11 @@ const s = {
   page: {
     minHeight: "100vh",
     backgroundColor: paper,
+    backgroundImage:
+      `radial-gradient(circle at 8% 8%, rgba(255,91,34,0.16), transparent 40%), ` +
+      `radial-gradient(circle at 92% 18%, rgba(31,143,92,0.14), transparent 42%), ` +
+      `radial-gradient(circle at 30% 90%, rgba(255,91,34,0.10), transparent 45%)`,
+    backgroundAttachment: "fixed",
     fontFamily: bodyFont,
     color: ink,
   } as React.CSSProperties,
@@ -107,9 +112,12 @@ const s = {
     padding: "32px 16px",
   } as React.CSSProperties,
   card: {
-    backgroundColor: "#fff",
-    border: `1px solid ${line}`,
-    borderRadius: "2px",
+    backgroundColor: "rgba(255, 255, 255, 0.55)",
+    backdropFilter: "blur(16px) saturate(160%)",
+    WebkitBackdropFilter: "blur(16px) saturate(160%)",
+    border: `1px solid rgba(255, 255, 255, 0.6)`,
+    boxShadow: "0 8px 32px rgba(20, 21, 15, 0.08)",
+    borderRadius: "16px",
     padding: "24px",
     marginBottom: "20px",
   } as React.CSSProperties,
@@ -2154,8 +2162,12 @@ export default function AdminCoursesPage() {
                   style={{
                     display: "flex", alignItems: "center", gap: "10px", width: "100%",
                     padding: "9px 10px", marginBottom: "2px", borderRadius: "10px",
-                    border: "none", cursor: "pointer", textAlign: "left",
-                    background: activeTab === item.key ? accent : "transparent",
+                    cursor: "pointer", textAlign: "left",
+                    background: activeTab === item.key ? "rgba(255, 91, 34, 0.55)" : "transparent",
+                    backdropFilter: activeTab === item.key ? "blur(10px) saturate(160%)" : undefined,
+                    WebkitBackdropFilter: activeTab === item.key ? "blur(10px) saturate(160%)" : undefined,
+                    border: activeTab === item.key ? "1px solid rgba(255, 255, 255, 0.45)" : "1px solid transparent",
+                    boxShadow: activeTab === item.key ? "0 4px 16px rgba(255, 91, 34, 0.25)" : "none",
                     color: activeTab === item.key ? "#fff" : ink,
                     fontWeight: activeTab === item.key ? 700 : 500,
                     fontSize: "16px",
