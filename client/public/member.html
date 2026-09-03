@@ -13,13 +13,15 @@
 
 <style>
   :root{
-    --bg:#0c0a1d;
-    --card:#161329;
-    --card-2:#1e1a37;
-    --line:#332d54;
-    --text-1:#f6f6f2;
-    --text-2:#a3a0c2;
-    --text-3:#716d94;
+    /* Default theme: matches 課程後台管理系統 (admin) light palette —
+       paper background, near-black ink, sage-tinted borders, orange accent. */
+    --bg:#EAECE4;
+    --card:#ffffff;
+    --card-2:#F1F2E9;
+    --line:#E7E8DD;
+    --text-1:#14150F;
+    --text-2:#71735F;
+    --text-3:#9C9D8C;
 
     --orange:#FF5B22;
     --orange-ink:#ffffff;
@@ -41,14 +43,14 @@
     --crit:#ff5b4a;
     --crit-bg:rgba(255,91,74,.16);
 
-    --shell-shadow: 0 40px 90px -30px rgba(0,0,0,.7);
-    --shadow-card: 0 10px 24px -14px rgba(0,0,0,.5);
-    --glass-bg:rgba(255,255,255,.07);
-    --glass-bg-2:rgba(255,255,255,.11);
-    --glass-border:rgba(255,255,255,.10);
-    --r-xl:28px;
-    --r-lg:22px;
-    --r-md:16px;
+    --shell-shadow: 0 40px 80px -30px rgba(20,21,15,.18), 0 10px 26px -14px rgba(20,21,15,.1);
+    --shadow-card: 0 8px 32px rgba(20,21,15,.08);
+    --glass-bg:rgba(255,255,255,.55);
+    --glass-bg-2:rgba(255,255,255,.72);
+    --glass-border:rgba(255,255,255,.6);
+    --r-xl:20px;
+    --r-lg:16px;
+    --r-md:12px;
     --r-pill:999px;
     --font-body:'Manrope','Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;
 
@@ -69,26 +71,37 @@
     --arctic:#AEE6ED;
     --arctic-ink:#173238;
   }
-  :root[data-theme="light"]{
-    --bg:#F7F3EC;
-    --card:#ffffff;
-    --card-2:#eee7d8;
-    --line:#e3dcc8;
-    --text-1:#241A42;
-    --text-2:#6d6a85;
-    --text-3:#9f9cb5;
-    --shell-shadow: 0 40px 80px -30px rgba(20,21,15,.18), 0 10px 26px -14px rgba(20,21,15,.1);
-    --shadow-card: 0 10px 24px -14px rgba(20,21,15,.14);
-    --glass-bg:rgba(255,255,255,.5);
-    --glass-bg-2:rgba(255,255,255,.7);
-    --glass-border:rgba(255,255,255,.65);
+  :root[data-theme="dark"]{
+    --bg:#0c0a1d;
+    --card:#161329;
+    --card-2:#1e1a37;
+    --line:#332d54;
+    --text-1:#f6f6f2;
+    --text-2:#a3a0c2;
+    --text-3:#716d94;
+    --shell-shadow: 0 40px 90px -30px rgba(0,0,0,.7);
+    --shadow-card: 0 10px 24px -14px rgba(0,0,0,.5);
+    --glass-bg:rgba(255,255,255,.07);
+    --glass-bg-2:rgba(255,255,255,.11);
+    --glass-border:rgba(255,255,255,.10);
+    --r-xl:28px;
+    --r-lg:22px;
+    --r-md:16px;
+  }
+  :root[data-theme="dark"] body{
+    background-image:none;
   }
 
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{ height:100%; }
   body{
     margin:0;
-    background:var(--bg);
+    background-color:var(--bg);
+    background-image:
+      radial-gradient(circle at 8% 8%, rgba(255,91,34,.12), transparent 40%),
+      radial-gradient(circle at 92% 12%, rgba(31,143,92,.10), transparent 42%),
+      radial-gradient(circle at 30% 95%, rgba(255,91,34,.08), transparent 45%);
+    background-attachment: fixed;
     color:var(--text-1);
     font-family:var(--font-body);
     display:flex;
@@ -137,14 +150,20 @@
   .nav-btn{
     flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
     background:rgba(255,255,255,.85);
-    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
-    border:none; cursor:pointer;
+    backdrop-filter:blur(18px) saturate(160%); -webkit-backdrop-filter:blur(18px) saturate(160%);
+    border:1px solid transparent; cursor:pointer;
     padding:9px 4px; border-radius:var(--r-pill);
     color:var(--text-3); font-size:12px; font-weight:700;
   }
   .nav-btn .nav-ic{ display:block; line-height:1; }
   .nav-btn .nav-ic svg{ width:22px; height:22px; display:block; margin:0 auto; }
-  .nav-btn.active{ color:var(--orange-ink); background:var(--orange); }
+  .nav-btn.active{
+    color:#fff;
+    background:rgba(255,91,34,.55);
+    backdrop-filter:blur(10px) saturate(160%); -webkit-backdrop-filter:blur(10px) saturate(160%);
+    border:1px solid rgba(255,255,255,.45);
+    box-shadow:0 4px 16px rgba(255,91,34,.25);
+  }
 
   /* ---------- Buttons / inputs ---------- */
   .btn{
@@ -930,8 +949,8 @@
         <div class="pz-block pz-pink">
           <div class="pz-label pz-section-title">外觀模式</div>
           <div class="theme-switch" style="margin-bottom:14px;">
-            <button class="theme-opt" type="button" data-theme-val="light">☀ 淺色</button>
-            <button class="theme-opt active" type="button" data-theme-val="dark">☾ 深色</button>
+            <button class="theme-opt active" type="button" data-theme-val="light">☀ 淺色</button>
+            <button class="theme-opt" type="button" data-theme-val="dark">☾ 深色</button>
           </div>
           <button class="btn ghost" id="btn-logout-2">登出帳號</button>
         </div>
@@ -1277,7 +1296,7 @@
       document.querySelectorAll('.theme-opt').forEach(b => b.classList.toggle('active', b.dataset.themeVal === t));
       try { localStorage.setItem('theme', t); } catch(e){}
     }
-    applyTheme(stored === 'light' ? 'light' : 'dark');
+    applyTheme(stored === 'dark' ? 'dark' : 'light');
     document.querySelectorAll('.theme-opt').forEach(b => {
       b.addEventListener('click', () => applyTheme(b.dataset.themeVal));
     });
