@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
-import { BookOpen, CheckSquare, AlertTriangle, Clock3, TrendingUp, TrendingDown, LayoutGrid } from "lucide-react";
+import { BookOpen, CheckSquare, AlertTriangle, Clock3, TrendingUp, TrendingDown, LayoutGrid, Search, X } from "lucide-react";
 import { hoursApi, fmtHours, type HoursStudent, type HoursSession, type HoursRegistration, type HoursCheckin, type HoursAdjustment, type ImportRow } from "@/lib/hoursApi";
 import { ink, inkSoft, accent, line, danger, good, adminStyles as a } from "@/lib/adminTheme";
 
 const h2Style: React.CSSProperties = { fontWeight: 700, fontSize: "16px", color: ink, margin: "0 0 16px" };
 const emptyStyle: React.CSSProperties = { textAlign: "center", padding: "32px", color: "#9CA3AF", fontSize: "13px" };
+const iconBtnStyle: React.CSSProperties = {
+  backgroundColor: "transparent", border: `1px solid ${line}`, borderRadius: "8px",
+  padding: "6px", cursor: "pointer", color: ink,
+  display: "inline-flex", alignItems: "center", justifyContent: "center",
+};
 
 function fmtDateTime(iso: string): string {
   if (!iso) return "";
@@ -596,9 +601,7 @@ export function CheckinsView() {
 export function StudentsView() {
   const { students, checkins, adjustments, loading, reload } = useHoursData();
   const [q, setQ] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState(false);
-  const [nameDraft, setNameDraft] = useState("");
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   if (loading) return <div style={emptyStyle}>載入中...</div>;
 
@@ -606,110 +609,163 @@ export function StudentsView() {
     ? students.filter(s => s.name.includes(q) || s.phone.includes(q))
     : students;
   const sorted = [...filtered].sort((x, y) => x.name.localeCompare(y.name));
-  const selected = students.find(s => s.id === selectedId) ?? null;
+  const detail = students.find(s => s.id === detailId) ?? null;
 
-  const toggleActive = (s: HoursStudent) => hoursApi.updateStudent(s.id, { is_active: !s.is_active }).then(reload);
-  const setTier = (s: HoursStudent, tier: "regular" | "senior") => hoursApi.updateStudent(s.id, { tier }).then(reload);
+  return (
+    <div>
+      <h2 style={h2Style}>學員管理（共 {students.length} 位）</h2>
+      <div style={a.card}>
+        <input style={{ ...a.input, maxWidth: "280px" }} placeholder="搜尋姓名或統編..." value={q} onChange={e => setQ(e.target.value)} />
+        <table style={a.table}>
+          <thead><tr><th style={a.th}>姓名</th><th style={a.th}>統編</th><th style={a.th}>剩餘時數</th><th style={a.th}>等級</th><th style={a.th}>狀態</th><th style={a.th}></th></tr></thead>
+          <tbody>
+            {sorted.map(s => (
+              <tr key={s.id}>
+                <td style={a.td}>{s.name}</td>
+                <td style={a.td}>{s.phone}</td>
+                <td style={a.td}>{s.tier === "senior" ? "無限" : `${fmtHours(s.remaining_hours)} hr`}</td>
+                <td style={a.td}>
+                  <span style={{ color: s.tier === "senior" ? accent : inkSoft, fontWeight: 600, fontSize: "12px" }}>
+                    {s.tier === "senior" ? "資深學員" : "一般學員"}
+                  </span>
+                </td>
+                <td style={a.td}>
+                  <span style={{ color: s.is_active ? good : inkSoft, fontWeight: 600, fontSize: "12px" }}>
+                    {s.is_active ? "啟用中" : "已停用"}
+                  </span>
+                </td>
+                <td style={{ ...a.td, textAlign: "right" as const }}>
+                  <button
+                    style={iconBtnStyle}
+                    title="查看詳細資訊"
+                    onClick={() => setDetailId(s.id)}
+                  >
+                    <Search size={14} strokeWidth={1.5} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {sorted.length === 0 && <div style={emptyStyle}>沒有符合的學員</div>}
+      </div>
 
+      {detail && (
+        <StudentDetailModal
+          student={detail}
+          checkins={checkins.filter(c => c.student_id === detail.id).slice(0, 6)}
+          adjustments={adjustments.filter(x => x.student_id === detail.id).slice(0, 6)}
+          onClose={() => setDetailId(null)}
+          onChanged={reload}
+        />
+      )}
+    </div>
+  );
+}
+
+function StudentDetailModal({
+  student, checkins, adjustments, onClose, onChanged,
+}: {
+  student: HoursStudent;
+  checkins: HoursCheckin[];
+  adjustments: HoursAdjustment[];
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState(student.name);
+
+  const toggleActive = () => hoursApi.updateStudent(student.id, { is_active: !student.is_active }).then(onChanged);
+  const setTier = (tier: "regular" | "senior") => hoursApi.updateStudent(student.id, { tier }).then(onChanged);
   const saveName = async () => {
-    if (!selected || !nameDraft.trim()) return;
-    await hoursApi.updateStudent(selected.id, { name: nameDraft.trim() });
+    if (!nameDraft.trim()) return;
+    await hoursApi.updateStudent(student.id, { name: nameDraft.trim() });
     setEditingName(false);
-    reload();
+    onChanged();
   };
 
   return (
-    <div style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <h2 style={h2Style}>學員管理（共 {students.length} 位）</h2>
-        <div style={a.card}>
-          <input style={{ ...a.input, maxWidth: "280px" }} placeholder="搜尋姓名或電話..." value={q} onChange={e => setQ(e.target.value)} />
-          <table style={a.table}>
-            <thead><tr><th style={a.th}>姓名</th><th style={a.th}>電話</th><th style={a.th}>剩餘時數</th><th style={a.th}>等級</th><th style={a.th}>狀態</th></tr></thead>
-            <tbody>
-              {sorted.map(s => (
-                <tr key={s.id} onClick={() => setSelectedId(s.id)} style={{ cursor: "pointer", background: selectedId === s.id ? "#FFF3EC" : "transparent" }}>
-                  <td style={a.td}>{s.name}</td>
-                  <td style={a.td}>{s.phone}</td>
-                  <td style={a.td}>{s.tier === "senior" ? "無限" : `${fmtHours(s.remaining_hours)} hr`}</td>
-                  <td style={a.td}>
-                    <span style={{ color: s.tier === "senior" ? accent : inkSoft, fontWeight: 600, fontSize: "12px" }}>
-                      {s.tier === "senior" ? "資深學員" : "一般學員"}
-                    </span>
-                  </td>
-                  <td style={a.td}>
-                    <span style={{ color: s.is_active ? good : inkSoft, fontWeight: 600, fontSize: "12px" }}>
-                      {s.is_active ? "啟用中" : "已停用"}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {sorted.length === 0 && <div style={emptyStyle}>沒有符合的學員</div>}
-        </div>
-      </div>
-
-      {selected && (
-        <div style={{ width: "340px", flexShrink: 0 }}>
-          <div style={a.card}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              {editingName ? (
-                <div style={{ flex: 1 }}>
-                  <input style={a.input} value={nameDraft} onChange={e => setNameDraft(e.target.value)} />
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <button style={a.btnPrimary} onClick={saveName}>儲存</button>
-                    <button style={a.btnGhost} onClick={() => setEditingName(false)}>取消</button>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: "16px", color: ink }}>{selected.name}</div>
-                  <div style={{ fontSize: "12px", color: inkSoft }}>{selected.phone}</div>
-                </div>
-              )}
-              {!editingName && (
-                <button style={a.btnGhost} onClick={() => { setNameDraft(selected.name); setEditingName(true); }}>編輯</button>
-              )}
-            </div>
-            <div style={{ marginTop: "14px", fontSize: "13px", color: ink }}>
-              剩餘時數 <b>{selected.tier === "senior" ? "無限" : `${fmtHours(selected.remaining_hours)} hr`}</b>　累計購買 {fmtHours(selected.purchased_hours)} hr　上課 {selected.attended_count} 次
-            </div>
-            <div style={{ marginTop: "10px", fontSize: "13px", color: ink, display: "flex", alignItems: "center", gap: "8px" }}>
-              會員等級
-              <span style={{ color: selected.tier === "senior" ? accent : inkSoft, fontWeight: 700 }}>
-                {selected.tier === "senior" ? "資深學員（不扣時數）" : "一般學員（扣時數）"}
-              </span>
-            </div>
-            <button
-              style={{ ...a.btnGhost, marginTop: "8px" }}
-              onClick={() => setTier(selected, selected.tier === "senior" ? "regular" : "senior")}
-            >
-              {selected.tier === "senior" ? "改回一般學員" : "設為資深學員"}
-            </button>
-            <button
-              style={{ ...a.btnGhost, marginTop: "8px", color: selected.is_active ? danger : good, borderColor: selected.is_active ? danger : good }}
-              onClick={() => toggleActive(selected)}
-            >
-              {selected.is_active ? "停用此帳號" : "啟用此帳號"}
-            </button>
-
-            <div style={{ marginTop: "18px", fontSize: "12px", fontWeight: 700, color: inkSoft }}>上課紀錄</div>
-            {checkins.filter(c => c.student_id === selected.id).slice(0, 6).map(c => (
-              <div key={c.id} style={{ fontSize: "12px", color: ink, padding: "6px 0", borderBottom: `1px solid ${line}` }}>
-                {c.session_name || "課程"}　-{fmtHours(c.hours_deducted)} hr　<span style={{ color: inkSoft }}>{fmtDateTime(c.checked_in_at)}</span>
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 1000,
+        backgroundColor: "rgba(0,0,0,0.45)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "16px",
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{
+        backgroundColor: "#fff",
+        borderRadius: "16px",
+        width: "100%",
+        maxWidth: "420px",
+        maxHeight: "88vh",
+        overflowY: "auto",
+        boxShadow: "0 8px 40px rgba(0,0,0,0.2)",
+        padding: "24px",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          {editingName ? (
+            <div style={{ flex: 1 }}>
+              <input style={a.input} value={nameDraft} onChange={e => setNameDraft(e.target.value)} />
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button style={a.btnPrimary} onClick={saveName}>儲存</button>
+                <button style={a.btnGhost} onClick={() => setEditingName(false)}>取消</button>
               </div>
-            ))}
-
-            <div style={{ marginTop: "14px", fontSize: "12px", fontWeight: 700, color: inkSoft }}>時數異動</div>
-            {adjustments.filter(x => x.student_id === selected.id).slice(0, 6).map(x => (
-              <div key={x.id} style={{ fontSize: "12px", color: ink, padding: "6px 0", borderBottom: `1px solid ${line}` }}>
-                {x.reason}　<span style={{ color: Number(x.amount) >= 0 ? good : danger }}>{Number(x.amount) >= 0 ? "+" : ""}{x.amount} hr</span>　<span style={{ color: inkSoft }}>{fmtDateTime(x.created_at)}</span>
-              </div>
-            ))}
+            </div>
+          ) : (
+            <div>
+              <div style={{ fontWeight: 700, fontSize: "16px", color: ink }}>{student.name}</div>
+              <div style={{ fontSize: "12px", color: inkSoft }}>{student.phone}</div>
+            </div>
+          )}
+          <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+            {!editingName && (
+              <button style={a.btnGhost} onClick={() => { setNameDraft(student.name); setEditingName(true); }}>編輯</button>
+            )}
+            <button style={iconBtnStyle} onClick={onClose} title="關閉">
+              <X size={14} strokeWidth={1.5} />
+            </button>
           </div>
         </div>
-      )}
+        <div style={{ marginTop: "14px", fontSize: "13px", color: ink }}>
+          剩餘時數 <b>{student.tier === "senior" ? "無限" : `${fmtHours(student.remaining_hours)} hr`}</b>　累計購買 {fmtHours(student.purchased_hours)} hr　上課 {student.attended_count} 次
+        </div>
+        <div style={{ marginTop: "10px", fontSize: "13px", color: ink, display: "flex", alignItems: "center", gap: "8px" }}>
+          會員等級
+          <span style={{ color: student.tier === "senior" ? accent : inkSoft, fontWeight: 700 }}>
+            {student.tier === "senior" ? "資深學員（不扣時數）" : "一般學員（扣時數）"}
+          </span>
+        </div>
+        <button
+          style={{ ...a.btnGhost, marginTop: "8px" }}
+          onClick={() => setTier(student.tier === "senior" ? "regular" : "senior")}
+        >
+          {student.tier === "senior" ? "改回一般學員" : "設為資深學員"}
+        </button>
+        <button
+          style={{ ...a.btnGhost, marginTop: "8px", color: student.is_active ? danger : good, borderColor: student.is_active ? danger : good }}
+          onClick={toggleActive}
+        >
+          {student.is_active ? "停用此帳號" : "啟用此帳號"}
+        </button>
+
+        <div style={{ marginTop: "18px", fontSize: "12px", fontWeight: 700, color: inkSoft }}>上課紀錄</div>
+        {checkins.map(c => (
+          <div key={c.id} style={{ fontSize: "12px", color: ink, padding: "6px 0", borderBottom: `1px solid ${line}` }}>
+            {c.session_name || "課程"}　-{fmtHours(c.hours_deducted)} hr　<span style={{ color: inkSoft }}>{fmtDateTime(c.checked_in_at)}</span>
+          </div>
+        ))}
+        {checkins.length === 0 && <div style={{ fontSize: "12px", color: inkSoft, padding: "6px 0" }}>尚無紀錄</div>}
+
+        <div style={{ marginTop: "14px", fontSize: "12px", fontWeight: 700, color: inkSoft }}>時數異動</div>
+        {adjustments.map(x => (
+          <div key={x.id} style={{ fontSize: "12px", color: ink, padding: "6px 0", borderBottom: `1px solid ${line}` }}>
+            {x.reason}　<span style={{ color: Number(x.amount) >= 0 ? good : danger }}>{Number(x.amount) >= 0 ? "+" : ""}{x.amount} hr</span>　<span style={{ color: inkSoft }}>{fmtDateTime(x.created_at)}</span>
+          </div>
+        ))}
+        {adjustments.length === 0 && <div style={{ fontSize: "12px", color: inkSoft, padding: "6px 0" }}>尚無紀錄</div>}
+      </div>
     </div>
   );
 }
