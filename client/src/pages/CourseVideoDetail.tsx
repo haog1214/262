@@ -244,7 +244,7 @@ export default function CourseVideoDetail() {
         <section className="py-14">
           <div className="container max-w-4xl">
             <h2 className="text-2xl font-bold mb-8" style={{ color: "#1B3A6B" }}>適合對象</h2>
-            <div className="grid sm:grid-cols-2 gap-5">
+            <div className={`grid gap-5${targets.length > 1 ? " sm:grid-cols-2" : ""}`}>
               {targets.map((t, i) => (
                 <div key={i} className="flex items-start gap-4 p-5 rounded-xl border border-gray-100 hover:shadow-md transition-all" onMouseEnter={e => (e.currentTarget.style.borderColor = "#D4AF37")} onMouseLeave={e => (e.currentTarget.style.borderColor = "")}>
                   <span className="text-3xl flex-shrink-0">{t.icon}</span>
