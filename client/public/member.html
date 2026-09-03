@@ -915,16 +915,16 @@
 
       <div class="pz-stat-row">
         <div class="pz-stat-col">
-          <div class="pz-label">目前總時數</div>
+          <div class="pz-label">目前時數</div>
           <div class="pz-row" style="align-items:baseline; gap:4px;">
-            <div class="pz-big" id="home-purchased">0</div>
+            <div class="pz-big" id="home-hours">0</div>
             <div class="pz-big-unit" style="margin-bottom:0;">hr</div>
           </div>
         </div>
         <div class="pz-stat-col">
-          <div class="pz-label">剩餘時數</div>
+          <div class="pz-label">累計上課時數</div>
           <div class="pz-row" style="align-items:baseline; gap:4px;">
-            <div class="pz-big" id="home-hours">0</div>
+            <div class="pz-big" id="home-used-hours">0</div>
             <div class="pz-big-unit" style="margin-bottom:0;">hr</div>
           </div>
         </div>
@@ -1084,7 +1084,7 @@
       <button class="course-detail-close" id="enroll-confirm-close" type="button">✕</button>
       <div class="course-detail-name">確認加入選課</div>
       <div style="font-size:13px; font-weight:600; color:var(--text-2);" id="enroll-confirm-hint">
-        送出後會立即從你的剩餘時數扣除
+        送出後會立即從你的目前時數扣除
       </div>
       <div class="enroll-confirm-list" id="enroll-confirm-list"></div>
       <div class="enroll-confirm-actions">
@@ -1587,7 +1587,7 @@
     document.getElementById('home-name').textContent = me.name;
     document.getElementById('home-avatar-fallback').textContent = me.name.charAt(0);
     document.getElementById('home-hours').textContent = fmtHours(me.remaining_hours);
-    document.getElementById('home-purchased').textContent = fmtHours(me.purchased_hours);
+    document.getElementById('home-used-hours').textContent = fmtHours(Math.max(0, Number(me.purchased_hours) - Number(me.remaining_hours)));
     applyAvatarToUI();
 
     // registered courses = this account's actual course_registrations, split into
@@ -1770,7 +1770,7 @@
     `).join('');
     const totalHours = items.reduce((sum, s) => sum + (Number(s.hours_per_checkin) || 0), 0);
     document.getElementById('enroll-confirm-hint').textContent =
-      `送出後會立即從你的剩餘時數扣除，共需 ${fmtHours(totalHours)} hr（目前剩餘 ${me ? fmtHours(me.remaining_hours) : '—'} hr）`;
+      `送出後會立即從你的目前時數扣除，共需 ${fmtHours(totalHours)} hr（目前時數 ${me ? fmtHours(me.remaining_hours) : '—'} hr）`;
     enrollConfirmOverlay.classList.add('open');
   }
   document.getElementById('select-cta').addEventListener('click', openEnrollConfirm);
@@ -1788,7 +1788,7 @@
       const result = await HoursAPI.selfEnroll(me.id, [...selectedSessionIds]);
       if (!result.ok) {
         if (result.reason === 'insufficient') {
-          showToast(`時數不足：需要 ${fmtHours(result.needed)} hr，剩餘 ${fmtHours(result.remaining)} hr`);
+          showToast(`時數不足：需要 ${fmtHours(result.needed)} hr，目前時數 ${fmtHours(result.remaining)} hr`);
         } else {
           showToast('加入失敗，請稍後再試');
         }
