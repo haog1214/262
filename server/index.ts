@@ -418,6 +418,41 @@ async function startServer() {
     }
   });
 
+  // Self-service: give up a not-yet-attended registration ("我要放棄"). Only
+  // allowed while seats_checked_in is still 0 (nothing to undo once staff have
+  // scanned the member in) — refunds the hours that registrations/self deducted.
+  app.post("/api/hours/registrations/self/cancel", async (req, res) => {
+    try {
+      const { studentId, sessionId } = req.body as { studentId: string; sessionId: string };
+      if (!studentId || !sessionId) {
+        return res.status(400).json({ error: "Missing studentId or sessionId" });
+      }
+      const result = await hours.withHoursLock(async () => {
+        const students = await hours.readStudents();
+        const student = students.find(s => s.id === studentId);
+        if (!student) throw new Error("Student not found");
+
+        const regs = await hours.readRegistrations();
+        const reg = regs.find(r => r.student_id === studentId && r.session_id === sessionId);
+        if (!reg) return { ok: false as const, reason: "not_found" };
+        if (reg.seats_checked_in > 0) return { ok: false as const, reason: "already_checked_in" };
+
+        const sessions = await hours.readSessions();
+        const session = sessions.find(s => s.id === sessionId);
+        const refund = Number(session?.hours_per_checkin) || 0;
+
+        await hours.writeRegistrations(regs.filter(r => r.id !== reg.id));
+        const updatedStudent = await hours.raw.updateStudent(studentId, {
+          remaining_hours: Number(student.remaining_hours) + refund,
+        });
+        return { ok: true as const, refunded: refund, student: updatedStudent };
+      });
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: "Cancel registration failed", detail: String(err) });
+    }
+  });
+
   app.get("/api/hours/checkins", async (_req, res) => {
     try {
       const [checkins, sessions] = await Promise.all([hours.readCheckins(), hours.readSessions()]);

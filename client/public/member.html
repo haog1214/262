@@ -1072,6 +1072,7 @@
         <div class="course-detail-row"><span class="k">扣除時數</span><span class="v" id="cd-hours">1 hr</span></div>
         <div class="course-detail-row"><span class="k">報名名額</span><span class="v" id="cd-seats">已報到 0/1</span></div>
       </div>
+      <button class="btn ghost" id="cd-cancel" type="button" style="display:none; margin-top:18px; color:var(--crit);">我要放棄</button>
     </div>
   </div>
 
@@ -1134,6 +1135,7 @@
     listCheckins: () => hoursApi('/checkins'),
     listAdjustments: () => hoursApi('/adjustments'),
     selfEnroll: (studentId, sessionIds) => hoursApi('/registrations/self', { method: 'POST', body: JSON.stringify({ studentId, sessionIds }) }),
+    selfCancel: (studentId, sessionId) => hoursApi('/registrations/self/cancel', { method: 'POST', body: JSON.stringify({ studentId, sessionId }) }),
   };
 
   /* ---------- Demo fallback data (used when Supabase is unreachable, e.g. Artifact CSP) ---------- */
@@ -1607,7 +1609,7 @@
         return buildCourseCardHtml(next, i, 'registered', badge);
       }).join('');
       nextEl.querySelectorAll('[data-list="registered"]').forEach(btn => {
-        btn.addEventListener('click', () => openCourseDetail(registeredCourses[Number(btn.dataset.courseIdx)]));
+        btn.addEventListener('click', () => openCourseDetail(registeredCourses[Number(btn.dataset.courseIdx)], 'registered'));
       });
     }
 
@@ -1622,7 +1624,7 @@
         return buildCourseCardHtml(c, i, 'completed', badge);
       }).join('');
       takenEl.querySelectorAll('[data-list="completed"]').forEach(btn => {
-        btn.addEventListener('click', () => openCourseDetail(completedCourses[Number(btn.dataset.courseIdx)]));
+        btn.addEventListener('click', () => openCourseDetail(completedCourses[Number(btn.dataset.courseIdx)], 'completed'));
       });
     }
 
@@ -1636,14 +1638,17 @@
         return buildCourseCardHtml(c, i, 'incomplete', badge);
       }).join('');
       incompleteEl.querySelectorAll('[data-list="incomplete"]').forEach(btn => {
-        btn.addEventListener('click', () => openCourseDetail(incompleteCourses[Number(btn.dataset.courseIdx)]));
+        btn.addEventListener('click', () => openCourseDetail(incompleteCourses[Number(btn.dataset.courseIdx)], 'incomplete'));
       });
     }
   }
 
   /* ================= COURSE DETAIL OVERLAY ================= */
   const courseDetailOverlay = document.getElementById('course-detail-overlay');
-  function openCourseDetail(session){
+  const cdCancelBtn = document.getElementById('cd-cancel');
+  let cdSession = null; // the session currently shown in the sheet, for the 我要放棄 handler
+  function openCourseDetail(session, listKey){
+    cdSession = session;
     const ds = fmtDateShort(session.session_date);
     document.getElementById('cd-date').innerHTML = `${ds.d}<span>${ds.m}</span>`;
     document.getElementById('cd-name').textContent = session.name;
@@ -1653,9 +1658,38 @@
     document.getElementById('cd-room').textContent = session.room || '—';
     document.getElementById('cd-hours').textContent = fmtHours(session.hours_per_checkin) + ' hr';
     document.getElementById('cd-seats').textContent = `已報到 ${session.seats_checked_in ?? 0}/${session.seats_total ?? 1}`;
+    // Only an upcoming, not-yet-checked-in registration can be given up.
+    const canCancel = listKey === 'registered' && (session.seats_checked_in ?? 0) < 1;
+    cdCancelBtn.style.display = canCancel ? 'block' : 'none';
     courseDetailOverlay.classList.add('open');
   }
   document.getElementById('course-detail-close').addEventListener('click', () => courseDetailOverlay.classList.remove('open'));
+  cdCancelBtn.addEventListener('click', async () => {
+    if (!me || !cdSession) return;
+    if (!confirm(`確定要放棄「${cdSession.name}」嗎？已扣除的時數會退回帳號。`)) return;
+    cdCancelBtn.disabled = true;
+    const originalLabel = cdCancelBtn.textContent;
+    cdCancelBtn.textContent = '處理中...';
+    try {
+      const result = await HoursAPI.selfCancel(me.id, cdSession.id);
+      if (!result.ok) {
+        showToast(result.reason === 'already_checked_in' ? '已報到的課程無法放棄' : '放棄失敗，請稍後再試');
+        return;
+      }
+      if (result.student) me = studentRowToMe(result.student, true);
+      courseDetailOverlay.classList.remove('open');
+      showToast('已放棄該堂課，時數已退回');
+      await loadRegistrations();
+      renderHome();
+      renderCourses();
+    } catch (e) {
+      console.warn('selfCancel failed', e);
+      showToast('放棄失敗，請稍後再試');
+    } finally {
+      cdCancelBtn.disabled = false;
+      cdCancelBtn.textContent = originalLabel;
+    }
+  });
   courseDetailOverlay.addEventListener('click', e => { if (e.target === courseDetailOverlay) courseDetailOverlay.classList.remove('open'); });
 
   /* ================= RENDER: COURSES ================= */
