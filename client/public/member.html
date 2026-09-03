@@ -560,8 +560,12 @@
      that same boundary). */
   .pz-stack{
     display:flex; flex-direction:column;
-    margin:0 -20px 22px; width:calc(100% + 40px); flex-shrink:0;
+    margin:0 -4px 22px; width:calc(100% + 8px); flex-shrink:0;
   }
+  /* Hero blocks (home/courses date-and-title banner) stay full-bleed to the
+     screen edge; every other stack below sits with a 16px gutter instead
+     (screen padding is 20px, so a -4px bleed nets a 16px gap). */
+  .pz-stack.pz-stack-full{ margin-left:-20px; margin-right:-20px; width:calc(100% + 40px); }
   .pz-block{ padding:24px 22px 30px; position:relative; border-radius:32px; }
   /* One neutral card style for every section — Pilo-style palette is
      white/off-white surfaces + black ink, with the single brand accent
@@ -583,7 +587,7 @@
   .pz-big-unit{ font-size:16px; font-weight:700; opacity:.7; margin-bottom:4px; }
   .pz-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .pz-sub{ font-size:14px; font-weight:600; opacity:.72; margin-top:4px; }
-  .pz-stat-row{ display:flex; gap:0; margin:0 -20px; width:calc(100% + 40px); }
+  .pz-stat-row{ display:flex; gap:0; margin:0 -4px; width:calc(100% + 8px); }
   .pz-stat-col{
     flex:1; aspect-ratio:1/0.8; background:var(--card); color:var(--text-1);
     border:1px solid var(--line); box-shadow:var(--shadow-card);
@@ -819,7 +823,7 @@
 
     <!-- ---------- HOME ---------- -->
     <section class="screen active" id="screen-home">
-      <div class="pz-stack" style="margin-bottom:0; margin-top:-20px;">
+      <div class="pz-stack pz-stack-full" style="margin-bottom:0; margin-top:-20px;">
         <div class="pz-block pz-dark" style="padding-top:47px; padding-bottom:60px;">
           <div class="home-hero-date-row">
             <div class="home-hero-date" id="home-date-big">08.27</div>
@@ -874,7 +878,7 @@
 
     <!-- ---------- COURSES ---------- -->
     <section class="screen" id="screen-courses">
-      <div class="pz-stack" style="margin-bottom:0; margin-top:-20px;">
+      <div class="pz-stack pz-stack-full" style="margin-bottom:0; margin-top:-20px;">
         <div class="pz-block pz-dark" style="padding-bottom:24px;">
           <div class="pz-label pz-section-title">課程總覽</div>
           <div style="font-size:20px; font-weight:800;">近期開放的課程場次</div>
