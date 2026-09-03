@@ -1670,10 +1670,10 @@ function CourseRow({
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 700, fontSize: "14px", color: "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        <div style={{ fontWeight: 700, fontSize: "16px", color: "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           {course.title ? (course.courseCode ? `${course.courseCode} ${course.title}` : course.title) : "（無標題）"}
         </div>
-        <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "2px", display: "flex", alignItems: "center", gap: "8px" }}>
+        <div style={{ fontSize: "14px", color: "#6B7280", marginTop: "2px", display: "flex", alignItems: "center", gap: "8px" }}>
           <span>{formatPrice(course.discountPrice)}</span>
           <span style={{
             backgroundColor: "#EFF6FF",
@@ -1681,7 +1681,7 @@ function CourseRow({
             borderRadius: "10px",
             padding: "1px 8px",
             fontWeight: 600,
-            fontSize: "11px",
+            fontSize: "13px",
           }}>
             已報名 {enrollCount} 人
           </span>
@@ -1716,7 +1716,7 @@ function CourseRow({
             boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
           }} />
         </span>
-        <span style={{ fontSize: "11px", fontWeight: 600, color: course.published ? "#FF5B22" : "#9CA3AF", width: "36px" }}>
+        <span style={{ fontSize: "13px", fontWeight: 600, color: course.published ? "#FF5B22" : "#9CA3AF", width: "40px" }}>
           {course.published ? "顯示中" : "已隱藏"}
         </span>
       </button>
@@ -2158,7 +2158,7 @@ export default function AdminCoursesPage() {
                     background: activeTab === item.key ? accent : "transparent",
                     color: activeTab === item.key ? "#fff" : ink,
                     fontWeight: activeTab === item.key ? 700 : 500,
-                    fontSize: "18px",
+                    fontSize: "16px",
                   }}
                 >
                   <item.Icon size={15} strokeWidth={1.5} />
@@ -2193,17 +2193,17 @@ export default function AdminCoursesPage() {
         {/* Course list */}
         <div style={s.card}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-            <h2 style={{ fontWeight: 700, fontSize: "16px", color: ink }}>
+            <h2 style={{ fontWeight: 700, fontSize: "18px", color: ink }}>
               課程列表（共 {visibleCourses.length} 門）
             </h2>
             <div style={{ display: "flex", gap: "8px" }}>
               <button
-                style={{ ...s.btnGhost, fontSize: "13px", display: "flex", alignItems: "center", gap: "6px" }}
+                style={{ ...s.btnGhost, fontSize: "15px", display: "flex", alignItems: "center", gap: "6px" }}
                 onClick={() => setShowReorder(true)}
               >
                 <ArrowUpDown size={13} strokeWidth={1.5} /> 調整順序
               </button>
-              <button style={{ ...s.btnGreen, display: "inline-flex", alignItems: "center", gap: "6px" }} onClick={() => openEditView("new")}>
+              <button style={{ ...s.btnGreen, fontSize: "14px", display: "inline-flex", alignItems: "center", gap: "6px" }} onClick={() => openEditView("new")}>
                 <Plus size={14} strokeWidth={1.5} /> 新增課程
               </button>
             </div>
