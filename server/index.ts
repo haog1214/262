@@ -365,10 +365,12 @@ async function startServer() {
   });
 
   // Self-service: a logged-in member (學員專區) reserves a seat in one or more
-  // upcoming sessions themselves. Unlike the front-desk checkin/register-*
-  // routes, this never touches remaining_hours or creates a checkin row —
-  // hour deduction still only happens when staff scan the member's QR code
-  // on the day of class (see comment near the top of member.html).
+  // upcoming sessions themselves. Hours are deducted immediately (like a
+  // purchase/reservation), all-or-nothing across the batch so a partial
+  // selection never leaves the balance in a confusing in-between state.
+  // seats_checked_in stays 0 and no checkin row is created — actual
+  // attendance/check-in still only happens when staff scan the member's QR
+  // code on the day of class (see comment near the top of member.html).
   app.post("/api/hours/registrations/self", async (req, res) => {
     try {
       const { studentId, sessionIds } = req.body as { studentId: string; sessionIds: string[] };
@@ -377,26 +379,40 @@ async function startServer() {
       }
       const result = await hours.withHoursLock(async () => {
         const students = await hours.readStudents();
-        if (!students.some(s => s.id === studentId)) throw new Error("Student not found");
+        const student = students.find(s => s.id === studentId);
+        if (!student) throw new Error("Student not found");
 
         const sessions = await hours.readSessions();
         const sessionById = new Map(sessions.map(s => [s.id, s]));
         const existingRegs = await hours.readRegistrations();
 
-        const created: string[] = [];
+        const toCreate: string[] = [];
         const skipped: string[] = [];
+        let needed = 0;
         for (const sessionId of sessionIds) {
-          if (!sessionById.has(sessionId)) { skipped.push(sessionId); continue; }
+          const session = sessionById.get(sessionId);
+          if (!session) { skipped.push(sessionId); continue; }
           if (existingRegs.some(r => r.student_id === studentId && r.session_id === sessionId)) {
             skipped.push(sessionId);
             continue;
           }
-          await hours.raw.createRegistration({ student_id: studentId, session_id: sessionId, seats_total: 1, seats_checked_in: 0 });
-          created.push(sessionId);
+          toCreate.push(sessionId);
+          needed += Number(session.hours_per_checkin) || 0;
         }
-        return { created, skipped };
+
+        if (!toCreate.length) return { ok: true as const, created: [], skipped, student };
+        if (Number(student.remaining_hours) < needed) {
+          return { ok: false as const, reason: "insufficient", needed, remaining: Number(student.remaining_hours) };
+        }
+
+        for (const sessionId of toCreate) {
+          await hours.raw.createRegistration({ student_id: studentId, session_id: sessionId, seats_total: 1, seats_checked_in: 0 });
+        }
+        const after = Math.max(0, Number(student.remaining_hours) - needed);
+        const updatedStudent = await hours.raw.updateStudent(studentId, { remaining_hours: after });
+        return { ok: true as const, created: toCreate, skipped, student: updatedStudent };
       });
-      res.json({ ok: true, ...result });
+      res.json(result);
     } catch (err) {
       res.status(500).json({ error: "Self registration failed", detail: String(err) });
     }

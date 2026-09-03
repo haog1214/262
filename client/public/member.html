@@ -1083,8 +1083,8 @@
     <div class="course-detail-sheet">
       <button class="course-detail-close" id="enroll-confirm-close" type="button">✕</button>
       <div class="course-detail-name">確認加入選課</div>
-      <div style="font-size:13px; font-weight:600; color:var(--text-2);">
-        送出後會加入你的帳號，正式報名結果請以現場報到為準
+      <div style="font-size:13px; font-weight:600; color:var(--text-2);" id="enroll-confirm-hint">
+        送出後會立即從你的剩餘時數扣除
       </div>
       <div class="enroll-confirm-list" id="enroll-confirm-list"></div>
       <div class="enroll-confirm-actions">
@@ -1765,9 +1765,12 @@
     document.getElementById('enroll-confirm-list').innerHTML = items.map(s => `
       <div class="enroll-confirm-item">
         <span class="n">${s.name}</span>
-        <span class="d">${fmtDateLabel(s.session_date)}・${s.start_time.slice(0,5)}</span>
+        <span class="d">${fmtDateLabel(s.session_date)}・${s.start_time.slice(0,5)}・${fmtHours(s.hours_per_checkin)} hr</span>
       </div>
     `).join('');
+    const totalHours = items.reduce((sum, s) => sum + (Number(s.hours_per_checkin) || 0), 0);
+    document.getElementById('enroll-confirm-hint').textContent =
+      `送出後會立即從你的剩餘時數扣除，共需 ${fmtHours(totalHours)} hr（目前剩餘 ${me ? fmtHours(me.remaining_hours) : '—'} hr）`;
     enrollConfirmOverlay.classList.add('open');
   }
   document.getElementById('select-cta').addEventListener('click', openEnrollConfirm);
@@ -1782,10 +1785,19 @@
     const originalLabel = btn.textContent;
     btn.textContent = '處理中...';
     try {
-      await HoursAPI.selfEnroll(me.id, [...selectedSessionIds]);
+      const result = await HoursAPI.selfEnroll(me.id, [...selectedSessionIds]);
+      if (!result.ok) {
+        if (result.reason === 'insufficient') {
+          showToast(`時數不足：需要 ${fmtHours(result.needed)} hr，剩餘 ${fmtHours(result.remaining)} hr`);
+        } else {
+          showToast('加入失敗，請稍後再試');
+        }
+        return;
+      }
+      if (result.student) me = studentRowToMe(result.student, true);
       selectedSessionIds.clear();
       enrollConfirmOverlay.classList.remove('open');
-      showToast('✅ 已加入選課');
+      showToast('✅ 已加入選課，已扣除時數');
       await loadRegistrations();
       renderCourses();
       renderHome();
