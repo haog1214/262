@@ -15,9 +15,9 @@
   :root{
     /* Default theme: matches 課程後台管理系統 (admin) light palette —
        paper background, near-black ink, sage-tinted borders, orange accent. */
-    --bg:#EAECE4;
+    --bg:#F5F4EF;
     --card:#ffffff;
-    --card-2:#F1F2E9;
+    --card-2:#EFEEE6;
     --line:#E7E8DD;
     --text-1:#14150F;
     --text-2:#71735F;
@@ -98,9 +98,8 @@
     margin:0;
     background-color:var(--bg);
     background-image:
-      radial-gradient(circle at 8% 8%, rgba(255,91,34,.12), transparent 40%),
-      radial-gradient(circle at 92% 12%, rgba(31,143,92,.10), transparent 42%),
-      radial-gradient(circle at 30% 95%, rgba(255,91,34,.08), transparent 45%);
+      radial-gradient(circle at 8% 8%, rgba(255,91,34,.10), transparent 40%),
+      radial-gradient(circle at 92% 95%, rgba(255,91,34,.08), transparent 45%);
     background-attachment: fixed;
     color:var(--text-1);
     font-family:var(--font-body);
@@ -199,9 +198,9 @@
     padding:5px 11px; border-radius:var(--r-pill); font-size:11px; font-weight:800;
   }
   .mark .dot{ width:5px; height:5px; border-radius:50%; background:currentColor; }
-  .mark.good{ background:#ffffff; color:var(--good); }
+  .mark.good{ background:var(--good-bg); color:var(--good); }
   .mark.warn{ background:var(--warn-bg); color:var(--warn); }
-  .mark.crit{ background:#ffffff; color:var(--crit); }
+  .mark.crit{ background:var(--crit-bg); color:var(--crit); }
   .mark.neutral{ background:var(--card-2); color:var(--text-3); }
 
   /* ---------- Login screen ---------- */
@@ -258,7 +257,7 @@
 
   .avatar-circle{
     width:62px; height:62px; border-radius:50%; flex:none;
-    background:var(--arctic); color:var(--arctic-ink);
+    background:var(--orange); color:#fff;
     display:flex; align-items:center; justify-content:center;
     font-size:23px; font-weight:800; overflow:hidden; position:relative;
     box-shadow:0 10px 22px -8px rgba(0,0,0,.4);
@@ -456,6 +455,8 @@
   .pencil-btn svg{ width:13px; height:13px; }
   .profile-phone{ font-size:14px; font-weight:600; color:var(--text-2); margin-top:2px; font-variant-numeric:tabular-nums; }
   .profile-since{ font-size:13px; font-weight:500; color:var(--text-3); margin-top:1px; }
+  .pz-block.pz-dark .profile-phone{ color:rgba(255,255,255,.7); }
+  .pz-block.pz-dark .profile-since{ color:rgba(255,255,255,.5); }
 
   .edit-profile-form{
     background:var(--glass-bg); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
@@ -561,57 +562,69 @@
     margin:0 -20px 22px; width:calc(100% + 40px); flex-shrink:0;
   }
   .pz-block{ padding:24px 22px 30px; position:relative; border-radius:32px; }
-  .pz-block.pz-orange{ background:var(--pz-orange); color:var(--pz-orange-ink); }
-  .pz-block.pz-green{ background:var(--pz-green); color:var(--pz-green-ink); }
-  .pz-block.pz-pink{ background:var(--pz-pink); color:var(--pz-pink-ink); }
-  .pz-block.pz-blue{ background:var(--pz-blue); color:var(--pz-blue-ink); }
+  /* One neutral card style for every section — Pilo-style palette is
+     white/off-white surfaces + black ink, with the single brand accent
+     (orange) reserved for CTAs/active states, and black used only for the
+     one "hero" card (.pz-dark) per screen. The pz-orange/green/pink/blue
+     class names are kept in the markup (and in the JS-generated course
+     list) purely as hooks — they all resolve to the same neutral look now. */
+  .pz-block.pz-orange, .pz-block.pz-green, .pz-block.pz-pink, .pz-block.pz-blue{
+    background:var(--card); color:var(--text-1);
+    border:1px solid var(--line); box-shadow:var(--shadow-card);
+  }
+  .pz-block.pz-dark{ background:#14150F; color:#fff; }
 
   .pz-label{ font-size:12px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; opacity:.7; margin-bottom:10px; }
-  .pz-label.pz-section-title{ font-size:16px; color:#ffffff; opacity:1; }
-  .pz-big{ font-size:40px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+  .pz-label.pz-section-title{ font-size:16px; color:var(--text-1); opacity:1; }
+  .pz-block.pz-dark .pz-label.pz-section-title{ color:#fff; }
+  .pz-big{ font-size:40px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; letter-spacing:-.01em; color:var(--orange); }
+  .pz-block.pz-dark .pz-big{ color:#fff; }
   .pz-big-unit{ font-size:16px; font-weight:700; opacity:.7; margin-bottom:4px; }
   .pz-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .pz-sub{ font-size:14px; font-weight:600; opacity:.72; margin-top:4px; }
   .pz-stat-row{ display:flex; gap:0; margin:0 -20px; width:calc(100% + 40px); }
   .pz-stat-col{
-    flex:1; aspect-ratio:1/0.8; background:var(--pz-green); color:var(--pz-green-ink);
+    flex:1; aspect-ratio:1/0.8; background:var(--card); color:var(--text-1);
+    border:1px solid var(--line); box-shadow:var(--shadow-card);
     border-radius:var(--r-lg); padding:14px 12px;
     display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
   }
   .pz-stat-link{
-    background:var(--pz-green); color:var(--pz-green-ink); border:none; margin:0;
+    background:var(--card); color:var(--text-1); border:1px solid var(--line); box-shadow:var(--shadow-card); margin:0;
     font-family:inherit; cursor:pointer;
   }
   .pz-stat-col .pz-row{ justify-content:center; gap:4px; }
 
-  /* Colored variants of shared components, so lists/cards can sit legibly
-     inside a bright puzzle block instead of on the app's dark/light ground. */
+  /* Shared components that sit inside a pz-block: on the old bright/dark
+     blocks these leaned on `color:inherit` + black-tint overlays; the same
+     rules now read as light-gray surfaces on the new white/black cards. */
   .pz-block .profile-stats{ margin-bottom:0; }
   .pz-block .profile-stat{
-    background:rgba(0,0,0,.08); backdrop-filter:none; -webkit-backdrop-filter:none;
-    border:1.5px solid rgba(0,0,0,.14); color:inherit;
+    background:rgba(0,0,0,.06); backdrop-filter:none; -webkit-backdrop-filter:none;
+    border:1.5px solid var(--line); color:inherit;
   }
+  .pz-block.pz-dark .profile-stat{ background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.16); }
   .pz-block .profile-stat .lbl{ color:inherit; opacity:.65; }
   .pz-block .profile-stat .val{ color:inherit; }
-  .pz-block .next-class-card{ background:rgba(0,0,0,.1); color:inherit; border:1.5px solid rgba(0,0,0,.14); }
-  .pz-block .next-class-date{ background:var(--pz-line); color:#fff; }
+  .pz-block .next-class-card{ background:rgba(0,0,0,.05); color:inherit; border:1.5px solid var(--line); }
+  .pz-block .next-class-date{ background:var(--orange); color:#fff; }
   .pz-block .next-class-sub{ color:inherit; opacity:.72; }
-  .pz-block .next-class-empty{ background:rgba(0,0,0,.08); border:1.5px solid rgba(0,0,0,.14); color:inherit; opacity:.7; }
-  .pz-block .checkin-list-item{ background:rgba(0,0,0,.08); border:1.5px solid rgba(0,0,0,.14); }
+  .pz-block .next-class-empty{ background:rgba(0,0,0,.04); border:1.5px solid var(--line); color:inherit; opacity:.7; }
+  .pz-block .checkin-list-item{ background:rgba(0,0,0,.04); border:1.5px solid var(--line); }
   .pz-block .checkin-list-item .cl-name, .pz-block .checkin-list-item .cl-sub{ color:inherit; }
   .pz-block .checkin-list-item .cl-sub{ opacity:.68; }
   .pz-block .empty-note{ color:inherit; opacity:.65; }
   .pz-block .tab-row{ margin-bottom:12px; }
-  .pz-block .tab-chip{ background:rgba(0,0,0,.08); color:inherit; }
-  .pz-block .tab-chip.active{ background:var(--pz-line); color:#fff; }
-  .pz-block .hist-list{ background:rgba(0,0,0,.08); border:1.5px solid rgba(0,0,0,.14); }
-  .pz-block .hist-item{ border-top-color:rgba(0,0,0,.12); }
+  .pz-block .tab-chip{ background:rgba(0,0,0,.05); color:inherit; }
+  .pz-block .tab-chip.active{ background:var(--orange); color:#fff; }
+  .pz-block .hist-list{ background:rgba(0,0,0,.04); border:1.5px solid var(--line); }
+  .pz-block .hist-item{ border-top-color:var(--line); }
   .pz-block .hist-item-main{ color:inherit; }
   .pz-block .hist-item-sub{ color:inherit; opacity:.65; }
-  .pz-block .theme-switch .theme-opt{ background:rgba(0,0,0,.08); color:inherit; }
-  .pz-block .theme-switch .theme-opt.active{ background:var(--pz-line); color:#fff; }
-  .pz-block .btn.ghost{ background:rgba(0,0,0,.08); color:inherit; }
-  .pz-block .btn.ghost:hover{ background:rgba(0,0,0,.14); }
+  .pz-block .theme-switch .theme-opt{ background:rgba(0,0,0,.05); color:inherit; }
+  .pz-block .theme-switch .theme-opt.active{ background:var(--orange); color:#fff; }
+  .pz-block .btn.ghost{ background:rgba(0,0,0,.05); color:inherit; }
+  .pz-block .btn.ghost:hover{ background:rgba(0,0,0,.09); }
 
   /* Courses list: no static markup to seam-fuse (it's a JS-rendered list of
      variable length), so each date group instead becomes its own pz-block,
@@ -806,7 +819,7 @@
     <!-- ---------- HOME ---------- -->
     <section class="screen active" id="screen-home">
       <div class="pz-stack" style="margin-bottom:0; margin-top:-20px;">
-        <div class="pz-block pz-orange" style="padding-top:47px; padding-bottom:60px;">
+        <div class="pz-block pz-dark" style="padding-top:47px; padding-bottom:60px;">
           <div class="home-hero-date-row">
             <div class="home-hero-date" id="home-date-big">08.27</div>
             <div class="avatar-circle" id="home-avatar">
@@ -861,7 +874,7 @@
     <!-- ---------- COURSES ---------- -->
     <section class="screen" id="screen-courses">
       <div class="pz-stack" style="margin-bottom:0; margin-top:-20px;">
-        <div class="pz-block pz-orange" style="padding-bottom:24px;">
+        <div class="pz-block pz-dark" style="padding-bottom:24px;">
           <div class="pz-label pz-section-title">課程總覽</div>
           <div style="font-size:20px; font-weight:800;">近期開放的課程場次</div>
         </div>
@@ -892,7 +905,7 @@
     <!-- ---------- PROFILE ---------- -->
     <section class="screen" id="screen-profile">
       <div class="pz-stack">
-        <div class="pz-block pz-green">
+        <div class="pz-block pz-dark">
           <div class="profile-header" style="margin-bottom:0;">
             <div class="profile-avatar-wrap" id="pf-avatar-wrap" title="點擊上傳照片">
               <div class="profile-avatar">
