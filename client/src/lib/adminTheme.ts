@@ -15,9 +15,12 @@ export const bodyFont = "'Manrope', 'Noto Sans TC', 'PingFang TC', 'Microsoft Jh
 
 export const adminStyles = {
   card: {
-    backgroundColor: "#fff",
-    border: `1px solid ${line}`,
-    borderRadius: "14px",
+    backgroundColor: "rgba(255, 255, 255, 0.55)",
+    backdropFilter: "blur(16px) saturate(160%)",
+    WebkitBackdropFilter: "blur(16px) saturate(160%)",
+    border: `1px solid rgba(255, 255, 255, 0.6)`,
+    boxShadow: "0 8px 32px rgba(20, 21, 15, 0.08)",
+    borderRadius: "16px",
     padding: "24px",
     marginBottom: "20px",
   } as CSSProperties,
