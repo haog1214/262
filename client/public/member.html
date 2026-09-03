@@ -1107,6 +1107,17 @@
     </div>
   </div>
 
+  <div class="course-detail-overlay" id="app-confirm-overlay">
+    <div class="course-detail-sheet">
+      <div class="course-detail-name" id="app-confirm-title">確定嗎？</div>
+      <div style="font-size:13px; font-weight:600; color:var(--text-2);" id="app-confirm-msg"></div>
+      <div class="enroll-confirm-actions">
+        <button class="btn ghost" id="app-confirm-no" type="button">取消</button>
+        <button class="btn primary" id="app-confirm-yes" type="button">確定</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast">已更新</div>
 </div>
 
@@ -1395,12 +1406,45 @@
     const activeScreen = document.getElementById('screen-' + key);
     if (activeScreen) activeScreen.scrollTop = 0;
   }
+  /* In-app confirm dialog (styled like the rest of the app) instead of the
+     browser's native confirm() — reused by both the nav-away guard below and
+     the 我要放棄 handler further down. */
+  const appConfirmOverlay = document.getElementById('app-confirm-overlay');
+  function showConfirm(message, opts){
+    opts = opts || {};
+    document.getElementById('app-confirm-title').textContent = opts.title || '確定嗎？';
+    document.getElementById('app-confirm-msg').textContent = message;
+    const yesBtn = document.getElementById('app-confirm-yes');
+    const noBtn = document.getElementById('app-confirm-no');
+    yesBtn.textContent = opts.yesLabel || '確定';
+    noBtn.textContent = opts.noLabel || '取消';
+    appConfirmOverlay.classList.add('open');
+    return new Promise(resolve => {
+      function cleanup(result){
+        appConfirmOverlay.classList.remove('open');
+        yesBtn.removeEventListener('click', onYes);
+        noBtn.removeEventListener('click', onNo);
+        appConfirmOverlay.removeEventListener('click', onBackdrop);
+        resolve(result);
+      }
+      function onYes(){ cleanup(true); }
+      function onNo(){ cleanup(false); }
+      function onBackdrop(e){ if (e.target === appConfirmOverlay) cleanup(false); }
+      yesBtn.addEventListener('click', onYes);
+      noBtn.addEventListener('click', onNo);
+      appConfirmOverlay.addEventListener('click', onBackdrop);
+    });
+  }
+
   document.querySelectorAll('[data-nav]').forEach(el => {
-    el.addEventListener('click', () => {
+    el.addEventListener('click', async () => {
       const targetKey = el.dataset.nav;
       const onCourses = document.getElementById('screen-courses').classList.contains('active');
       if (onCourses && targetKey !== 'courses' && selectedSessions.size > 0) {
-        const keepSelecting = confirm(`你已勾選 ${selectedSessions.size} 堂課程尚未加入選課，是否要繼續選課？`);
+        const keepSelecting = await showConfirm(
+          `你已勾選 ${selectedSessions.size} 堂課程尚未加入選課，是否要繼續選課？`,
+          { title: '繼續選課？', yesLabel: '繼續選課', noLabel: '放棄並離開' }
+        );
         if (keepSelecting) return; // 是：留在課程頁，選取狀態不變
         selectedSessions.clear(); // 否：放棄目前勾選，再切換頁籤
         renderCourses();
@@ -1688,7 +1732,11 @@
   document.getElementById('course-detail-close').addEventListener('click', () => courseDetailOverlay.classList.remove('open'));
   cdCancelBtn.addEventListener('click', async () => {
     if (!me || !cdSession) return;
-    if (!confirm(`確定要放棄「${cdSession.name}」嗎？已扣除的時數會退回帳號。`)) return;
+    const ok = await showConfirm(
+      `確定要放棄「${cdSession.name}」嗎？已扣除的時數會退回帳號。`,
+      { title: '放棄這堂課？', yesLabel: '確定放棄', noLabel: '取消' }
+    );
+    if (!ok) return;
     cdCancelBtn.disabled = true;
     const originalLabel = cdCancelBtn.textContent;
     cdCancelBtn.textContent = '處理中...';
