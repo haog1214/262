@@ -273,6 +273,34 @@ async function startServer() {
     }
   });
 
+  // Admin "新增學員" helper: look up a company by 統一編號 against the
+  // Ministry of Economic Affairs company-registration open data (mirrored,
+  // no captcha, by the g0v community at company.g0v.ronny.tw) — only covers
+  // registered companies (公司), not sole proprietorships/unregistered ones.
+  app.get("/api/hours/company-lookup/:taxId", async (req, res) => {
+    try {
+      const taxId = req.params.taxId.trim();
+      if (!/^\d{8}$/.test(taxId)) {
+        return res.status(400).json({ error: "統一編號需為 8 碼數字" });
+      }
+      const upstream = await fetch(`https://company.g0v.ronny.tw/api/show/${taxId}`);
+      const json = (await upstream.json().catch(() => null)) as { data?: Record<string, unknown> } | null;
+      const data = json?.data ?? {};
+      const name = typeof data["公司名稱"] === "string" ? data["公司名稱"] as string : "";
+      if (!name) {
+        return res.status(404).json({ error: "查無此統一編號的公司登記資料" });
+      }
+      res.json({
+        taxId,
+        name,
+        representative: typeof data["代表人姓名"] === "string" ? data["代表人姓名"] as string : "",
+        address: typeof data["公司所在地"] === "string" ? data["公司所在地"] as string : "",
+      });
+    } catch (err) {
+      res.status(500).json({ error: "查詢失敗，請稍後再試", detail: String(err) });
+    }
+  });
+
   // Public, unauthenticated self-service — matches the old Supabase setup where the
   // member portal wrote directly with an anon key. Defaults are forced server-side
   // so a self-registration can't hand itself free hours.

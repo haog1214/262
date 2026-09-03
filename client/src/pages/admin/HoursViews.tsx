@@ -602,6 +602,7 @@ export function StudentsView() {
   const { students, checkins, adjustments, loading, reload } = useHoursData();
   const [q, setQ] = useState("");
   const [detailId, setDetailId] = useState<string | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
 
   if (loading) return <div style={emptyStyle}>載入中...</div>;
 
@@ -613,7 +614,10 @@ export function StudentsView() {
 
   return (
     <div>
-      <h2 style={h2Style}>學員管理（共 {students.length} 位）</h2>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+        <h2 style={{ ...h2Style, margin: 0 }}>學員管理（共 {students.length} 位）</h2>
+        <button style={a.btnPrimary} onClick={() => setShowAdd(true)}>+ 新增學員</button>
+      </div>
       <div style={a.card}>
         <input style={{ ...a.input, maxWidth: "280px" }} placeholder="搜尋姓名或統編..." value={q} onChange={e => setQ(e.target.value)} />
         <table style={a.table}>
@@ -659,6 +663,131 @@ export function StudentsView() {
           onChanged={reload}
         />
       )}
+
+      {showAdd && (
+        <AddStudentModal
+          onClose={() => setShowAdd(false)}
+          onCreated={() => { setShowAdd(false); reload(); }}
+        />
+      )}
+    </div>
+  );
+}
+
+const INITIAL_HOURS = 15;
+
+function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const [taxId, setTaxId] = useState("");
+  const [looking, setLooking] = useState(false);
+  const [lookupErr, setLookupErr] = useState("");
+  const [name, setName] = useState("");
+  const [representative, setRepresentative] = useState("");
+  const [address, setAddress] = useState("");
+  const [found, setFound] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const runLookup = async () => {
+    const id = taxId.trim();
+    if (!/^\d{8}$/.test(id)) {
+      setLookupErr("統一編號需為 8 碼數字");
+      return;
+    }
+    setLooking(true);
+    setLookupErr("");
+    try {
+      const r = await hoursApi.lookupCompany(id);
+      setName(r.name);
+      setRepresentative(r.representative);
+      setAddress(r.address);
+      setFound(true);
+    } catch (err) {
+      setFound(false);
+      setName(""); setRepresentative(""); setAddress("");
+      setLookupErr(err instanceof Error ? err.message : "查詢失敗，可手動輸入公司資料");
+    } finally {
+      setLooking(false);
+    }
+  };
+
+  const submit = async () => {
+    if (!taxId.trim() || !name.trim()) return;
+    setSaving(true);
+    try {
+      await hoursApi.createStudent({
+        name: name.trim(),
+        phone: taxId.trim(),
+        remaining_hours: INITIAL_HOURS,
+        purchased_hours: INITIAL_HOURS,
+        is_active: true,
+        joined_at: new Date().toISOString().slice(0, 10),
+        note: [representative && `負責人：${representative}`, address && `登記地址：${address}`].filter(Boolean).join("｜"),
+      });
+      onCreated();
+    } catch (err) {
+      setLookupErr(err instanceof Error ? err.message : "新增失敗，請稍後再試");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 1000,
+        backgroundColor: "rgba(0,0,0,0.45)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "20px",
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{
+        backgroundColor: "#fff", borderRadius: "18px", width: "100%", maxWidth: "440px",
+        maxHeight: "88vh", overflowY: "auto", boxShadow: "0 12px 56px rgba(0,0,0,0.24)", padding: "27px",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+          <div style={{ fontWeight: 800, fontSize: "18px", color: ink }}>新增學員</div>
+          <button style={{ ...iconBtnStyle, width: "33px", height: "33px", borderRadius: "50%" }} onClick={onClose} title="關閉">
+            <X size={15} strokeWidth={2} />
+          </button>
+        </div>
+
+        <label style={a.label}>統一編號</label>
+        <div style={{ display: "flex", gap: "8px", marginBottom: "4px" }}>
+          <input
+            style={{ ...a.input, marginBottom: 0, flex: 1 }}
+            placeholder="請輸入 8 碼統編"
+            value={taxId}
+            onChange={e => { setTaxId(e.target.value); setFound(false); }}
+            maxLength={8}
+          />
+          <button style={{ ...a.btnGhost, flexShrink: 0 }} onClick={runLookup} disabled={looking}>
+            {looking ? "查詢中..." : "查詢"}
+          </button>
+        </div>
+        {lookupErr && <div style={{ fontSize: "12px", color: danger, marginBottom: "10px" }}>{lookupErr}</div>}
+        {found && <div style={{ fontSize: "12px", color: good, marginBottom: "10px" }}>已從經濟部公司登記資料帶入，可手動修改</div>}
+
+        <label style={a.label}>公司名稱</label>
+        <input style={a.input} value={name} onChange={e => setName(e.target.value)} placeholder="查詢後自動帶入，或手動輸入" />
+
+        <label style={a.label}>負責人姓名</label>
+        <input style={a.input} value={representative} onChange={e => setRepresentative(e.target.value)} placeholder="（選填）" />
+
+        <label style={a.label}>登記地址</label>
+        <input style={a.input} value={address} onChange={e => setAddress(e.target.value)} placeholder="（選填）" />
+
+        <div style={{ fontSize: "13px", color: inkSoft, marginBottom: "16px" }}>
+          初始時數將設定為 <b style={{ color: accent }}>{INITIAL_HOURS} hr</b>（剩餘時數與累計購買皆為 {INITIAL_HOURS} hr），新增後可在學員詳情調整。
+        </div>
+
+        <button
+          style={{ ...a.btnPrimary, width: "100%", padding: "12px", fontSize: "15px" }}
+          onClick={submit}
+          disabled={saving || !taxId.trim() || !name.trim()}
+        >
+          {saving ? "新增中..." : "確認新增學員"}
+        </button>
+      </div>
     </div>
   );
 }
