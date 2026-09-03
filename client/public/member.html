@@ -1287,14 +1287,17 @@
   }
   document.getElementById('btn-logout-2').addEventListener('click', doLogout);
 
-  /* ---------- Theme (light / dark) ---------- */
+  /* ---------- Theme (light / dark) ----------
+     Storage key is versioned ("theme-v2") so browsers that already saved
+     "dark" under the old default (pre light-theme-default change) start
+     fresh instead of getting stuck on the old value forever. */
   (function initTheme(){
     let stored = null;
-    try { stored = localStorage.getItem('theme'); } catch(e){}
+    try { stored = localStorage.getItem('theme-v2'); } catch(e){}
     function applyTheme(t){
       document.documentElement.setAttribute('data-theme', t);
       document.querySelectorAll('.theme-opt').forEach(b => b.classList.toggle('active', b.dataset.themeVal === t));
-      try { localStorage.setItem('theme', t); } catch(e){}
+      try { localStorage.setItem('theme-v2', t); } catch(e){}
     }
     applyTheme(stored === 'dark' ? 'dark' : 'light');
     document.querySelectorAll('.theme-opt').forEach(b => {
