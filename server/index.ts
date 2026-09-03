@@ -273,29 +273,51 @@ async function startServer() {
     }
   });
 
-  // Admin "新增學員" helper: look up a company by 統一編號 against the
-  // Ministry of Economic Affairs company-registration open data (mirrored,
-  // no captcha, by the g0v community at company.g0v.ronny.tw) — only covers
-  // registered companies (公司), not sole proprietorships/unregistered ones.
+  // Admin "新增學員" helper: look up a business by 統一編號. Tries two open,
+  // captcha-free government-backed data sources in order:
+  //  1. Ministry of Economic Affairs company registration (mirrored by the
+  //     g0v community at company.g0v.ronny.tw) — covers registered
+  //     companies (股份/有限公司) and includes 代表人姓名 (responsible person).
+  //  2. Ministry of Finance's official 全國營業(稅籍)登記 open API
+  //     (eip.fia.gov.tw) — also covers sole proprietorships/partnerships
+  //     (獨資/合夥) that never show up in the MOEA company registry, but the
+  //     open dataset omits the responsible-person name for privacy reasons.
   app.get("/api/hours/company-lookup/:taxId", async (req, res) => {
     try {
       const taxId = req.params.taxId.trim();
       if (!/^\d{8}$/.test(taxId)) {
         return res.status(400).json({ error: "統一編號需為 8 碼數字" });
       }
-      const upstream = await fetch(`https://company.g0v.ronny.tw/api/show/${taxId}`);
-      const json = (await upstream.json().catch(() => null)) as { data?: Record<string, unknown> } | null;
-      const data = json?.data ?? {};
-      const name = typeof data["公司名稱"] === "string" ? data["公司名稱"] as string : "";
-      if (!name) {
-        return res.status(404).json({ error: "查無此統一編號的公司登記資料" });
+
+      const moeaRes = await fetch(`https://company.g0v.ronny.tw/api/show/${taxId}`);
+      const moeaJson = (await moeaRes.json().catch(() => null)) as { data?: Record<string, unknown> } | null;
+      const moeaData = moeaJson?.data ?? {};
+      const moeaName = typeof moeaData["公司名稱"] === "string" ? moeaData["公司名稱"] as string : "";
+      if (moeaName) {
+        return res.json({
+          taxId,
+          name: moeaName,
+          representative: typeof moeaData["代表人姓名"] === "string" ? moeaData["代表人姓名"] as string : "",
+          address: typeof moeaData["公司所在地"] === "string" ? moeaData["公司所在地"] as string : "",
+          source: "經濟部公司登記",
+        });
       }
-      res.json({
-        taxId,
-        name,
-        representative: typeof data["代表人姓名"] === "string" ? data["代表人姓名"] as string : "",
-        address: typeof data["公司所在地"] === "string" ? data["公司所在地"] as string : "",
-      });
+
+      const finRes = await fetch(`https://eip.fia.gov.tw/OAI/api/businessRegistration/${taxId}`);
+      if (finRes.ok) {
+        const finData = await finRes.json().catch(() => null) as { businessNm?: string; businessAddress?: string } | null;
+        if (finData?.businessNm) {
+          return res.json({
+            taxId,
+            name: finData.businessNm,
+            representative: "",
+            address: finData.businessAddress || "",
+            source: "財政部稅籍登記",
+          });
+        }
+      }
+
+      res.status(404).json({ error: "查無此統一編號的登記資料，請手動輸入" });
     } catch (err) {
       res.status(500).json({ error: "查詢失敗，請稍後再試", detail: String(err) });
     }

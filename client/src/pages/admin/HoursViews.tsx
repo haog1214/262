@@ -684,6 +684,7 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
   const [representative, setRepresentative] = useState("");
   const [address, setAddress] = useState("");
   const [found, setFound] = useState(false);
+  const [source, setSource] = useState("");
   const [saving, setSaving] = useState(false);
 
   const runLookup = async () => {
@@ -700,8 +701,10 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
       setRepresentative(r.representative);
       setAddress(r.address);
       setFound(true);
+      setSource(r.source);
     } catch (err) {
       setFound(false);
+      setSource("");
       setName(""); setRepresentative(""); setAddress("");
       setLookupErr(err instanceof Error ? err.message : "查詢失敗，可手動輸入公司資料");
     } finally {
@@ -765,7 +768,12 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
           </button>
         </div>
         {lookupErr && <div style={{ fontSize: "12px", color: danger, marginBottom: "10px" }}>{lookupErr}</div>}
-        {found && <div style={{ fontSize: "12px", color: good, marginBottom: "10px" }}>已從經濟部公司登記資料帶入，可手動修改</div>}
+        {found && (
+          <div style={{ fontSize: "12px", color: good, marginBottom: "10px" }}>
+            已從{source || "政府開放資料"}帶入，可手動修改
+            {source === "財政部稅籍登記" && "（此來源不含負責人姓名，請視需要手動補上）"}
+          </div>
+        )}
 
         <label style={a.label}>公司名稱</label>
         <input style={a.input} value={name} onChange={e => setName(e.target.value)} placeholder="查詢後自動帶入，或手動輸入" />
