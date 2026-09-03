@@ -2020,8 +2020,8 @@ export default function AdminCoursesPage() {
         <Toast msg={toast} />
         <div style={s.header}>
           <div>
-            <div style={{ fontSize: "17px", fontWeight: 600, color: ink }}>課程後台管理系統</div>
-            <div style={{ fontSize: "12px", color: inkSoft, marginTop: "2px" }}>
+            <div style={{ fontSize: "18px", fontWeight: 600, color: ink }}>課程後台管理系統</div>
+            <div style={{ fontSize: "16px", color: inkSoft, marginTop: "2px" }}>
               {saving ? "⏳ 儲存中..." : "精選課程編輯 · 已連接 Google Sheets"}
             </div>
           </div>
@@ -2044,8 +2044,8 @@ export default function AdminCoursesPage() {
         <Toast msg={toast} />
         <div style={s.header}>
           <div>
-            <div style={{ fontSize: "17px", fontWeight: 600, color: ink }}>課程後台管理系統</div>
-            <div style={{ fontSize: "12px", color: inkSoft, marginTop: "2px" }}>
+            <div style={{ fontSize: "18px", fontWeight: 600, color: ink }}>課程後台管理系統</div>
+            <div style={{ fontSize: "16px", color: inkSoft, marginTop: "2px" }}>
               報名管理 · 已連接 Google Sheets
             </div>
           </div>
@@ -2105,8 +2105,8 @@ export default function AdminCoursesPage() {
       {/* Header */}
       <div style={s.header}>
         <div>
-          <div style={{ fontSize: "17px", fontWeight: 600, color: ink }}>課程後台管理系統</div>
-          <div style={{ fontSize: "12px", color: inkSoft, marginTop: "2px" }}>
+          <div style={{ fontSize: "18px", fontWeight: 600, color: ink }}>課程後台管理系統</div>
+          <div style={{ fontSize: "16px", color: inkSoft, marginTop: "2px" }}>
             {saving ? "⏳ 儲存中..." : "精選課程編輯 · 已連接 Google Sheets"}
           </div>
         </div>
@@ -2158,7 +2158,7 @@ export default function AdminCoursesPage() {
                     background: activeTab === item.key ? accent : "transparent",
                     color: activeTab === item.key ? "#fff" : ink,
                     fontWeight: activeTab === item.key ? 700 : 500,
-                    fontSize: "13px",
+                    fontSize: "18px",
                   }}
                 >
                   <item.Icon size={15} strokeWidth={1.5} />
