@@ -1655,7 +1655,11 @@
     document.getElementById('home-name').textContent = me.name;
     document.getElementById('home-avatar-fallback').textContent = me.name.charAt(0);
     document.getElementById('home-hours').textContent = fmtHours(me.remaining_hours);
-    document.getElementById('home-used-hours').textContent = fmtHours(Math.max(0, Number(me.purchased_hours) - Number(me.remaining_hours)));
+    // 累計上課時數 only counts hours from actual check-ins (myCheckins) — not
+    // hours reserved-but-not-yet-attended by self-enroll, which already show
+    // up as a lower 目前時數 the moment they're registered, before class.
+    const attendedHours = myCheckins.reduce((sum, c) => sum + (Number(c.hours_per_checkin) || 0), 0);
+    document.getElementById('home-used-hours').textContent = fmtHours(attendedHours);
     applyAvatarToUI();
 
     // registered courses = this account's actual course_registrations, split into
