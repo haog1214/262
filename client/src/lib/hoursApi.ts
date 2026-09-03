@@ -13,6 +13,8 @@ export interface HoursStudent {
   note: string;
   joined_at: string;
   created_at: string;
+  avatar_url?: string;
+  tier?: "regular" | "senior";
 }
 
 export interface HoursSession {

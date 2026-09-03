@@ -609,6 +609,7 @@ export function StudentsView() {
   const selected = students.find(s => s.id === selectedId) ?? null;
 
   const toggleActive = (s: HoursStudent) => hoursApi.updateStudent(s.id, { is_active: !s.is_active }).then(reload);
+  const setTier = (s: HoursStudent, tier: "regular" | "senior") => hoursApi.updateStudent(s.id, { tier }).then(reload);
 
   const saveName = async () => {
     if (!selected || !nameDraft.trim()) return;
@@ -624,13 +625,18 @@ export function StudentsView() {
         <div style={a.card}>
           <input style={{ ...a.input, maxWidth: "280px" }} placeholder="搜尋姓名或電話..." value={q} onChange={e => setQ(e.target.value)} />
           <table style={a.table}>
-            <thead><tr><th style={a.th}>姓名</th><th style={a.th}>電話</th><th style={a.th}>剩餘時數</th><th style={a.th}>狀態</th></tr></thead>
+            <thead><tr><th style={a.th}>姓名</th><th style={a.th}>電話</th><th style={a.th}>剩餘時數</th><th style={a.th}>等級</th><th style={a.th}>狀態</th></tr></thead>
             <tbody>
               {sorted.map(s => (
                 <tr key={s.id} onClick={() => setSelectedId(s.id)} style={{ cursor: "pointer", background: selectedId === s.id ? "#FFF3EC" : "transparent" }}>
                   <td style={a.td}>{s.name}</td>
                   <td style={a.td}>{s.phone}</td>
-                  <td style={a.td}>{fmtHours(s.remaining_hours)} hr</td>
+                  <td style={a.td}>{s.tier === "senior" ? "無限" : `${fmtHours(s.remaining_hours)} hr`}</td>
+                  <td style={a.td}>
+                    <span style={{ color: s.tier === "senior" ? accent : inkSoft, fontWeight: 600, fontSize: "12px" }}>
+                      {s.tier === "senior" ? "資深學員" : "一般學員"}
+                    </span>
+                  </td>
                   <td style={a.td}>
                     <span style={{ color: s.is_active ? good : inkSoft, fontWeight: 600, fontSize: "12px" }}>
                       {s.is_active ? "啟用中" : "已停用"}
@@ -667,10 +673,22 @@ export function StudentsView() {
               )}
             </div>
             <div style={{ marginTop: "14px", fontSize: "13px", color: ink }}>
-              剩餘時數 <b>{fmtHours(selected.remaining_hours)} hr</b>　累計購買 {fmtHours(selected.purchased_hours)} hr　上課 {selected.attended_count} 次
+              剩餘時數 <b>{selected.tier === "senior" ? "無限" : `${fmtHours(selected.remaining_hours)} hr`}</b>　累計購買 {fmtHours(selected.purchased_hours)} hr　上課 {selected.attended_count} 次
+            </div>
+            <div style={{ marginTop: "10px", fontSize: "13px", color: ink, display: "flex", alignItems: "center", gap: "8px" }}>
+              會員等級
+              <span style={{ color: selected.tier === "senior" ? accent : inkSoft, fontWeight: 700 }}>
+                {selected.tier === "senior" ? "資深學員（不扣時數）" : "一般學員（扣時數）"}
+              </span>
             </div>
             <button
-              style={{ ...a.btnGhost, marginTop: "10px", color: selected.is_active ? danger : good, borderColor: selected.is_active ? danger : good }}
+              style={{ ...a.btnGhost, marginTop: "8px" }}
+              onClick={() => setTier(selected, selected.tier === "senior" ? "regular" : "senior")}
+            >
+              {selected.tier === "senior" ? "改回一般學員" : "設為資深學員"}
+            </button>
+            <button
+              style={{ ...a.btnGhost, marginTop: "8px", color: selected.is_active ? danger : good, borderColor: selected.is_active ? danger : good }}
               onClick={() => toggleActive(selected)}
             >
               {selected.is_active ? "停用此帳號" : "啟用此帳號"}
@@ -844,7 +862,8 @@ export function SelfQueryView() {
         <div style={a.card}>
           <div style={{ fontWeight: 700, fontSize: "16px", color: ink }}>{result.name}</div>
           <div style={{ fontSize: "13px", color: ink, marginTop: "8px" }}>
-            剩餘時數 <b>{fmtHours(result.remaining_hours)} hr</b>　累計上課 {result.attended_count} 堂
+            剩餘時數 <b>{result.tier === "senior" ? "無限" : `${fmtHours(result.remaining_hours)} hr`}</b>　累計上課 {result.attended_count} 堂
+            {result.tier === "senior" && <span style={{ marginLeft: "8px", color: accent, fontWeight: 700 }}>資深學員</span>}
           </div>
           <div style={{ marginTop: "16px", fontSize: "12px", fontWeight: 700, color: inkSoft }}>最近上課紀錄</div>
           {checkins.map(c => (

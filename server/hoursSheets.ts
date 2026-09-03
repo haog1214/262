@@ -13,6 +13,10 @@ export interface HoursStudent {
   joined_at: string;
   created_at: string;
   avatar_url?: string;
+  // "senior" members never have hours checked or deducted, at self-enroll or
+  // front-desk checkin — everything else about them works the same. Empty/
+  // missing means "regular" (the default, pay-per-class-hours behavior).
+  tier?: "regular" | "senior";
 }
 
 export interface HoursSession {
@@ -60,7 +64,7 @@ export interface HoursAdjustment {
 
 const STUDENT_HEADERS: (keyof HoursStudent)[] = [
   "id", "name", "phone", "email", "remaining_hours", "purchased_hours",
-  "attended_count", "is_active", "note", "joined_at", "created_at", "avatar_url",
+  "attended_count", "is_active", "note", "joined_at", "created_at", "avatar_url", "tier",
 ];
 const SESSION_HEADERS: (keyof HoursSession)[] = [
   "id", "name", "session_date", "start_time", "end_time", "teacher", "room",

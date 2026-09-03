@@ -740,6 +740,11 @@
     border-radius:var(--r-pill); padding:2px 8px; margin-right:6px; letter-spacing:.02em;
     vertical-align:middle;
   }
+  .pf-tier-badge{
+    align-items:center; justify-content:center;
+    background:var(--orange); color:#fff; font-size:10.5px; font-weight:800;
+    border-radius:var(--r-pill); padding:3px 9px; letter-spacing:.02em;
+  }
 </style>
 
 <div id="app">
@@ -938,7 +943,7 @@
           <div class="pz-label">目前時數</div>
           <div class="pz-row" style="align-items:baseline; gap:4px;">
             <div class="pz-big" id="home-hours">0</div>
-            <div class="pz-big-unit" style="margin-bottom:0;">hr</div>
+            <div class="pz-big-unit" id="home-hours-unit" style="margin-bottom:0;">hr</div>
           </div>
         </div>
         <div class="pz-stat-col">
@@ -1021,6 +1026,7 @@
             <div>
               <div class="profile-name-row">
                 <div class="profile-name" id="pf-name">公司</div>
+                <span class="pf-tier-badge" id="pf-tier-badge" style="display:none;">資深學員</span>
                 <button class="pencil-btn" id="btn-edit-profile" title="編輯個人資料" type="button">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                 </button>
@@ -1045,7 +1051,7 @@
         <div class="pz-block pz-blue">
           <div class="pz-label pz-section-title">帳號時數</div>
           <div class="profile-stats" style="margin-bottom:0;">
-            <div class="profile-stat"><div class="lbl">目前時數</div><div class="val"><span id="pf-hours">0</span><span class="unit">hr</span></div></div>
+            <div class="profile-stat"><div class="lbl">目前時數</div><div class="val"><span id="pf-hours">0</span><span class="unit" id="pf-hours-unit">hr</span></div></div>
             <div class="profile-stat"><div class="lbl">已購買</div><div class="val"><span id="pf-purchased">0</span><span class="unit">hr</span></div></div>
             <div class="profile-stat"><div class="lbl">累計上課時數</div><div class="val"><span id="pf-attended">0</span><span class="unit">hr</span></div></div>
           </div>
@@ -1310,7 +1316,8 @@
       attended_count: Number(row.attended_count),
       joined_at: row.joined_at,
       is_active: row.is_active !== false,
-      avatar_url: row.avatar_url || ''
+      avatar_url: row.avatar_url || '',
+      tier: row.tier === 'senior' ? 'senior' : 'regular'
     };
   }
 
@@ -1663,7 +1670,9 @@
     document.getElementById('home-date-big').innerHTML = `${pad(now.getMonth() + 1)}.${pad(now.getDate())}<span class="wd">（週${weekdayNames[now.getDay()]}）</span>`;
     document.getElementById('home-name').textContent = me.name;
     document.getElementById('home-avatar-fallback').textContent = me.name.charAt(0);
-    document.getElementById('home-hours').textContent = fmtHours(me.remaining_hours);
+    const isSenior = me.tier === 'senior';
+    document.getElementById('home-hours').textContent = isSenior ? '無限' : fmtHours(me.remaining_hours);
+    document.getElementById('home-hours-unit').style.display = isSenior ? 'none' : '';
     // 累計上課時數 only counts hours from actual check-ins (myCheckins) — not
     // hours reserved-but-not-yet-attended by self-enroll, which already show
     // up as a lower 目前時數 the moment they're registered, before class.
@@ -1751,8 +1760,9 @@
   document.getElementById('course-detail-close').addEventListener('click', () => courseDetailOverlay.classList.remove('open'));
   cdCancelBtn.addEventListener('click', async () => {
     if (!me || !cdSession) return;
+    const isSenior = me.tier === 'senior';
     const ok = await showConfirm(
-      `確定要放棄「${cdSession.name}」嗎？已扣除的時數會退回帳號。`,
+      isSenior ? `確定要放棄「${cdSession.name}」嗎？` : `確定要放棄「${cdSession.name}」嗎？已扣除的時數會退回帳號。`,
       { title: '放棄這堂課？', yesLabel: '確定放棄', noLabel: '取消' }
     );
     if (!ok) return;
@@ -1767,7 +1777,7 @@
       }
       if (result.student) me = studentRowToMe(result.student, true);
       courseDetailOverlay.classList.remove('open');
-      showToast('已放棄該堂課，時數已退回');
+      showToast(isSenior ? '已放棄該堂課' : '已放棄該堂課，時數已退回');
       await loadRegistrations();
       renderHome();
       renderCourses();
@@ -1903,8 +1913,9 @@
       </div>
     `).join('');
     const totalHours = items.reduce((sum, { s, seats }) => sum + (Number(s.hours_per_checkin) || 0) * seats, 0);
-    document.getElementById('enroll-confirm-hint').textContent =
-      `送出後會立即從你的目前時數扣除，共需 ${fmtHours(totalHours)} hr（目前時數 ${me ? fmtHours(me.remaining_hours) : '—'} hr）`;
+    document.getElementById('enroll-confirm-hint').textContent = (me && me.tier === 'senior')
+      ? '你是資深學員，加入選課不會扣除時數'
+      : `送出後會立即從你的目前時數扣除，共需 ${fmtHours(totalHours)} hr（目前時數 ${me ? fmtHours(me.remaining_hours) : '—'} hr）`;
     return items.length;
   }
   function openEnrollConfirm(){
@@ -1947,7 +1958,7 @@
       if (result.student) me = studentRowToMe(result.student, true);
       selectedSessions.clear();
       enrollConfirmOverlay.classList.remove('open');
-      showToast('✅ 已加入選課，已扣除時數');
+      showToast(me.tier === 'senior' ? '✅ 已加入選課' : '✅ 已加入選課，已扣除時數');
       await loadRegistrations();
       renderCourses();
       renderHome();
@@ -2016,7 +2027,10 @@
     document.getElementById('pf-name').textContent = me.name;
     document.getElementById('pf-phone').textContent = fmtPhoneDisplay(me.phone);
     document.getElementById('pf-since').textContent = me.joined_at ? `加入於 ${String(me.joined_at).replaceAll('-', '/')}` : '';
-    document.getElementById('pf-hours').textContent = fmtHours(me.remaining_hours);
+    const pfIsSenior = me.tier === 'senior';
+    document.getElementById('pf-hours').textContent = pfIsSenior ? '無限' : fmtHours(me.remaining_hours);
+    document.getElementById('pf-hours-unit').style.display = pfIsSenior ? 'none' : '';
+    document.getElementById('pf-tier-badge').style.display = pfIsSenior ? 'inline-flex' : 'none';
     document.getElementById('pf-purchased').textContent = fmtHours(me.purchased_hours);
     // Same logic as the home screen's 累計上課時數: sum of hours from actual
     // check-ins, not attended_count (a session count) and not a
