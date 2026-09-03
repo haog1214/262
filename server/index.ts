@@ -303,6 +303,40 @@ async function startServer() {
     }
   });
 
+  // Public — a member uploads their own profile photo (學員專區). Deliberately
+  // unauthenticated like the rest of the self-service student routes (no
+  // admin password, unlike /api/upload-image which the admin panel uses) —
+  // it can only ever touch this one student's avatar_url. Shares the same
+  // Google Drive folder as course cover images.
+  app.post(
+    "/api/hours/students/self/:id/avatar",
+    express.raw({ type: "*/*", limit: "4mb" }),
+    async (req, res) => {
+      try {
+        const filename = String(req.query.filename ?? "");
+        if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+          return res.status(400).json({ error: "No file data" });
+        }
+        const ext = path.extname(filename).toLowerCase() || ".jpg";
+        if (![".jpg", ".jpeg", ".png", ".webp", ".gif"].includes(ext)) {
+          return res.status(400).json({ error: "Unsupported file type" });
+        }
+        if (!driveIsConfigured()) {
+          return res.status(500).json({ error: "Google Drive is not configured" });
+        }
+        const safeName = `avatar-${req.params.id}-${Date.now()}${ext}`;
+        const url = await uploadImageToDrive(req.body, safeName, ext);
+        const updated = await hours.updateStudent(req.params.id, { avatar_url: url });
+        if (!updated) return res.status(404).json({ error: "Student not found" });
+        res.json({ url, student: updated });
+      } catch (err) {
+        const detail = err instanceof Error ? err.message : String(err);
+        console.error("Avatar upload failed:", err);
+        res.status(500).json({ error: `Failed to upload avatar: ${detail}` });
+      }
+    }
+  );
+
   app.patch("/api/hours/students/:id", async (req, res) => {
     if (!requireHoursAdmin(req, res)) return;
     try {

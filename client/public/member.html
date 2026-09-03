@@ -492,7 +492,7 @@
   }
   .avatar-edit-badge svg{ width:12px; height:12px; }
   .profile-name-row{ display:flex; align-items:center; gap:8px; }
-  .profile-name{ font-size:20px; font-weight:800; }
+  .profile-name{ font-size:20px; font-weight:800; color:#0C1115; }
   .pencil-btn{
     width:26px; height:26px; border-radius:50%; border:none; cursor:pointer;
     background:var(--card); color:var(--text-2); flex:none;
@@ -1309,7 +1309,8 @@
       purchased_hours: Number(row.purchased_hours),
       attended_count: Number(row.attended_count),
       joined_at: row.joined_at,
-      is_active: row.is_active !== false
+      is_active: row.is_active !== false,
+      avatar_url: row.avatar_url || ''
     };
   }
 
@@ -2048,12 +2049,15 @@
     });
   });
 
-  /* ================= AVATAR UPLOAD (stored locally per device) ================= */
+  /* ================= AVATAR UPLOAD =================
+     Live accounts upload to the server (same Google Drive folder as course
+     cover images) so the photo persists across devices. Local/demo accounts
+     (no real backend row to save to) still fall back to localStorage. */
   function avatarKey(){ return 'student_avatar_' + (me ? me.id : ''); }
-  function loadAvatar(){ try { return localStorage.getItem(avatarKey()); } catch(e){ return null; } }
-  function saveAvatar(dataUrl){ try { localStorage.setItem(avatarKey(), dataUrl); } catch(e){} }
+  function loadLocalAvatar(){ try { return localStorage.getItem(avatarKey()); } catch(e){ return null; } }
+  function saveLocalAvatar(dataUrl){ try { localStorage.setItem(avatarKey(), dataUrl); } catch(e){} }
   function applyAvatarToUI(){
-    const url = loadAvatar();
+    const url = (me && me.avatar_url) || loadLocalAvatar();
     const imgs = [document.getElementById('home-avatar-img'), document.getElementById('pf-avatar-img')];
     const fallbacks = [document.getElementById('home-avatar-fallback'), document.getElementById('pf-avatar-fallback')];
     if (url) {
@@ -2067,15 +2071,38 @@
 
   const avatarFileInput = document.getElementById('avatar-file-input');
   document.getElementById('pf-avatar-wrap').addEventListener('click', () => avatarFileInput.click());
-  avatarFileInput.addEventListener('change', () => {
+  avatarFileInput.addEventListener('change', async () => {
     const file = avatarFileInput.files && avatarFileInput.files[0];
+    avatarFileInput.value = '';
     if (!file || !me) return;
     if (!file.type.startsWith('image/')) { showToast('請選擇圖片檔案'); return; }
     if (file.size > 4 * 1024 * 1024) { showToast('圖片太大，請選擇 4MB 以下的照片'); return; }
+
+    if (me.isLive && SB) {
+      try {
+        const buf = await file.arrayBuffer();
+        const res = await fetch(`/api/hours/students/self/${encodeURIComponent(me.id)}/avatar?filename=${encodeURIComponent(file.name)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/octet-stream' },
+          body: buf,
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok) throw new Error((data && data.error) || ('HTTP ' + res.status));
+        me.avatar_url = data.url;
+        applyAvatarToUI();
+        showToast('已更新大頭照');
+      } catch (e) {
+        console.warn('avatar upload failed', e);
+        showToast('照片上傳失敗，請稍後再試');
+      }
+      return;
+    }
+
+    // Local/demo account fallback: no backend row to persist to.
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        saveAvatar(reader.result);
+        saveLocalAvatar(reader.result);
         applyAvatarToUI();
         showToast('已更新大頭照');
       } catch (e) {
@@ -2083,7 +2110,6 @@
       }
     };
     reader.readAsDataURL(file);
-    avatarFileInput.value = '';
   });
 
   /* ================= EDIT PROFILE (name) ================= */

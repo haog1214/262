@@ -12,6 +12,7 @@ export interface HoursStudent {
   note: string;
   joined_at: string;
   created_at: string;
+  avatar_url?: string;
 }
 
 export interface HoursSession {
@@ -59,7 +60,7 @@ export interface HoursAdjustment {
 
 const STUDENT_HEADERS: (keyof HoursStudent)[] = [
   "id", "name", "phone", "email", "remaining_hours", "purchased_hours",
-  "attended_count", "is_active", "note", "joined_at", "created_at",
+  "attended_count", "is_active", "note", "joined_at", "created_at", "avatar_url",
 ];
 const SESSION_HEADERS: (keyof HoursSession)[] = [
   "id", "name", "session_date", "start_time", "end_time", "teacher", "room",
