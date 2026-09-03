@@ -373,10 +373,36 @@
   .date-group{ margin-bottom:18px; }
   .date-group-head{ font-size:13px; font-weight:800; color:var(--text-2); margin:0 0 10px; letter-spacing:.02em; }
   .course-card{
-    display:flex; align-items:center; gap:12px;
     background:var(--glass-bg); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
     border:1px solid var(--glass-border); border-radius:var(--r-lg); padding:14px 15px; margin-bottom:10px;
   }
+  .course-card-row{ display:flex; align-items:center; gap:12px; }
+  /* "課程說明" expand/collapse, revealing the full course record (image,
+     title, tagline, description, outline, location) below the compact row. */
+  .course-desc-toggle{
+    display:flex; align-items:center; gap:4px; margin:10px 0 0 42px;
+    background:none; border:none; padding:0; cursor:pointer; font-family:inherit;
+    font-size:12.5px; font-weight:700; color:var(--orange);
+  }
+  .course-desc-toggle svg{ width:12px; height:12px; transition:transform .15s; }
+  .course-desc-toggle.open svg{ transform:rotate(180deg); }
+  .course-desc-panel{ display:none; margin:12px 0 0 42px; padding-top:12px; border-top:1px solid var(--line); }
+  .course-desc-panel.open{ display:block; }
+  .course-desc-img{ width:100%; max-height:150px; object-fit:cover; border-radius:12px; margin-bottom:12px; display:block; }
+  .course-desc-title{ font-size:16px; font-weight:800; margin-bottom:2px; }
+  .course-desc-tagline{ font-size:13px; font-weight:600; color:var(--text-2); margin-bottom:10px; }
+  .course-desc-body{ font-size:13px; line-height:1.7; color:var(--text-2); margin-bottom:12px; white-space:pre-line; }
+  .course-desc-outline{ margin-bottom:12px; }
+  .course-desc-outline-item{ display:flex; gap:8px; padding:8px 0; border-top:1px solid var(--line); }
+  .course-desc-outline-item:first-child{ border-top:none; }
+  .course-desc-outline-num{
+    flex:none; width:22px; height:22px; border-radius:50%; background:rgba(0,0,0,.05);
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;
+  }
+  .course-desc-outline-text{ flex:1; min-width:0; }
+  .course-desc-outline-text .ot{ font-size:13px; font-weight:700; }
+  .course-desc-outline-text .od{ font-size:12px; color:var(--text-2); margin-top:2px; }
+  .course-desc-loc{ font-size:13px; font-weight:600; color:var(--text-2); }
   /* Left slot: a checkbox for multi-selecting sessions to enroll in (was the
      start/end time — that moved to .course-side on the right instead). */
   .course-select{
@@ -1400,9 +1426,26 @@
   let upcomingSessions = [];
   let registeredCourses = [];
   let myRegistrations = [];
+  let coursesCatalog = new Map(); // course id (number) -> full Course record (image/description/outline/...)
+
+  async function loadCoursesCatalog(){
+    try {
+      const res = await fetch('/api/courses');
+      const data = await res.json();
+      coursesCatalog = new Map((data.courses || []).map(c => [c.id, c]));
+    } catch (e) { console.warn('loadCoursesCatalog failed', e); }
+  }
+
+  // Sessions built from a course+schedule get the id "course-<courseId>-<scheduleId>"
+  // (see deriveSessionFromSchedule in server/index.ts) — that's the only link back
+  // to the full course record, since HoursSession itself has no course_id field.
+  function courseForSession(sessionId){
+    const m = /^course-(\d+)-/.exec(sessionId || '');
+    return m ? coursesCatalog.get(Number(m[1])) : null;
+  }
 
   async function loadEverything(){
-    await Promise.all([ refreshMe(), loadHistory(), loadSessions(), loadRegistrations() ]);
+    await Promise.all([ refreshMe(), loadHistory(), loadSessions(), loadRegistrations(), loadCoursesCatalog() ]);
     renderHome();
     renderCourses();
     renderCheckinQr();
@@ -1641,18 +1684,47 @@
           const selected = selectedSessionIds.has(s.id);
           const selectable = s.is_open && !registered;
           const cls = registered ? 'registered' : (!s.is_open ? 'disabled' : (selected ? 'checked' : ''));
+          const course = courseForSession(s.id);
           return `
           <div class="course-card">
-            <div class="course-select ${cls}" ${selectable ? `data-session-id="${s.id}"` : ''} title="${registered ? '已選課' : (s.is_open ? '選擇這堂課' : '尚未開放')}">${(registered || selected) ? CHECK_SVG : ''}</div>
-            <div class="course-main">
-              <div class="course-name">${s.name}</div>
-              <div class="course-sub">${s.teacher || ''}${s.room ? '・' + s.room : ''}・扣 ${fmtHours(s.hours_per_checkin)} hr</div>
+            <div class="course-card-row">
+              <div class="course-select ${cls}" ${selectable ? `data-session-id="${s.id}"` : ''} title="${registered ? '已選課' : (s.is_open ? '選擇這堂課' : '尚未開放')}">${(registered || selected) ? CHECK_SVG : ''}</div>
+              <div class="course-main">
+                <div class="course-name">${s.name}</div>
+                <div class="course-sub">上課時數 ${fmtHours(s.hours_per_checkin)} hr</div>
+              </div>
+              <div class="course-side">
+                <div class="t1">${s.start_time.slice(0,5)}</div>
+                <div class="t2">${s.end_time.slice(0,5)}</div>
+                <div class="course-countdown">${countdownLabel(daysUntil(s.session_date))}</div>
+              </div>
             </div>
-            <div class="course-side">
-              <div class="t1">${s.start_time.slice(0,5)}</div>
-              <div class="t2">${s.end_time.slice(0,5)}</div>
-              <div class="course-countdown">${countdownLabel(daysUntil(s.session_date))}</div>
+            ${course ? `
+            <button class="course-desc-toggle" data-desc-toggle="${s.id}" type="button">
+              課程說明
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="course-desc-panel" id="course-desc-${s.id}">
+              ${course.backgroundImage ? `<img class="course-desc-img" src="${course.backgroundImage}" alt="">` : ''}
+              <div class="course-desc-title">${course.title}</div>
+              ${course.tools ? `<div class="course-desc-tagline">${course.tools}</div>` : ''}
+              ${course.description ? `<div class="course-desc-body">${course.description}</div>` : ''}
+              ${course.outline && course.outline.length ? `
+                <div class="course-desc-outline">
+                  ${course.outline.map((o, oi) => `
+                    <div class="course-desc-outline-item">
+                      <div class="course-desc-outline-num">${oi + 1}</div>
+                      <div class="course-desc-outline-text">
+                        <div class="ot">${o.title}</div>
+                        ${o.description ? `<div class="od">${o.description}</div>` : ''}
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+              ${course.location ? `<div class="course-desc-loc">📍 ${course.location}</div>` : ''}
             </div>
+            ` : ''}
           </div>
         `; }).join('')}
       </div>
@@ -1667,6 +1739,15 @@
     if (selectedSessionIds.has(id)) selectedSessionIds.delete(id);
     else selectedSessionIds.add(id);
     renderCourses();
+  });
+
+  document.getElementById('courses-list').addEventListener('click', e => {
+    const btn = e.target.closest('[data-desc-toggle]');
+    if (!btn) return;
+    const panel = document.getElementById('course-desc-' + btn.dataset.descToggle);
+    if (!panel) return;
+    const open = panel.classList.toggle('open');
+    btn.classList.toggle('open', open);
   });
 
   function updateSelectCta(){
