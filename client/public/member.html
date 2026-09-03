@@ -339,6 +339,11 @@
     background:var(--glass-bg); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
     border:1px solid var(--glass-border); border-radius:var(--r-lg); margin-bottom:22px;
   }
+  .next-class-empty.link{
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    width:100%; appearance:none; font-family:inherit; color:var(--orange); cursor:pointer;
+  }
+  .next-class-empty.link svg{ width:16px; height:16px; }
 
   .two-col-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:22px; }
   .mini-list-card{ min-height:0; flex-shrink:0; }
@@ -698,6 +703,7 @@
   .pz-block .next-class-date{ background:var(--orange); color:#fff; }
   .pz-block .next-class-sub{ color:inherit; opacity:.72; }
   .pz-block .next-class-empty{ background:rgba(0,0,0,.04); border:1.5px solid var(--line); color:inherit; opacity:.7; }
+  .pz-block .next-class-empty.link{ color:var(--orange); opacity:1; }
   .pz-block .checkin-list-item{ background:rgba(0,0,0,.04); border:1.5px solid var(--line); }
   .pz-block .checkin-list-item .cl-name, .pz-block .checkin-list-item .cl-sub{ color:inherit; }
   .pz-block .checkin-list-item .cl-sub{ opacity:.68; }
@@ -1670,7 +1676,13 @@
     registeredCourses = myRegistrations.filter(r => !isSessionExpired(r));
     incompleteCourses = myRegistrations.filter(r => isSessionExpired(r) && r.seats_checked_in < r.seats_total);
     if (!registeredCourses.length) {
-      nextEl.innerHTML = '<div class="next-class-empty">目前沒有報名中的課程</div>';
+      nextEl.innerHTML = `
+        <button type="button" class="next-class-empty link" id="home-goto-courses">
+          前往選課程
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      `;
+      document.getElementById('home-goto-courses').addEventListener('click', () => goTo('courses'));
     } else {
       nextEl.innerHTML = registeredCourses.map((next, i) => {
         const full = next.seats_checked_in >= next.seats_total;
