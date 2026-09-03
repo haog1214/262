@@ -619,9 +619,9 @@ export function StudentsView() {
         <button style={a.btnPrimary} onClick={() => setShowAdd(true)}>+ 新增學員</button>
       </div>
       <div style={a.card}>
-        <input style={{ ...a.input, maxWidth: "280px" }} placeholder="搜尋姓名或統編..." value={q} onChange={e => setQ(e.target.value)} />
+        <input style={{ ...a.input, maxWidth: "280px" }} placeholder="搜尋名稱或統編..." value={q} onChange={e => setQ(e.target.value)} />
         <table style={a.table}>
-          <thead><tr><th style={a.th}>姓名</th><th style={a.th}>統編</th><th style={a.th}>剩餘時數</th><th style={a.th}>等級</th><th style={a.th}>狀態</th><th style={a.th}></th></tr></thead>
+          <thead><tr><th style={a.th}>名稱</th><th style={a.th}>統編</th><th style={a.th}>剩餘時數</th><th style={a.th}>等級</th><th style={a.th}>狀態</th><th style={a.th}></th></tr></thead>
           <tbody>
             {sorted.map(s => (
               <tr key={s.id}>
