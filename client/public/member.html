@@ -1396,7 +1396,17 @@
     if (activeScreen) activeScreen.scrollTop = 0;
   }
   document.querySelectorAll('[data-nav]').forEach(el => {
-    el.addEventListener('click', () => goTo(el.dataset.nav));
+    el.addEventListener('click', () => {
+      const targetKey = el.dataset.nav;
+      const onCourses = document.getElementById('screen-courses').classList.contains('active');
+      if (onCourses && targetKey !== 'courses' && selectedSessions.size > 0) {
+        const keepSelecting = confirm(`你已勾選 ${selectedSessions.size} 堂課程尚未加入選課，是否要繼續選課？`);
+        if (keepSelecting) return; // 是：留在課程頁，選取狀態不變
+        selectedSessions.clear(); // 否：放棄目前勾選，再切換頁籤
+        renderCourses();
+      }
+      goTo(targetKey);
+    });
   });
   document.getElementById('home-history-link').addEventListener('click', () => {
     goTo('profile');
