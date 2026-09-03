@@ -364,6 +364,44 @@ async function startServer() {
     }
   });
 
+  // Self-service: a logged-in member (學員專區) reserves a seat in one or more
+  // upcoming sessions themselves. Unlike the front-desk checkin/register-*
+  // routes, this never touches remaining_hours or creates a checkin row —
+  // hour deduction still only happens when staff scan the member's QR code
+  // on the day of class (see comment near the top of member.html).
+  app.post("/api/hours/registrations/self", async (req, res) => {
+    try {
+      const { studentId, sessionIds } = req.body as { studentId: string; sessionIds: string[] };
+      if (!studentId || !Array.isArray(sessionIds) || sessionIds.length === 0) {
+        return res.status(400).json({ error: "Missing studentId or sessionIds" });
+      }
+      const result = await hours.withHoursLock(async () => {
+        const students = await hours.readStudents();
+        if (!students.some(s => s.id === studentId)) throw new Error("Student not found");
+
+        const sessions = await hours.readSessions();
+        const sessionById = new Map(sessions.map(s => [s.id, s]));
+        const existingRegs = await hours.readRegistrations();
+
+        const created: string[] = [];
+        const skipped: string[] = [];
+        for (const sessionId of sessionIds) {
+          if (!sessionById.has(sessionId)) { skipped.push(sessionId); continue; }
+          if (existingRegs.some(r => r.student_id === studentId && r.session_id === sessionId)) {
+            skipped.push(sessionId);
+            continue;
+          }
+          await hours.raw.createRegistration({ student_id: studentId, session_id: sessionId, seats_total: 1, seats_checked_in: 0 });
+          created.push(sessionId);
+        }
+        return { created, skipped };
+      });
+      res.json({ ok: true, ...result });
+    } catch (err) {
+      res.status(500).json({ error: "Self registration failed", detail: String(err) });
+    }
+  });
+
   app.get("/api/hours/checkins", async (_req, res) => {
     try {
       const [checkins, sessions] = await Promise.all([hours.readCheckins(), hours.readSessions()]);
