@@ -13,10 +13,17 @@ export interface HoursStudent {
   joined_at: string;
   created_at: string;
   avatar_url?: string;
-  // "senior" members never have hours checked or deducted, at self-enroll or
-  // front-desk checkin — everything else about them works the same. Empty/
-  // missing means "regular" (the default, pay-per-class-hours behavior).
-  tier?: "regular" | "senior";
+}
+
+// A named package (e.g. "方案A") that sets how many hours a newly-created
+// student starts with — picked in the 新增學員 form instead of a hardcoded
+// default. Purely a data-entry convenience; it doesn't affect the student
+// afterward (their remaining_hours is just a number from then on).
+export interface HoursPlan {
+  id: string;
+  name: string;
+  hours: number;
+  created_at: string;
 }
 
 export interface HoursSession {
@@ -64,8 +71,9 @@ export interface HoursAdjustment {
 
 const STUDENT_HEADERS: (keyof HoursStudent)[] = [
   "id", "name", "phone", "email", "remaining_hours", "purchased_hours",
-  "attended_count", "is_active", "note", "joined_at", "created_at", "avatar_url", "tier",
+  "attended_count", "is_active", "note", "joined_at", "created_at", "avatar_url",
 ];
+const PLAN_HEADERS: (keyof HoursPlan)[] = ["id", "name", "hours", "created_at"];
 const SESSION_HEADERS: (keyof HoursSession)[] = [
   "id", "name", "session_date", "start_time", "end_time", "teacher", "room",
   "hours_per_checkin", "capacity", "is_open", "created_at",
@@ -82,7 +90,7 @@ const ADJUSTMENT_HEADERS: (keyof HoursAdjustment)[] = [
 
 const NUMERIC_FIELDS = new Set([
   "remaining_hours", "purchased_hours", "attended_count",
-  "hours_per_checkin", "capacity", "seats_total", "seats_checked_in", "hours_deducted", "amount",
+  "hours_per_checkin", "capacity", "seats_total", "seats_checked_in", "hours_deducted", "amount", "hours",
 ]);
 const BOOLEAN_FIELDS = new Set(["is_active", "is_open"]);
 
@@ -281,6 +289,36 @@ async function createAdjustmentRaw(data: Omit<HoursAdjustment, "id" | "created_a
   return row;
 }
 export const createAdjustment = (data: Omit<HoursAdjustment, "id" | "created_at">) => withHoursLock(() => createAdjustmentRaw(data));
+
+// ── Plans (named starting-hours packages, picked in 新增學員) ────────────────
+export const readPlans = () => readTable<HoursPlan>("hours_plans", PLAN_HEADERS);
+export const writePlans = (rows: HoursPlan[]) => writeTable("hours_plans", PLAN_HEADERS, rows);
+
+async function createPlanRaw(data: Omit<HoursPlan, "id" | "created_at">): Promise<HoursPlan> {
+  const rows = await readPlans();
+  const row: HoursPlan = { ...data, id: newId(), created_at: nowIso() };
+  rows.push(row);
+  await writePlans(rows);
+  return row;
+}
+async function updatePlanRaw(id: string, patch: Partial<HoursPlan>): Promise<HoursPlan | null> {
+  const rows = await readPlans();
+  const idx = rows.findIndex(r => r.id === id);
+  if (idx === -1) return null;
+  rows[idx] = { ...rows[idx], ...patch };
+  await writePlans(rows);
+  return rows[idx];
+}
+export const createPlan = (data: Omit<HoursPlan, "id" | "created_at">) => withHoursLock(() => createPlanRaw(data));
+export const updatePlan = (id: string, patch: Partial<HoursPlan>) => withHoursLock(() => updatePlanRaw(id, patch));
+export const deletePlan = (id: string) => withHoursLock(async () => {
+  const rows = await readPlans();
+  const idx = rows.findIndex(r => r.id === id);
+  if (idx === -1) return false;
+  rows.splice(idx, 1);
+  await writePlans(rows);
+  return true;
+});
 
 // Exposed for composite atomic operations in index.ts that need several of these
 // Raw steps to happen under a single lock acquisition.

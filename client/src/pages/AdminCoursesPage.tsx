@@ -22,6 +22,7 @@ import {
   Users,
   Scale,
   Search,
+  Tag,
 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -54,7 +55,7 @@ import { formatPrice } from "@/lib/utils";
 import { ink, inkSoft, accent, paper, line, danger, mono, bodyFont } from "@/lib/adminTheme";
 import {
   DashboardView, SessionsView, ImportRosterView, CheckinsView,
-  StudentsView, AdjustView, SelfQueryView,
+  PlansView, StudentsView, AdjustView, SelfQueryView,
 } from "./admin/HoursViews";
 
 const genId = () =>
@@ -1770,7 +1771,7 @@ export default function AdminCoursesPage() {
   const [editingId, setEditingId] = useState<number | "new" | null>(null);
   const [enrollCourseId, setEnrollCourseId] = useState<number | null>(null);
   const [previewCourseId, setPreviewCourseId] = useState<number | null>(null);
-  type SidebarView = "courses" | "closed" | "ci-dashboard" | "ci-sessions" | "ci-import" | "ci-checkins" | "ci-students" | "ci-adjust" | "ci-selfquery";
+  type SidebarView = "courses" | "closed" | "ci-dashboard" | "ci-sessions" | "ci-import" | "ci-checkins" | "ci-plans" | "ci-students" | "ci-adjust" | "ci-selfquery";
   const [activeTab, setActiveTab] = useState<SidebarView>(() => {
     const tab = new URLSearchParams(window.location.search).get("tab");
     return tab === "closed" ? "closed" : "courses";
@@ -2146,6 +2147,7 @@ export default function AdminCoursesPage() {
               { key: "ci-checkins" as const, label: "報到紀錄", Icon: CheckSquare },
             ] },
             { label: "學員資訊", items: [
+              { key: "ci-plans" as const, label: "專案名稱", Icon: Tag },
               { key: "ci-students" as const, label: "學員管理", Icon: Users },
               { key: "ci-adjust" as const, label: "時數調整", Icon: Scale },
             ] },
@@ -2286,6 +2288,7 @@ export default function AdminCoursesPage() {
         {activeTab === "ci-sessions" && <SessionsView />}
         {activeTab === "ci-import" && <ImportRosterView />}
         {activeTab === "ci-checkins" && <CheckinsView />}
+        {activeTab === "ci-plans" && <PlansView />}
         {activeTab === "ci-students" && <StudentsView />}
         {activeTab === "ci-adjust" && <AdjustView />}
         {activeTab === "ci-selfquery" && <SelfQueryView />}

@@ -14,7 +14,13 @@ export interface HoursStudent {
   joined_at: string;
   created_at: string;
   avatar_url?: string;
-  tier?: "regular" | "senior";
+}
+
+export interface HoursPlan {
+  id: string;
+  name: string;
+  hours: number;
+  created_at: string;
 }
 
 export interface HoursSession {
@@ -86,6 +92,11 @@ export const hoursApi = {
   lookupCompany: (taxId: string) => call<{ taxId: string; name: string; representative: string; address: string; source: string }>(`/company-lookup/${encodeURIComponent(taxId)}`),
   updateStudent: (id: string, patch: Partial<HoursStudent>) => call<HoursStudent>(`/students/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(patch) }),
   deleteStudent: (id: string) => call<{ ok: boolean }>(`/students/${encodeURIComponent(id)}`, { method: "DELETE" }),
+
+  listPlans: () => call<HoursPlan[]>("/plans"),
+  createPlan: (data: { name: string; hours: number }) => call<HoursPlan>("/plans", { method: "POST", body: JSON.stringify(data) }),
+  updatePlan: (id: string, patch: Partial<{ name: string; hours: number }>) => call<HoursPlan>(`/plans/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(patch) }),
+  deletePlan: (id: string) => call<{ ok: boolean }>(`/plans/${encodeURIComponent(id)}`, { method: "DELETE" }),
 
   listSessions: () => call<HoursSession[]>("/sessions"),
   createSession: (data: Omit<HoursSession, "id" | "created_at">) => call<HoursSession>("/sessions", { method: "POST", body: JSON.stringify(data) }),

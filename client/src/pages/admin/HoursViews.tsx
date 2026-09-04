@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BookOpen, CheckSquare, AlertTriangle, Clock3, TrendingUp, TrendingDown, LayoutGrid, Search, X } from "lucide-react";
-import { hoursApi, fmtHours, type HoursStudent, type HoursSession, type HoursRegistration, type HoursCheckin, type HoursAdjustment, type ImportRow } from "@/lib/hoursApi";
+import { hoursApi, fmtHours, type HoursStudent, type HoursSession, type HoursRegistration, type HoursCheckin, type HoursAdjustment, type HoursPlan, type ImportRow } from "@/lib/hoursApi";
 import { ink, inkSoft, accent, line, danger, good, adminStyles as a } from "@/lib/adminTheme";
 
 const h2Style: React.CSSProperties = { fontWeight: 700, fontSize: "16px", color: ink, margin: "0 0 16px" };
@@ -597,6 +597,99 @@ export function CheckinsView() {
   );
 }
 
+// ── 專案名稱 ────────────────────────────────────────────────────────────────
+export function PlansView() {
+  const [plans, setPlans] = useState<HoursPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [name, setName] = useState("");
+  const [hours, setHours] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editHours, setEditHours] = useState("");
+
+  const reload = () => {
+    setLoading(true);
+    hoursApi.listPlans().then(list => { setPlans(list); setLoading(false); }).catch(() => setLoading(false));
+  };
+  useEffect(() => { reload(); }, []);
+
+  const addPlan = async () => {
+    if (!name.trim() || !hours) return;
+    await hoursApi.createPlan({ name: name.trim(), hours: Number(hours) });
+    setName(""); setHours("");
+    reload();
+  };
+  const startEdit = (p: HoursPlan) => { setEditingId(p.id); setEditName(p.name); setEditHours(String(p.hours)); };
+  const saveEdit = async () => {
+    if (!editingId || !editName.trim() || !editHours) return;
+    await hoursApi.updatePlan(editingId, { name: editName.trim(), hours: Number(editHours) });
+    setEditingId(null);
+    reload();
+  };
+  const removePlan = async (id: string) => {
+    if (!confirm("確定要刪除此專案嗎？已使用此專案建立的學員不受影響。")) return;
+    await hoursApi.deletePlan(id);
+    reload();
+  };
+
+  if (loading) return <div style={emptyStyle}>載入中...</div>;
+
+  return (
+    <div>
+      <h2 style={h2Style}>專案名稱（共 {plans.length} 個）</h2>
+      <div style={a.card}>
+        <h3 style={{ fontSize: "16px", fontWeight: 700, color: ink, margin: "0 0 6px" }}>新增專案</h3>
+        <p style={{ fontSize: "13px", color: inkSoft, marginBottom: "14px" }}>
+          每個專案定義一組固定時數，供「新增學員」時挑選作為初始時數。
+        </p>
+        <div style={{ display: "flex", gap: "10px", alignItems: "flex-end" }}>
+          <div style={{ flex: 1 }}>
+            <label style={a.label}>專案名稱</label>
+            <input style={{ ...a.input, marginBottom: 0 }} value={name} onChange={e => setName(e.target.value)} placeholder="例：新生方案" />
+          </div>
+          <div style={{ width: "140px" }}>
+            <label style={a.label}>時數（hr）</label>
+            <input type="number" style={{ ...a.input, marginBottom: 0 }} value={hours} onChange={e => setHours(e.target.value)} placeholder="例：15" />
+          </div>
+          <button style={a.btnPrimary} onClick={addPlan} disabled={!name.trim() || !hours}>新增</button>
+        </div>
+      </div>
+
+      <div style={a.card}>
+        <table style={a.table}>
+          <thead><tr><th style={a.th}>專案名稱</th><th style={a.th}>時數</th><th style={a.th}></th></tr></thead>
+          <tbody>
+            {plans.map(p => (
+              <tr key={p.id}>
+                {editingId === p.id ? (
+                  <>
+                    <td style={a.td}><input style={{ ...a.input, marginBottom: 0 }} value={editName} onChange={e => setEditName(e.target.value)} /></td>
+                    <td style={a.td}><input type="number" style={{ ...a.input, marginBottom: 0, width: "100px" }} value={editHours} onChange={e => setEditHours(e.target.value)} /></td>
+                    <td style={{ ...a.td, textAlign: "right" as const }}>
+                      <button style={{ ...a.btnPrimary, marginRight: "8px" }} onClick={saveEdit}>儲存</button>
+                      <button style={a.btnGhost} onClick={() => setEditingId(null)}>取消</button>
+                    </td>
+                  </>
+                ) : (
+                  <>
+                    <td style={a.td}>{p.name}</td>
+                    <td style={a.td}>{fmtHours(p.hours)} hr</td>
+                    <td style={{ ...a.td, textAlign: "right" as const }}>
+                      <button style={{ ...a.btnGhost, marginRight: "8px" }} onClick={() => startEdit(p)}>編輯</button>
+                      <button style={{ ...a.btnGhost, color: danger, borderColor: danger }} onClick={() => removePlan(p.id)}>刪除</button>
+                    </td>
+                  </>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {plans.length === 0 && <div style={emptyStyle}>尚未建立任何專案</div>}
+      </div>
+    </div>
+  );
+}
+
 // ── 學生管理 ────────────────────────────────────────────────────────────────
 export function StudentsView() {
   const { students, checkins, adjustments, loading, reload } = useHoursData();
@@ -621,18 +714,13 @@ export function StudentsView() {
       <div style={a.card}>
         <input style={{ ...a.input, maxWidth: "280px" }} placeholder="搜尋名稱或統編..." value={q} onChange={e => setQ(e.target.value)} />
         <table style={a.table}>
-          <thead><tr><th style={a.th}>名稱</th><th style={a.th}>統編</th><th style={a.th}>剩餘時數</th><th style={a.th}>等級</th><th style={a.th}>狀態</th><th style={a.th}></th></tr></thead>
+          <thead><tr><th style={a.th}>名稱</th><th style={a.th}>統編</th><th style={a.th}>剩餘時數</th><th style={a.th}>狀態</th><th style={a.th}></th></tr></thead>
           <tbody>
             {sorted.map(s => (
               <tr key={s.id}>
                 <td style={a.td}>{s.name}</td>
                 <td style={a.td}>{s.phone}</td>
-                <td style={a.td}>{s.tier === "senior" ? "無限" : `${fmtHours(s.remaining_hours)} hr`}</td>
-                <td style={a.td}>
-                  <span style={{ color: s.tier === "senior" ? accent : inkSoft, fontWeight: 600, fontSize: "12px" }}>
-                    {s.tier === "senior" ? "資深學員" : "一般學員"}
-                  </span>
-                </td>
+                <td style={a.td}>{fmtHours(s.remaining_hours)} hr</td>
                 <td style={a.td}>
                   <span style={{ color: s.is_active ? good : inkSoft, fontWeight: 600, fontSize: "12px" }}>
                     {s.is_active ? "啟用中" : "已停用"}
@@ -674,8 +762,6 @@ export function StudentsView() {
   );
 }
 
-const INITIAL_HOURS = 15;
-
 function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const [taxId, setTaxId] = useState("");
   const [looking, setLooking] = useState(false);
@@ -688,6 +774,11 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
   const [found, setFound] = useState(false);
   const [source, setSource] = useState("");
   const [saving, setSaving] = useState(false);
+  const [plans, setPlans] = useState<HoursPlan[]>([]);
+  const [planId, setPlanId] = useState("");
+
+  useEffect(() => { hoursApi.listPlans().then(setPlans).catch(() => setPlans([])); }, []);
+  const selectedPlan = plans.find(p => p.id === planId) ?? null;
 
   const runLookup = async () => {
     const id = taxId.trim();
@@ -715,14 +806,14 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
   };
 
   const submit = async () => {
-    if (!taxId.trim() || !name.trim()) return;
+    if (!taxId.trim() || !name.trim() || !selectedPlan) return;
     setSaving(true);
     try {
       await hoursApi.createStudent({
         name: name.trim(),
         phone: taxId.trim(),
-        remaining_hours: INITIAL_HOURS,
-        purchased_hours: INITIAL_HOURS,
+        remaining_hours: selectedPlan.hours,
+        purchased_hours: selectedPlan.hours,
         is_active: true,
         joined_at: new Date().toISOString().slice(0, 10),
         note: [
@@ -802,14 +893,28 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
         <label style={a.label}>登記地址</label>
         <input style={a.input} value={address} onChange={e => setAddress(e.target.value)} placeholder="（選填）" />
 
-        <div style={{ fontSize: "13px", color: inkSoft, marginBottom: "16px" }}>
-          初始時數將設定為 <b style={{ color: accent }}>{INITIAL_HOURS} hr</b>（剩餘時數與累計購買皆為 {INITIAL_HOURS} hr），新增後可在學員詳情調整。
-        </div>
+        <label style={a.label}>專案名稱</label>
+        <select style={a.input} value={planId} onChange={e => setPlanId(e.target.value)}>
+          <option value="">請選擇專案</option>
+          {plans.map(p => (
+            <option key={p.id} value={p.id}>{p.name}（{fmtHours(p.hours)} hr）</option>
+          ))}
+        </select>
+        {plans.length === 0 && (
+          <div style={{ fontSize: "12px", color: danger, marginTop: "-10px", marginBottom: "14px" }}>
+            尚未建立任何專案，請先到左側「專案名稱」新增
+          </div>
+        )}
+        {selectedPlan && (
+          <div style={{ fontSize: "13px", color: inkSoft, marginBottom: "16px" }}>
+            初始時數將設定為 <b style={{ color: accent }}>{fmtHours(selectedPlan.hours)} hr</b>（剩餘時數與累計購買皆為此數值），新增後可在學員詳情調整。
+          </div>
+        )}
 
         <button
           style={{ ...a.btnPrimary, width: "100%", padding: "12px", fontSize: "15px" }}
           onClick={submit}
-          disabled={saving || !taxId.trim() || !name.trim()}
+          disabled={saving || !taxId.trim() || !name.trim() || !selectedPlan}
         >
           {saving ? "新增中..." : "確認新增學員"}
         </button>
@@ -835,7 +940,6 @@ function StudentDetailModal({
   const [deleteErr, setDeleteErr] = useState("");
 
   const toggleActive = () => hoursApi.updateStudent(student.id, { is_active: !student.is_active }).then(onChanged);
-  const setTier = (tier: "regular" | "senior") => hoursApi.updateStudent(student.id, { tier }).then(onChanged);
   const saveName = async () => {
     if (!nameDraft.trim()) return;
     await hoursApi.updateStudent(student.id, { name: nameDraft.trim() });
@@ -923,8 +1027,7 @@ function StudentDetailModal({
           <div style={statBoxStyle}>
             <div style={{ fontSize: "11px", color: inkSoft, fontWeight: 600, marginBottom: "5px" }}>剩餘時數</div>
             <div style={{ fontSize: "25px", fontWeight: 800, color: accent, lineHeight: 1 }}>
-              {student.tier === "senior" ? "無限" : fmtHours(student.remaining_hours)}
-              {student.tier !== "senior" && <span style={{ fontSize: "12px", fontWeight: 700, marginLeft: "2px" }}>hr</span>}
+              {fmtHours(student.remaining_hours)}<span style={{ fontSize: "12px", fontWeight: 700, marginLeft: "2px" }}>hr</span>
             </div>
           </div>
           <div style={statBoxStyle}>
@@ -940,29 +1043,6 @@ function StudentDetailModal({
             </div>
           </div>
         </div>
-
-        <div style={{
-          marginTop: "15px", display: "flex", alignItems: "center", justifyContent: "space-between",
-          background: student.tier === "senior" ? "#FFF3EC" : "#F7F8F2",
-          border: `1px solid ${student.tier === "senior" ? accent : line}`,
-          borderRadius: "11px", padding: "12px 15px",
-        }}>
-          <span style={{ fontSize: "13px", fontWeight: 700, color: ink }}>會員等級</span>
-          <span style={{
-            fontSize: "13px", fontWeight: 800, color: "#fff",
-            background: student.tier === "senior" ? accent : inkSoft,
-            padding: "5px 12px", borderRadius: "999px",
-          }}>
-            {student.tier === "senior" ? "資深學員・不扣時數" : "一般學員・扣時數"}
-          </span>
-        </div>
-
-        <button
-          style={bigActionBtnStyle}
-          onClick={() => setTier(student.tier === "senior" ? "regular" : "senior")}
-        >
-          {student.tier === "senior" ? "改回一般學員" : "設為資深學員"}
-        </button>
 
         <div style={{ marginTop: "22px", fontSize: "14px", fontWeight: 800, color: ink }}>上課紀錄</div>
         <div style={{ marginTop: "6px" }}>
@@ -1190,8 +1270,7 @@ export function SelfQueryView() {
         <div style={a.card}>
           <div style={{ fontWeight: 700, fontSize: "16px", color: ink }}>{result.name}</div>
           <div style={{ fontSize: "13px", color: ink, marginTop: "8px" }}>
-            剩餘時數 <b>{result.tier === "senior" ? "無限" : `${fmtHours(result.remaining_hours)} hr`}</b>　累計上課 {result.attended_count} 堂
-            {result.tier === "senior" && <span style={{ marginLeft: "8px", color: accent, fontWeight: 700 }}>資深學員</span>}
+            剩餘時數 <b>{fmtHours(result.remaining_hours)} hr</b>　累計上課 {result.attended_count} 堂
           </div>
           <div style={{ marginTop: "16px", fontSize: "12px", fontWeight: 700, color: inkSoft }}>最近上課紀錄</div>
           {checkins.map(c => (

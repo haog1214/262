@@ -421,6 +421,49 @@ async function startServer() {
     }
   });
 
+  // ── Plans (named starting-hours packages, picked in 新增學員) ──────────────
+  app.get("/api/hours/plans", async (_req, res) => {
+    try {
+      res.json(await hours.readPlans());
+    } catch (err) {
+      res.status(500).json({ error: "Failed to read plans", detail: String(err) });
+    }
+  });
+
+  app.post("/api/hours/plans", async (req, res) => {
+    if (!requireHoursAdmin(req, res)) return;
+    try {
+      const { name, hours: planHours } = req.body as { name: string; hours: number };
+      if (!name || !String(name).trim()) return res.status(400).json({ error: "Missing name" });
+      const created = await hours.createPlan({ name: String(name).trim(), hours: Number(planHours) || 0 });
+      res.json(created);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to create plan", detail: String(err) });
+    }
+  });
+
+  app.patch("/api/hours/plans/:id", async (req, res) => {
+    if (!requireHoursAdmin(req, res)) return;
+    try {
+      const updated = await hours.updatePlan(req.params.id, req.body as Partial<{ name: string; hours: number }>);
+      if (!updated) return res.status(404).json({ error: "Plan not found" });
+      res.json(updated);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to update plan", detail: String(err) });
+    }
+  });
+
+  app.delete("/api/hours/plans/:id", async (req, res) => {
+    if (!requireHoursAdmin(req, res)) return;
+    try {
+      const ok = await hours.deletePlan(req.params.id);
+      if (!ok) return res.status(404).json({ error: "Plan not found" });
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to delete plan", detail: String(err) });
+    }
+  });
+
   app.get("/api/hours/sessions", async (_req, res) => {
     try {
       res.json(await hours.readSessions());
@@ -509,15 +552,14 @@ async function startServer() {
         }
 
         if (!toCreate.length) return { ok: true as const, created: [], skipped, student };
-        const isSenior = student.tier === "senior";
-        if (!isSenior && Number(student.remaining_hours) < needed) {
+        if (Number(student.remaining_hours) < needed) {
           return { ok: false as const, reason: "insufficient", needed, remaining: Number(student.remaining_hours) };
         }
 
         for (const { sessionId, seats } of toCreate) {
           await hours.raw.createRegistration({ student_id: studentId, session_id: sessionId, seats_total: seats, seats_checked_in: 0 });
         }
-        const after = isSenior ? Number(student.remaining_hours) : Math.max(0, Number(student.remaining_hours) - needed);
+        const after = Math.max(0, Number(student.remaining_hours) - needed);
         const updatedStudent = await hours.raw.updateStudent(studentId, { remaining_hours: after });
         return { ok: true as const, created: toCreate.map(c => c.sessionId), skipped, student: updatedStudent };
       });
@@ -548,9 +590,7 @@ async function startServer() {
 
         const sessions = await hours.readSessions();
         const session = sessions.find(s => s.id === sessionId);
-        const refund = student.tier === "senior"
-          ? 0
-          : (Number(session?.hours_per_checkin) || 0) * (Number(reg.seats_total) || 1);
+        const refund = (Number(session?.hours_per_checkin) || 0) * (Number(reg.seats_total) || 1);
 
         await hours.writeRegistrations(regs.filter(r => r.id !== reg.id));
         const updatedStudent = await hours.raw.updateStudent(studentId, {
@@ -596,14 +636,13 @@ async function startServer() {
         const reg = regs.find(r => r.student_id === student.id && r.session_id === sessionId);
         if (!reg) return { state: "notregistered" as const, student };
         if (reg.seats_checked_in >= reg.seats_total) return { state: "duplicate" as const, student, reg };
-        const isSenior = student.tier === "senior";
-        if (!isSenior && Number(student.remaining_hours) < Number(need)) return { state: "insufficient" as const, student };
+        if (Number(student.remaining_hours) < Number(need)) return { state: "insufficient" as const, student };
 
-        const after = isSenior ? Number(student.remaining_hours) : Math.max(0, Number(student.remaining_hours) - Number(need));
+        const after = Math.max(0, Number(student.remaining_hours) - Number(need));
         const [updatedStudent] = await Promise.all([
           hours.raw.updateStudent(student.id, { remaining_hours: after, attended_count: Number(student.attended_count) + 1 }),
           hours.raw.updateRegistrationSeatsCheckedIn(reg.id, reg.seats_checked_in + 1),
-          hours.raw.createCheckin({ student_id: student.id, session_id: sessionId, phone_used: phone, result: "success", hours_deducted: isSenior ? 0 : Number(need) }),
+          hours.raw.createCheckin({ student_id: student.id, session_id: sessionId, phone_used: phone, result: "success", hours_deducted: Number(need) }),
         ]);
         return { state: "success" as const, student: updatedStudent };
       });
@@ -623,13 +662,12 @@ async function startServer() {
         const students = await hours.readStudents();
         const student = students.find(s => s.id === studentId);
         if (!student) throw new Error("Student not found");
-        const isSenior = student.tier === "senior";
-        if (!isSenior && Number(student.remaining_hours) < Number(need)) {
+        if (Number(student.remaining_hours) < Number(need)) {
           return { ok: false as const, reason: "insufficient", student };
         }
-        const after = isSenior ? Number(student.remaining_hours) : Math.max(0, Number(student.remaining_hours) - Number(need));
+        const after = Math.max(0, Number(student.remaining_hours) - Number(need));
         await hours.raw.createRegistration({ student_id: studentId, session_id: sessionId, seats_total: 1, seats_checked_in: 1 });
-        await hours.raw.createCheckin({ student_id: studentId, session_id: sessionId, phone_used: phoneUsed, result: "success", hours_deducted: isSenior ? 0 : Number(need) });
+        await hours.raw.createCheckin({ student_id: studentId, session_id: sessionId, phone_used: phoneUsed, result: "success", hours_deducted: Number(need) });
         const updatedStudent = await hours.raw.updateStudent(studentId, { remaining_hours: after, attended_count: Number(student.attended_count) + 1 });
         return { ok: true as const, student: updatedStudent };
       });
