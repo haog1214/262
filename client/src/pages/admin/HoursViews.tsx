@@ -1080,25 +1080,25 @@ export function AdjustView() {
           <input style={{ ...a.input, marginBottom: "14px" }} placeholder="輸入公司名稱或統一編號搜尋..." value={q} onChange={e => setQ(e.target.value)} />
 
           {selected && (
-            <div style={{ background: accent, borderRadius: "12px", padding: "14px", marginBottom: "14px" }}>
+            <div style={{ background: "rgba(255,91,34,0.5)", borderRadius: "12px", padding: "14px", marginBottom: "14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: "14px", color: "#fff" }}>{selected.name}</div>
-                  <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.85)" }}>{selected.phone}・剩餘 {fmtHours(selected.remaining_hours)} hr</div>
+                  <div style={{ fontWeight: 700, fontSize: "14px", color: ink }}>{selected.name}</div>
+                  <div style={{ fontSize: "12px", color: ink }}>{selected.phone}・剩餘 {fmtHours(selected.remaining_hours)} hr</div>
                 </div>
                 <button
-                  style={{ ...a.btnGhost, padding: "4px 10px", color: "#fff", borderColor: "rgba(255,255,255,0.6)" }}
+                  style={{ ...a.btnGhost, padding: "4px 10px", background: "#fff", color: accent, borderColor: "#fff" }}
                   onClick={() => setSelectedId(null)}
                 >取消選擇</button>
               </div>
-              <label style={{ ...a.label, color: "#fff" }}>調整時數（正數為加時，負數為扣時）</label>
+              <label style={{ ...a.label, color: ink }}>調整時數（正數為加時，負數為扣時）</label>
               <input type="number" style={a.input} value={amount} onChange={e => setAmount(e.target.value)} placeholder="例：5 或 -2" />
-              <label style={{ ...a.label, color: "#fff" }}>原因</label>
+              <label style={{ ...a.label, color: ink }}>原因</label>
               <input style={a.input} value={reason} onChange={e => setReason(e.target.value)} placeholder="例：補購課程包" />
-              <label style={{ ...a.label, color: "#fff" }}>備註（選填）</label>
+              <label style={{ ...a.label, color: ink }}>備註（選填）</label>
               <input style={a.input} value={note} onChange={e => setNote(e.target.value)} />
-              <button style={a.btnPrimary} onClick={submit}>確認調整</button>
-              {toast && <span style={{ marginLeft: "12px", fontSize: "13px", color: "#fff", fontWeight: 700 }}>{toast}</span>}
+              <button style={{ ...a.btnPrimary, background: "#fff", color: accent }} onClick={submit}>確認調整</button>
+              {toast && <span style={{ marginLeft: "12px", fontSize: "13px", color: ink, fontWeight: 700 }}>{toast}</span>}
             </div>
           )}
 
