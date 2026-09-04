@@ -188,7 +188,7 @@ const s = {
     backgroundColor: accent,
     color: "#fff",
     border: `1px solid ${accent}`,
-    borderRadius: "2px",
+    borderRadius: "999px",
     padding: "10px 20px",
     fontSize: "13px",
     fontWeight: 500,
@@ -199,7 +199,7 @@ const s = {
     backgroundColor: "transparent",
     color: danger,
     border: `1px solid ${danger}`,
-    borderRadius: "2px",
+    borderRadius: "999px",
     padding: "8px 14px",
     fontSize: "12px",
     fontWeight: 500,
@@ -210,7 +210,7 @@ const s = {
     backgroundColor: "transparent",
     color: inkSoft,
     border: `1px solid ${line}`,
-    borderRadius: "2px",
+    borderRadius: "999px",
     padding: "8px 14px",
     fontSize: "12px",
     letterSpacing: "0.04em",
@@ -220,7 +220,7 @@ const s = {
     backgroundColor: accent,
     color: "#fff",
     border: `1px solid ${accent}`,
-    borderRadius: "2px",
+    borderRadius: "999px",
     padding: "8px 14px",
     fontSize: "12px",
     fontWeight: 500,
@@ -230,7 +230,7 @@ const s = {
   btnIcon: {
     backgroundColor: "transparent",
     border: `1px solid ${line}`,
-    borderRadius: "2px",
+    borderRadius: "999px",
     padding: "6px 10px",
     fontSize: "15px",
     cursor: "pointer",
@@ -240,7 +240,7 @@ const s = {
   btnIconDanger: {
     backgroundColor: "transparent",
     border: `1px solid ${danger}`,
-    borderRadius: "2px",
+    borderRadius: "999px",
     padding: "6px 10px",
     fontSize: "15px",
     cursor: "pointer",
@@ -1103,7 +1103,7 @@ function EnrollmentView({
                         backgroundColor: isFull ? "#FEE2E2" : "#D1FAE5",
                         color: isFull ? "#DC2626" : "#065F46",
                         border: "none",
-                        borderRadius: "14px",
+                        borderRadius: "999px",
                         padding: "5px 12px",
                         fontSize: "12px",
                         fontWeight: 700,
@@ -1478,7 +1478,7 @@ function ReorderModal({
                   disabled={idx === 0}
                   style={{
                     border: "1px solid #D1D5DB",
-                    borderRadius: "6px",
+                    borderRadius: "999px",
                     background: "#fff",
                     width: "30px", height: "30px",
                     cursor: idx === 0 ? "default" : "pointer",
@@ -1492,7 +1492,7 @@ function ReorderModal({
                   disabled={idx === list.length - 1}
                   style={{
                     border: "1px solid #D1D5DB",
-                    borderRadius: "6px",
+                    borderRadius: "999px",
                     background: "#fff",
                     width: "30px", height: "30px",
                     cursor: idx === list.length - 1 ? "default" : "pointer",
@@ -2161,7 +2161,7 @@ export default function AdminCoursesPage() {
                   onClick={() => setActiveTab(item.key)}
                   style={{
                     display: "flex", alignItems: "center", gap: "10px", width: "100%",
-                    padding: "9px 10px", marginBottom: "2px", borderRadius: "10px",
+                    padding: "9px 10px", marginBottom: "2px", borderRadius: "999px",
                     cursor: "pointer", textAlign: "left",
                     background: activeTab === item.key ? "rgba(255, 91, 34, 0.55)" : "transparent",
                     backdropFilter: activeTab === item.key ? "blur(10px) saturate(160%)" : undefined,
