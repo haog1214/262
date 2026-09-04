@@ -23,6 +23,14 @@ export interface HoursPlan {
   created_at: string;
 }
 
+export interface HoursStudentPlan {
+  id: string;
+  student_id: string;
+  plan_id: string;
+  hours: number;
+  created_at: string;
+}
+
 export interface HoursSession {
   id: string;
   name: string;
@@ -97,6 +105,12 @@ export const hoursApi = {
   createPlan: (data: { name: string; hours: number }) => call<HoursPlan>("/plans", { method: "POST", body: JSON.stringify(data) }),
   updatePlan: (id: string, patch: Partial<{ name: string; hours: number }>) => call<HoursPlan>(`/plans/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(patch) }),
   deletePlan: (id: string) => call<{ ok: boolean }>(`/plans/${encodeURIComponent(id)}`, { method: "DELETE" }),
+
+  listStudentPlans: () => call<HoursStudentPlan[]>("/student-plans"),
+  enrollStudents: (planId: string, rows: { taxId: string; name: string; note?: string }[]) =>
+    call<{ created: number; updated: number; skipped: number; results: { taxId: string; status: string }[] }>(
+      "/students/enroll", { method: "POST", body: JSON.stringify({ planId, rows }) }
+    ),
 
   listSessions: () => call<HoursSession[]>("/sessions"),
   createSession: (data: Omit<HoursSession, "id" | "created_at">) => call<HoursSession>("/sessions", { method: "POST", body: JSON.stringify(data) }),

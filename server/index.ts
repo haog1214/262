@@ -20,7 +20,7 @@ import { sendEnrollmentNotification } from "./email.js";
 import { isBot, getBotHtml } from "./botRenderer.js";
 import { uploadImageToDrive, driveIsConfigured } from "./drive.js";
 import * as hours from "./hoursSheets.js";
-import { ensureEnrollmentInHours, type HoursStudent, type HoursSession } from "./hoursSheets.js";
+import { ensureEnrollmentInHours, newId, nowIso, type HoursStudent, type HoursSession } from "./hoursSheets.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -461,6 +461,83 @@ async function startServer() {
       res.json({ ok: true });
     } catch (err) {
       res.status(500).json({ error: "Failed to delete plan", detail: String(err) });
+    }
+  });
+
+  app.get("/api/hours/student-plans", async (req, res) => {
+    if (!requireHoursAdmin(req, res)) return;
+    try {
+      res.json(await hours.readStudentPlans());
+    } catch (err) {
+      res.status(500).json({ error: "Failed to read student plans", detail: String(err) });
+    }
+  });
+
+  // Shared by 新增學員 (single row) and 匯入學員 (many rows): resolves each
+  // row's 統一編號 against existing students and, per row, either
+  //  - creates a brand-new student with the plan's hours (new company), or
+  //  - tops up an existing student's hours by the plan's amount (same
+  //    company, a different 專案 than any it already has), or
+  //  - is skipped if that exact (統編, 專案) pair was already granted.
+  // Always all rows processed together under one lock so two rows for the
+  // same 統編 in one import can't both think they're "new".
+  app.post("/api/hours/students/enroll", async (req, res) => {
+    if (!requireHoursAdmin(req, res)) return;
+    try {
+      const { planId, rows } = req.body as {
+        planId: string;
+        rows: { taxId: string; name: string; note?: string }[];
+      };
+      if (!planId || !Array.isArray(rows) || rows.length === 0) {
+        return res.status(400).json({ error: "Missing planId or rows" });
+      }
+      const result = await hours.withHoursLock(async () => {
+        const plans = await hours.readPlans();
+        const plan = plans.find(p => p.id === planId);
+        if (!plan) throw new Error("Plan not found");
+
+        const students = await hours.readStudents();
+        const studentPlans = await hours.readStudentPlans();
+
+        let created = 0, updated = 0, skipped = 0;
+        const results: { taxId: string; status: "created" | "updated" | "duplicate" | "invalid" }[] = [];
+
+        for (const row of rows) {
+          const taxId = String(row.taxId ?? "").trim();
+          if (!/^\d{8}$/.test(taxId)) { skipped++; results.push({ taxId, status: "invalid" }); continue; }
+
+          let student = students.find(s => s.phone === taxId);
+          if (!student) {
+            student = {
+              id: newId(), name: row.name?.trim() || taxId, phone: taxId, email: "",
+              remaining_hours: plan.hours, purchased_hours: plan.hours, attended_count: 0,
+              is_active: true, note: row.note ?? "", joined_at: new Date().toISOString().slice(0, 10),
+              created_at: nowIso(),
+            };
+            students.push(student);
+            studentPlans.push({ id: newId(), student_id: student.id, plan_id: planId, hours: plan.hours, created_at: nowIso() });
+            created++;
+            results.push({ taxId, status: "created" });
+            continue;
+          }
+
+          const already = studentPlans.some(sp => sp.student_id === student!.id && sp.plan_id === planId);
+          if (already) { skipped++; results.push({ taxId, status: "duplicate" }); continue; }
+
+          student.remaining_hours = Number(student.remaining_hours) + Number(plan.hours);
+          student.purchased_hours = Number(student.purchased_hours) + Number(plan.hours);
+          studentPlans.push({ id: newId(), student_id: student.id, plan_id: planId, hours: plan.hours, created_at: nowIso() });
+          updated++;
+          results.push({ taxId, status: "updated" });
+        }
+
+        await hours.writeStudents(students);
+        await hours.writeStudentPlans(studentPlans);
+        return { created, updated, skipped, results };
+      });
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: "Enroll failed", detail: String(err) });
     }
   });
 

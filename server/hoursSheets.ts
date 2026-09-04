@@ -26,6 +26,19 @@ export interface HoursPlan {
   created_at: string;
 }
 
+// Records that a student has already been granted a given plan — the
+// (student_id, plan_id) pair is the uniqueness key the 新增學員/匯入學員
+// flows check against: same 統編 + same 專案 = 重複會員 (blocked), same
+// 統編 + a different 專案 = 原有會員 (tops up that student's hours instead
+// of creating a second row for the same company).
+export interface HoursStudentPlan {
+  id: string;
+  student_id: string;
+  plan_id: string;
+  hours: number;
+  created_at: string;
+}
+
 export interface HoursSession {
   id: string;
   name: string;
@@ -74,6 +87,7 @@ const STUDENT_HEADERS: (keyof HoursStudent)[] = [
   "attended_count", "is_active", "note", "joined_at", "created_at", "avatar_url",
 ];
 const PLAN_HEADERS: (keyof HoursPlan)[] = ["id", "name", "hours", "created_at"];
+const STUDENT_PLAN_HEADERS: (keyof HoursStudentPlan)[] = ["id", "student_id", "plan_id", "hours", "created_at"];
 const SESSION_HEADERS: (keyof HoursSession)[] = [
   "id", "name", "session_date", "start_time", "end_time", "teacher", "room",
   "hours_per_checkin", "capacity", "is_open", "created_at",
@@ -186,10 +200,10 @@ export function withHoursLock<T>(fn: () => Promise<T>): Promise<T> {
   return result;
 }
 
-function newId(): string {
+export function newId(): string {
   return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 }
-function nowIso(): string {
+export function nowIso(): string {
   return new Date().toISOString();
 }
 
@@ -319,6 +333,10 @@ export const deletePlan = (id: string) => withHoursLock(async () => {
   await writePlans(rows);
   return true;
 });
+
+// ── Student-plan grants ────────────────────────────────────────────────────
+export const readStudentPlans = () => readTable<HoursStudentPlan>("hours_student_plans", STUDENT_PLAN_HEADERS);
+export const writeStudentPlans = (rows: HoursStudentPlan[]) => writeTable("hours_student_plans", STUDENT_PLAN_HEADERS, rows);
 
 // Exposed for composite atomic operations in index.ts that need several of these
 // Raw steps to happen under a single lock acquisition.

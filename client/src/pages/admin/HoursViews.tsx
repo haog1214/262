@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { BookOpen, CheckSquare, AlertTriangle, Clock3, TrendingUp, TrendingDown, LayoutGrid, Search, X } from "lucide-react";
-import { hoursApi, fmtHours, type HoursStudent, type HoursSession, type HoursRegistration, type HoursCheckin, type HoursAdjustment, type HoursPlan, type ImportRow } from "@/lib/hoursApi";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { BookOpen, CheckSquare, AlertTriangle, Clock3, TrendingUp, TrendingDown, LayoutGrid, Search, X, Upload as UploadIcon, Download } from "lucide-react";
+import * as XLSX from "xlsx";
+import { hoursApi, fmtHours, type HoursStudent, type HoursSession, type HoursRegistration, type HoursCheckin, type HoursAdjustment, type HoursPlan, type HoursStudentPlan, type ImportRow } from "@/lib/hoursApi";
 import { ink, inkSoft, accent, line, danger, good, adminStyles as a } from "@/lib/adminTheme";
 
 const h2Style: React.CSSProperties = { fontWeight: 700, fontSize: "16px", color: ink, margin: "0 0 16px" };
@@ -696,6 +697,7 @@ export function StudentsView() {
   const [q, setQ] = useState("");
   const [detailId, setDetailId] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [showImport, setShowImport] = useState(false);
 
   if (loading) return <div style={emptyStyle}>載入中...</div>;
 
@@ -709,7 +711,10 @@ export function StudentsView() {
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
         <h2 style={{ ...h2Style, margin: 0 }}>學員管理（共 {students.length} 位）</h2>
-        <button style={a.btnPrimary} onClick={() => setShowAdd(true)}>+ 新增學員</button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button style={a.btnGhost} onClick={() => setShowImport(true)}>匯入學員</button>
+          <button style={a.btnPrimary} onClick={() => setShowAdd(true)}>+ 新增學員</button>
+        </div>
       </div>
       <div style={a.card}>
         <input style={{ ...a.input, maxWidth: "280px" }} placeholder="搜尋名稱或統編..." value={q} onChange={e => setQ(e.target.value)} />
@@ -758,6 +763,13 @@ export function StudentsView() {
           onCreated={() => { setShowAdd(false); reload(); }}
         />
       )}
+
+      {showImport && (
+        <ImportStudentsModal
+          onClose={() => setShowImport(false)}
+          onImported={() => { setShowImport(false); reload(); }}
+        />
+      )}
     </div>
   );
 }
@@ -776,9 +788,30 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
   const [saving, setSaving] = useState(false);
   const [plans, setPlans] = useState<HoursPlan[]>([]);
   const [planId, setPlanId] = useState("");
+  const [students, setStudents] = useState<HoursStudent[]>([]);
+  const [studentPlans, setStudentPlans] = useState<HoursStudentPlan[]>([]);
 
-  useEffect(() => { hoursApi.listPlans().then(setPlans).catch(() => setPlans([])); }, []);
+  useEffect(() => {
+    hoursApi.listPlans().then(setPlans).catch(() => setPlans([]));
+    hoursApi.listStudents().then(setStudents).catch(() => setStudents([]));
+    hoursApi.listStudentPlans().then(setStudentPlans).catch(() => setStudentPlans([]));
+  }, []);
   const selectedPlan = plans.find(p => p.id === planId) ?? null;
+
+  const validTaxId = /^\d{8}$/.test(taxId.trim());
+  const matchedStudent = validTaxId ? students.find(s => s.phone === taxId.trim()) ?? null : null;
+  const enrollStatus: "new" | "existing" | "duplicate" | null = !validTaxId
+    ? null
+    : !matchedStudent
+      ? "new"
+      : (planId && studentPlans.some(sp => sp.student_id === matchedStudent.id && sp.plan_id === planId))
+        ? "duplicate"
+        : "existing";
+  const statusMeta = {
+    new: { label: "新增會員", color: good, bg: "#DFF3E7" },
+    existing: { label: "原有會員", color: accent, bg: "#FFF3EC" },
+    duplicate: { label: "重複會員", color: danger, bg: "#FBEAE7" },
+  } as const;
 
   const runLookup = async () => {
     const id = taxId.trim();
@@ -806,23 +839,19 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
   };
 
   const submit = async () => {
-    if (!taxId.trim() || !name.trim() || !selectedPlan) return;
+    if (!taxId.trim() || !name.trim() || !selectedPlan || enrollStatus === "duplicate") return;
     setSaving(true);
     try {
-      await hoursApi.createStudent({
+      await hoursApi.enrollStudents(planId, [{
+        taxId: taxId.trim(),
         name: name.trim(),
-        phone: taxId.trim(),
-        remaining_hours: selectedPlan.hours,
-        purchased_hours: selectedPlan.hours,
-        is_active: true,
-        joined_at: new Date().toISOString().slice(0, 10),
         note: [
           representative && `負責人：${representative}`,
           contactPerson && `聯絡人：${contactPerson}`,
           contactPhone && `聯絡電話：${contactPhone}`,
           address && `登記地址：${address}`,
         ].filter(Boolean).join("｜"),
-      });
+      }]);
       onCreated();
     } catch (err) {
       setLookupErr(err instanceof Error ? err.message : "新增失敗，請稍後再試");
@@ -864,7 +893,26 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
           <button style={{ ...a.btnGhost, flexShrink: 0 }} onClick={runLookup} disabled={looking}>
             {looking ? "查詢中..." : "查詢"}
           </button>
+          {enrollStatus && (
+            <span style={{
+              flexShrink: 0, alignSelf: "center", fontSize: "12px", fontWeight: 800,
+              color: statusMeta[enrollStatus].color, background: statusMeta[enrollStatus].bg,
+              padding: "5px 10px", borderRadius: "999px", whiteSpace: "nowrap",
+            }}>
+              {statusMeta[enrollStatus].label}
+            </span>
+          )}
         </div>
+        {enrollStatus === "duplicate" && (
+          <div style={{ fontSize: "12px", color: danger, marginBottom: "10px" }}>
+            此統編已加入所選專案，無法重複新增
+          </div>
+        )}
+        {enrollStatus === "existing" && (
+          <div style={{ fontSize: "12px", color: accent, marginBottom: "10px" }}>
+            此統編已是既有學員，送出後會把此專案加到該學員底下並加總時數
+          </div>
+        )}
         {lookupErr && <div style={{ fontSize: "12px", color: danger, marginBottom: "10px" }}>{lookupErr}</div>}
         {found && (
           <div style={{ fontSize: "12px", color: good, marginBottom: "10px" }}>
@@ -914,10 +962,270 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
         <button
           style={{ ...a.btnPrimary, width: "100%", padding: "12px", fontSize: "15px" }}
           onClick={submit}
-          disabled={saving || !taxId.trim() || !name.trim() || !selectedPlan}
+          disabled={saving || !taxId.trim() || !name.trim() || !selectedPlan || enrollStatus === "duplicate"}
         >
           {saving ? "新增中..." : "確認新增學員"}
         </button>
+      </div>
+    </div>
+  );
+}
+
+type ParsedImportRow = {
+  taxId: string; name: string; representative: string; contactPerson: string;
+  contactPhone: string; address: string; planName: string;
+};
+type EnrollStatus = "new" | "existing" | "duplicate";
+const ENROLL_STATUS_META: Record<EnrollStatus, { label: string; color: string; bg: string }> = {
+  new: { label: "新增會員", color: good, bg: "#DFF3E7" },
+  existing: { label: "原有會員", color: accent, bg: "#FFF3EC" },
+  duplicate: { label: "重複會員", color: danger, bg: "#FBEAE7" },
+};
+
+function ImportStudentsModal({ onClose, onImported }: { onClose: () => void; onImported: () => void }) {
+  const [plans, setPlans] = useState<HoursPlan[]>([]);
+  const [students, setStudents] = useState<HoursStudent[]>([]);
+  const [studentPlans, setStudentPlans] = useState<HoursStudentPlan[]>([]);
+  const [rows, setRows] = useState<ParsedImportRow[]>([]);
+  const [removedIdx, setRemovedIdx] = useState<Set<number>>(new Set());
+  const [planId, setPlanId] = useState("");
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState<{ created: number; updated: number; skipped: number } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    hoursApi.listPlans().then(setPlans).catch(() => setPlans([]));
+    hoursApi.listStudents().then(setStudents).catch(() => setStudents([]));
+    hoursApi.listStudentPlans().then(setStudentPlans).catch(() => setStudentPlans([]));
+  }, []);
+
+  // The file's own 專案名稱 column is only used once, to pre-fill this single
+  // selector for the whole batch (may race the plans fetch above, so retry
+  // once plans arrive too).
+  useEffect(() => {
+    if (planId || !rows.length || !plans.length) return;
+    const firstName = rows[0].planName.trim();
+    if (!firstName) return;
+    const matched = plans.find(p => p.name === firstName);
+    if (matched) setPlanId(matched.id);
+  }, [rows, plans, planId]);
+
+  const downloadTemplate = () => {
+    const ws = XLSX.utils.aoa_to_sheet([
+      ["統一編號", "公司名稱", "負責人姓名", "聯絡人", "聯絡電話", "登記地址", "專案名稱"],
+      ["12345678", "範例股份有限公司", "王小明", "李小華", "0912345678", "台中市西屯區某路1號", "新生方案"],
+    ]);
+    ws["!cols"] = [{ wch: 12 }, { wch: 22 }, { wch: 12 }, { wch: 12 }, { wch: 14 }, { wch: 28 }, { wch: 14 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "學員名單");
+    XLSX.writeFile(wb, "學員匯入範本.xlsx");
+  };
+
+  const onFile = (file: File) => {
+    setError("");
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = e.target?.result;
+        const wb = XLSX.read(data, { type: "binary" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
+        const parsed: ParsedImportRow[] = json
+          .map(r => ({
+            taxId: String(r["統一編號"] ?? "").trim(),
+            name: String(r["公司名稱"] ?? "").trim(),
+            representative: String(r["負責人姓名"] ?? "").trim(),
+            contactPerson: String(r["聯絡人"] ?? "").trim(),
+            contactPhone: String(r["聯絡電話"] ?? "").trim(),
+            address: String(r["登記地址"] ?? "").trim(),
+            planName: String(r["專案名稱"] ?? "").trim(),
+          }))
+          .filter(r => r.taxId);
+        if (!parsed.length) {
+          setError("找不到可用資料，請確認欄位名稱與範本一致（第一列需為欄位標題）");
+          return;
+        }
+        setRows(parsed);
+        setRemovedIdx(new Set());
+        setPlanId("");
+        setStep(2);
+      } catch {
+        setError("檔案解析失敗，請確認是否為 Excel（.xlsx）或 CSV 檔");
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
+
+  const taxIdCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    rows.forEach(r => { counts[r.taxId] = (counts[r.taxId] || 0) + 1; });
+    return counts;
+  }, [rows]);
+
+  const computedRows = useMemo(() => rows.map((r, idx) => {
+    const matchedStudent = students.find(s => s.phone === r.taxId) ?? null;
+    const status: EnrollStatus = !matchedStudent
+      ? "new"
+      : (planId && studentPlans.some(sp => sp.student_id === matchedStudent.id && sp.plan_id === planId))
+        ? "duplicate"
+        : "existing";
+    return { ...r, idx, status, inFileDup: taxIdCounts[r.taxId] > 1, removed: removedIdx.has(idx) };
+  }), [rows, students, studentPlans, planId, taxIdCounts, removedIdx]);
+
+  const visibleRows = computedRows.filter(r => !r.removed);
+  const importableRows = visibleRows.filter(r => r.status !== "duplicate");
+  const inFileDupCount = rows.length ? new Set(Object.keys(taxIdCounts).filter(k => taxIdCounts[k] > 1)).size : 0;
+
+  const removeRow = (idx: number) => setRemovedIdx(prev => new Set(prev).add(idx));
+
+  const commit = async () => {
+    if (!planId) { setError("請選擇專案名稱"); return; }
+    if (!importableRows.length) { setError("沒有可匯入的資料"); return; }
+    setBusy(true);
+    setError("");
+    try {
+      const payload = importableRows.map(r => ({
+        taxId: r.taxId,
+        name: r.name || r.taxId,
+        note: [
+          r.representative && `負責人：${r.representative}`,
+          r.contactPerson && `聯絡人：${r.contactPerson}`,
+          r.contactPhone && `聯絡電話：${r.contactPhone}`,
+          r.address && `登記地址：${r.address}`,
+        ].filter(Boolean).join("｜"),
+      }));
+      const res = await hoursApi.enrollStudents(planId, payload);
+      setResult(res);
+      setStep(3);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "匯入失敗，請稍後再試");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 1000,
+        backgroundColor: "rgba(0,0,0,0.45)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "20px",
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{
+        backgroundColor: "#fff", borderRadius: "18px", width: "100%", maxWidth: step === 1 ? "440px" : "760px",
+        maxHeight: "88vh", overflowY: "auto", boxShadow: "0 12px 56px rgba(0,0,0,0.24)", padding: "27px",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+          <div style={{ fontWeight: 800, fontSize: "18px", color: ink }}>匯入學員</div>
+          <button style={{ ...iconBtnStyle, width: "33px", height: "33px", borderRadius: "50%" }} onClick={onClose} title="關閉">
+            <X size={15} strokeWidth={2} />
+          </button>
+        </div>
+
+        {step === 1 && (
+          <>
+            <p style={{ fontSize: "13px", color: inkSoft, marginBottom: "18px" }}>
+              先下載範本填好資料，再上傳同一個檔案。欄位：統一編號（必填）、公司名稱、負責人姓名、聯絡人、聯絡電話、登記地址、專案名稱。
+            </p>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button style={{ ...a.btnGhost, flex: 1, padding: "14px" }} onClick={downloadTemplate}>
+                <Download size={14} strokeWidth={1.5} style={{ marginRight: "6px", verticalAlign: "-2px" }} />
+                下載模板
+              </button>
+              <button style={{ ...a.btnPrimary, flex: 1, padding: "14px" }} onClick={() => fileInputRef.current?.click()}>
+                <UploadIcon size={14} strokeWidth={1.5} style={{ marginRight: "6px", verticalAlign: "-2px" }} />
+                上傳資料
+              </button>
+              <input
+                ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }}
+                onChange={e => { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = ""; }}
+              />
+            </div>
+            {error && <div style={{ fontSize: "12px", color: danger, marginTop: "12px" }}>{error}</div>}
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <label style={a.label}>專案名稱（套用到整批匯入）</label>
+            <select style={{ ...a.input, marginBottom: "10px" }} value={planId} onChange={e => setPlanId(e.target.value)}>
+              <option value="">請選擇專案</option>
+              {plans.map(p => (
+                <option key={p.id} value={p.id}>{p.name}（{fmtHours(p.hours)} hr）</option>
+              ))}
+            </select>
+
+            {inFileDupCount > 0 && (
+              <div style={{ fontSize: "12px", color: danger, marginBottom: "10px" }}>
+                檔案內有 {inFileDupCount} 組統一編號重複出現，請確認資料是否正確（重複列已標示）
+              </div>
+            )}
+            <p style={{ fontSize: "13px", color: inkSoft, marginBottom: "12px" }}>
+              共 {visibleRows.length} 筆（{visibleRows.filter(r => r.status === "new").length} 筆新增會員・
+              {visibleRows.filter(r => r.status === "existing").length} 筆原有會員・
+              {visibleRows.filter(r => r.status === "duplicate").length} 筆重複會員，重複會員不會被匯入）。
+            </p>
+
+            <div style={{ maxHeight: "360px", overflow: "auto" }}>
+              <table style={a.table}>
+                <thead>
+                  <tr>
+                    <th style={a.th}>統一編號</th><th style={a.th}>公司名稱</th>
+                    <th style={a.th}>狀態</th><th style={a.th}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleRows.map(r => (
+                    <tr key={r.idx}>
+                      <td style={a.td}>
+                        {r.taxId}
+                        {r.inFileDup && <span style={{ marginLeft: "6px", fontSize: "11px", color: danger, fontWeight: 700 }}>檔案內重複</span>}
+                      </td>
+                      <td style={a.td}>{r.name || "—"}</td>
+                      <td style={a.td}>
+                        <span style={{
+                          fontSize: "12px", fontWeight: 800, color: ENROLL_STATUS_META[r.status].color,
+                          background: ENROLL_STATUS_META[r.status].bg, padding: "4px 10px", borderRadius: "999px",
+                        }}>
+                          {ENROLL_STATUS_META[r.status].label}
+                        </span>
+                      </td>
+                      <td style={{ ...a.td, textAlign: "right" as const }}>
+                        <button style={iconBtnStyle} title="從清單移除" onClick={() => removeRow(r.idx)}>
+                          <X size={13} strokeWidth={2} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {visibleRows.length === 0 && <div style={emptyStyle}>沒有可匯入的資料</div>}
+            </div>
+
+            {error && <div style={{ fontSize: "12px", color: danger, marginTop: "12px" }}>{error}</div>}
+            <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
+              <button style={a.btnGhost} onClick={() => setStep(1)}>返回</button>
+              <button style={a.btnPrimary} disabled={busy || !planId || importableRows.length === 0} onClick={commit}>
+                {busy ? "匯入中..." : `確認匯入 ${importableRows.length} 筆`}
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === 3 && result && (
+          <>
+            <p style={{ fontSize: "14px", color: ink, marginBottom: "16px" }}>
+              新增 <b>{result.created}</b> 位新會員，{result.updated} 筆加到既有會員底下並加總時數
+              {result.skipped > 0 && `，略過 ${result.skipped} 筆重複資料`}。
+            </p>
+            <button style={a.btnPrimary} onClick={onImported}>完成</button>
+          </>
+        )}
       </div>
     </div>
   );
