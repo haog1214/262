@@ -1252,6 +1252,33 @@ function StudentDetailModal({
   const [deleteInput, setDeleteInput] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [deleteErr, setDeleteErr] = useState("");
+  const [plans, setPlans] = useState<HoursPlan[]>([]);
+  const [studentPlans, setStudentPlans] = useState<HoursStudentPlan[]>([]);
+  const [tagPlanId, setTagPlanId] = useState("");
+  const [tagging, setTagging] = useState(false);
+
+  useEffect(() => {
+    hoursApi.listPlans().then(setPlans).catch(() => setPlans([]));
+    hoursApi.listStudentPlans().then(setStudentPlans).catch(() => setStudentPlans([]));
+  }, [student.id]);
+
+  const myPlanNames = studentPlans
+    .filter(sp => sp.student_id === student.id)
+    .map(sp => plans.find(p => p.id === sp.plan_id)?.name)
+    .filter((n): n is string => Boolean(n));
+
+  const addTag = async () => {
+    if (!tagPlanId) return;
+    setTagging(true);
+    try {
+      await hoursApi.tagStudentPlan(student.id, tagPlanId);
+      const updated = await hoursApi.listStudentPlans();
+      setStudentPlans(updated);
+      setTagPlanId("");
+    } finally {
+      setTagging(false);
+    }
+  };
 
   const toggleActive = () => hoursApi.updateStudent(student.id, { is_active: !student.is_active }).then(onChanged);
   const saveName = async () => {
@@ -1319,6 +1346,33 @@ function StudentDetailModal({
             <div>
               <div style={{ fontWeight: 800, fontSize: "20px", color: ink, lineHeight: 1.3 }}>{student.name}</div>
               <div style={{ fontSize: "13px", color: inkSoft, marginTop: "3px" }}>統編 {student.phone}</div>
+              <div style={{ marginTop: "6px", display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                {myPlanNames.length > 0 ? (
+                  myPlanNames.map((n, i) => (
+                    <span key={i} style={{ fontSize: "11px", fontWeight: 700, color: accent, background: "#FFF3EC", padding: "3px 10px", borderRadius: "999px" }}>
+                      {n}
+                    </span>
+                  ))
+                ) : (
+                  <span style={{ fontSize: "12px", color: inkSoft }}>尚未設定專案</span>
+                )}
+                <select
+                  style={{ fontSize: "11px", border: `1px solid ${line}`, borderRadius: "999px", padding: "3px 8px", color: inkSoft, background: "#fff" }}
+                  value={tagPlanId}
+                  onChange={e => setTagPlanId(e.target.value)}
+                  disabled={tagging}
+                >
+                  <option value="">+ 加入專案</option>
+                  {plans.filter(p => !myPlanNames.includes(p.name)).map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+                {tagPlanId && (
+                  <button style={{ ...a.btnGhost, fontSize: "11px", padding: "3px 10px" }} onClick={addTag} disabled={tagging}>
+                    {tagging ? "處理中..." : "確認"}
+                  </button>
+                )}
+              </div>
             </div>
           )}
           <div style={{ display: "flex", gap: "8px", flexShrink: 0, marginLeft: "10px" }}>

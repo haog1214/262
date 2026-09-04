@@ -111,6 +111,10 @@ export const hoursApi = {
     call<{ created: number; updated: number; skipped: number; results: { taxId: string; status: string }[] }>(
       "/students/enroll", { method: "POST", body: JSON.stringify({ planId, rows }) }
     ),
+  tagStudentPlan: (studentId: string, planId: string) =>
+    call<{ ok: boolean; created?: boolean; tag?: HoursStudentPlan }>(
+      `/students/${encodeURIComponent(studentId)}/tag-plan`, { method: "POST", body: JSON.stringify({ planId }) }
+    ),
 
   listSessions: () => call<HoursSession[]>("/sessions"),
   createSession: (data: Omit<HoursSession, "id" | "created_at">) => call<HoursSession>("/sessions", { method: "POST", body: JSON.stringify(data) }),

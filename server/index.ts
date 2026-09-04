@@ -541,6 +541,40 @@ async function startServer() {
     }
   });
 
+  // Tags a student as belonging to a plan WITHOUT touching their hours —
+  // for backfilling accounts that already had hours before the 專案 system
+  // existed (or otherwise recording which plan a student is under without
+  // re-granting hours they already have). Idempotent: re-tagging the same
+  // (student, plan) pair is a no-op.
+  app.post("/api/hours/students/:id/tag-plan", async (req, res) => {
+    if (!requireHoursAdmin(req, res)) return;
+    try {
+      const { planId } = req.body as { planId: string };
+      if (!planId) return res.status(400).json({ error: "Missing planId" });
+      const result = await hours.withHoursLock(async () => {
+        const students = await hours.readStudents();
+        const student = students.find(s => s.id === req.params.id);
+        if (!student) return { ok: false as const, reason: "student_not_found" };
+
+        const plans = await hours.readPlans();
+        const plan = plans.find(p => p.id === planId);
+        if (!plan) return { ok: false as const, reason: "plan_not_found" };
+
+        const studentPlans = await hours.readStudentPlans();
+        const already = studentPlans.find(sp => sp.student_id === student.id && sp.plan_id === planId);
+        if (already) return { ok: true as const, tag: already, created: false };
+
+        const tag = { id: newId(), student_id: student.id, plan_id: planId, hours: plan.hours, created_at: nowIso() };
+        studentPlans.push(tag);
+        await hours.writeStudentPlans(studentPlans);
+        return { ok: true as const, tag, created: true };
+      });
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: "Tag plan failed", detail: String(err) });
+    }
+  });
+
   app.get("/api/hours/sessions", async (_req, res) => {
     try {
       res.json(await hours.readSessions());
