@@ -398,6 +398,29 @@ async function startServer() {
     }
   });
 
+  // Removes the student's account row only — historical checkins/adjustments/
+  // registrations are left in place (audit trail), just no longer joined to a
+  // live student record. The client requires re-typing the student's own
+  // phone/統編 before calling this, as an extra confirmation on top of the
+  // admin password already required for every /api/hours/students/* write.
+  app.delete("/api/hours/students/:id", async (req, res) => {
+    if (!requireHoursAdmin(req, res)) return;
+    try {
+      const deleted = await hours.withHoursLock(async () => {
+        const students = await hours.readStudents();
+        const idx = students.findIndex(s => s.id === req.params.id);
+        if (idx === -1) return null;
+        const [removed] = students.splice(idx, 1);
+        await hours.writeStudents(students);
+        return removed;
+      });
+      if (!deleted) return res.status(404).json({ error: "Student not found" });
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to delete student", detail: String(err) });
+    }
+  });
+
   app.get("/api/hours/sessions", async (_req, res) => {
     try {
       res.json(await hours.readSessions());

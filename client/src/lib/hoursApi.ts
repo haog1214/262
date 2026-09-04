@@ -85,6 +85,7 @@ export const hoursApi = {
   createStudent: (data: Partial<HoursStudent> & { name: string; phone: string }) => call<HoursStudent>("/students", { method: "POST", body: JSON.stringify(data) }),
   lookupCompany: (taxId: string) => call<{ taxId: string; name: string; representative: string; address: string; source: string }>(`/company-lookup/${encodeURIComponent(taxId)}`),
   updateStudent: (id: string, patch: Partial<HoursStudent>) => call<HoursStudent>(`/students/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(patch) }),
+  deleteStudent: (id: string) => call<{ ok: boolean }>(`/students/${encodeURIComponent(id)}`, { method: "DELETE" }),
 
   listSessions: () => call<HoursSession[]>("/sessions"),
   createSession: (data: Omit<HoursSession, "id" | "created_at">) => call<HoursSession>("/sessions", { method: "POST", body: JSON.stringify(data) }),

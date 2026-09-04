@@ -829,6 +829,10 @@ function StudentDetailModal({
 }) {
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(student.name);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteInput, setDeleteInput] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteErr, setDeleteErr] = useState("");
 
   const toggleActive = () => hoursApi.updateStudent(student.id, { is_active: !student.is_active }).then(onChanged);
   const setTier = (tier: "regular" | "senior") => hoursApi.updateStudent(student.id, { tier }).then(onChanged);
@@ -837,6 +841,20 @@ function StudentDetailModal({
     await hoursApi.updateStudent(student.id, { name: nameDraft.trim() });
     setEditingName(false);
     onChanged();
+  };
+  const confirmDelete = async () => {
+    if (deleteInput.trim() !== student.phone) return;
+    setDeleting(true);
+    setDeleteErr("");
+    try {
+      await hoursApi.deleteStudent(student.id);
+      onChanged();
+      onClose();
+    } catch (err) {
+      setDeleteErr(err instanceof Error ? err.message : "刪除失敗，請稍後再試");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const statBoxStyle: React.CSSProperties = {
@@ -980,12 +998,42 @@ function StudentDetailModal({
           {adjustments.length === 0 && <div style={{ fontSize: "12px", color: inkSoft, padding: "10px 9px" }}>尚無紀錄</div>}
         </div>
 
-        <button
-          style={{ ...bigActionBtnStyle, marginTop: "22px", color: student.is_active ? danger : good, borderColor: student.is_active ? danger : good }}
-          onClick={toggleActive}
-        >
-          {student.is_active ? "停用此帳號" : "啟用此帳號"}
-        </button>
+        <div style={{ display: "flex", gap: "10px", marginTop: "22px" }}>
+          <button
+            style={{ ...bigActionBtnStyle, marginTop: 0, color: student.is_active ? danger : good, borderColor: student.is_active ? danger : good }}
+            onClick={toggleActive}
+          >
+            {student.is_active ? "停用此帳號" : "啟用此帳號"}
+          </button>
+          <button
+            style={{ ...bigActionBtnStyle, marginTop: 0, color: "#fff", background: danger, borderColor: danger }}
+            onClick={() => { setShowDeleteConfirm(v => !v); setDeleteInput(""); setDeleteErr(""); }}
+          >
+            刪除帳號
+          </button>
+        </div>
+
+        {showDeleteConfirm && (
+          <div style={{ marginTop: "12px", padding: "14px", borderRadius: "12px", border: `1px solid ${danger}`, background: "#FBEAE7" }}>
+            <div style={{ fontSize: "13px", color: ink, marginBottom: "8px" }}>
+              此操作無法復原。請輸入此帳號的統編 <b>{student.phone}</b> 以確認刪除：
+            </div>
+            <input
+              style={{ ...a.input, marginBottom: "8px" }}
+              value={deleteInput}
+              onChange={e => setDeleteInput(e.target.value)}
+              placeholder="請輸入統編"
+            />
+            {deleteErr && <div style={{ fontSize: "12px", color: danger, marginBottom: "8px" }}>{deleteErr}</div>}
+            <button
+              style={{ ...bigActionBtnStyle, marginTop: 0, color: "#fff", background: danger, borderColor: danger, opacity: deleteInput.trim() === student.phone ? 1 : 0.4 }}
+              onClick={confirmDelete}
+              disabled={deleting || deleteInput.trim() !== student.phone}
+            >
+              {deleting ? "刪除中..." : "確認刪除帳號"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
