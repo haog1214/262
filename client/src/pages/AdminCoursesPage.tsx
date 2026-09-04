@@ -2145,7 +2145,7 @@ export default function AdminCoursesPage() {
               { key: "ci-import" as const, label: "匯入名單", Icon: Upload },
               { key: "ci-checkins" as const, label: "報到紀錄", Icon: CheckSquare },
             ] },
-            { label: "學生與時數", items: [
+            { label: "學員資訊", items: [
               { key: "ci-students" as const, label: "學員管理", Icon: Users },
               { key: "ci-adjust" as const, label: "時數調整", Icon: Scale },
             ] },
