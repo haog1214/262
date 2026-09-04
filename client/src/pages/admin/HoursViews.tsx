@@ -1133,12 +1133,18 @@ function ImportStudentsModal({ onClose, onImported }: { onClose: () => void; onI
               先下載範本填好資料，再上傳同一個檔案。欄位：統一編號（必填）、公司名稱、負責人姓名、聯絡人、聯絡電話、登記地址、專案名稱。
             </p>
             <div style={{ display: "flex", gap: "10px" }}>
-              <button style={{ ...a.btnGhost, flex: 1, padding: "14px" }} onClick={downloadTemplate}>
-                <Download size={14} strokeWidth={1.5} style={{ marginRight: "6px", verticalAlign: "-2px" }} />
+              <button
+                style={{ ...a.btnGhost, flex: 1, padding: "14px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                onClick={downloadTemplate}
+              >
+                <Download size={14} strokeWidth={1.5} />
                 下載模板
               </button>
-              <button style={{ ...a.btnPrimary, flex: 1, padding: "14px" }} onClick={() => fileInputRef.current?.click()}>
-                <UploadIcon size={14} strokeWidth={1.5} style={{ marginRight: "6px", verticalAlign: "-2px" }} />
+              <button
+                style={{ ...a.btnPrimary, flex: 1, padding: "14px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <UploadIcon size={14} strokeWidth={1.5} />
                 上傳資料
               </button>
               <input
