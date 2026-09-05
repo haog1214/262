@@ -1528,7 +1528,7 @@ export function AdjustView() {
           <input style={{ ...a.input, marginBottom: "14px" }} placeholder="輸入公司名稱或統一編號搜尋..." value={q} onChange={e => setQ(e.target.value)} />
 
           {selected && (
-            <div style={{ background: "rgba(255,91,34,0.5)", borderRadius: "12px", padding: "14px", marginBottom: "14px" }}>
+            <div style={{ background: accent, borderRadius: "12px", padding: "14px", marginBottom: "14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: "14px", color: ink }}>{selected.name}</div>

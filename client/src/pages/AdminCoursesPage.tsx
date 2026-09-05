@@ -90,11 +90,6 @@ const s = {
   page: {
     minHeight: "100vh",
     backgroundColor: paper,
-    backgroundImage:
-      `radial-gradient(circle at 8% 8%, rgba(255,91,34,0.16), transparent 40%), ` +
-      `radial-gradient(circle at 92% 18%, rgba(31,143,92,0.14), transparent 42%), ` +
-      `radial-gradient(circle at 30% 90%, rgba(255,91,34,0.10), transparent 45%)`,
-    backgroundAttachment: "fixed",
     fontFamily: bodyFont,
     color: ink,
   } as React.CSSProperties,
@@ -117,7 +112,7 @@ const s = {
     backdropFilter: "blur(16px) saturate(160%)",
     WebkitBackdropFilter: "blur(16px) saturate(160%)",
     border: `1px solid rgba(255, 255, 255, 0.6)`,
-    boxShadow: "0 8px 32px rgba(20, 21, 15, 0.08)",
+    boxShadow: "0 8px 32px rgba(47, 13, 1, 0.08)",
     borderRadius: "16px",
     padding: "24px",
     marginBottom: "20px",
@@ -187,7 +182,7 @@ const s = {
   } as React.CSSProperties,
   btnPrimary: {
     backgroundColor: accent,
-    color: "#fff",
+    color: ink,
     border: `1px solid ${accent}`,
     borderRadius: "999px",
     padding: "10px 20px",
@@ -219,7 +214,7 @@ const s = {
   } as React.CSSProperties,
   btnGreen: {
     backgroundColor: accent,
-    color: "#fff",
+    color: ink,
     border: `1px solid ${accent}`,
     borderRadius: "999px",
     padding: "8px 14px",
@@ -990,7 +985,7 @@ function EnrollmentView({
           }}
         >← 返回課程列表</button>
         <div>
-          <div style={{ fontWeight: 700, fontSize: "18px", color: "#FF5B22" }}>{course.courseCode ? `${course.courseCode} ${course.title}` : course.title}</div>
+          <div style={{ fontWeight: 700, fontSize: "18px", color: "#ED4D0C" }}>{course.courseCode ? `${course.courseCode} ${course.title}` : course.title}</div>
           <div style={{ fontSize: "12px", color: "#9CA3AF" }}>報名管理</div>
         </div>
       </div>
@@ -1031,7 +1026,7 @@ function EnrollmentView({
       {/* Schedules */}
       <div style={s.card}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-          <h3 style={{ fontWeight: 700, fontSize: "15px", color: "#FF5B22", margin: 0 }}>
+          <h3 style={{ fontWeight: 700, fontSize: "15px", color: "#ED4D0C", margin: 0 }}>
             課程梯次 {savingSched && <span style={{ fontSize: "12px", color: "#9CA3AF" }}>儲存中...</span>}
           </h3>
           <button style={s.btnGreen} onClick={addSchedule} disabled={!!editingSchedId}>
@@ -1146,7 +1141,7 @@ function EnrollmentView({
       <div style={s.card}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <h3 style={{ fontWeight: 700, fontSize: "15px", color: "#FF5B22", margin: 0 }}>
+            <h3 style={{ fontWeight: 700, fontSize: "15px", color: "#ED4D0C", margin: 0 }}>
               報名人員 {savingEnroll && <span style={{ fontSize: "12px", color: "#9CA3AF" }}>儲存中...</span>}
             </h3>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -1287,7 +1282,7 @@ function EnrollmentView({
         );
         return courseRegs.length > 0 ? (
           <div style={s.card}>
-            <h3 style={{ fontWeight: 700, fontSize: "15px", color: "#FF5B22", margin: "0 0 16px" }}>
+            <h3 style={{ fontWeight: 700, fontSize: "15px", color: "#ED4D0C", margin: "0 0 16px" }}>
               Google Sheets 報名資料（{courseRegs.length} 筆）
             </h3>
             <table style={s.table}>
@@ -1424,7 +1419,7 @@ function ReorderModal({
                 marginBottom: "6px",
                 borderRadius: "10px",
                 border: dragOverIdx === idx && dragIdx !== idx
-                  ? "2px solid #FF5B22"
+                  ? "2px solid #ED4D0C"
                   : "1px solid #E5E7EB",
                 backgroundColor: dragIdx === idx ? "#F0F4FF" : "#FAFAFA",
                 opacity: dragIdx === idx ? 0.5 : 1,
@@ -1439,8 +1434,8 @@ function ReorderModal({
               <div style={{
                 width: "24px", height: "24px",
                 borderRadius: "50%",
-                backgroundColor: "#FF5B22",
-                color: "#fff",
+                backgroundColor: "#ED4D0C",
+                color: "#2F0D01",
                 fontSize: "12px",
                 fontWeight: 700,
                 display: "flex", alignItems: "center", justifyContent: "center",
@@ -1549,7 +1544,7 @@ function PreviewModal({ course, onClose }: { course: Course; onClose: () => void
         boxShadow: "0 8px 40px rgba(0,0,0,0.2)",
       }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-          <div style={{ fontWeight: 700, fontSize: "14px", color: "#FF5B22" }}>前台呈現效果預覽</div>
+          <div style={{ fontWeight: 700, fontSize: "14px", color: "#ED4D0C" }}>前台呈現效果預覽</div>
           <button
             onClick={onClose}
             style={{ background: "none", border: "none", fontSize: "18px", cursor: "pointer", color: "#9CA3AF" }}
@@ -1616,7 +1611,7 @@ function CourseRow({
         ...s.courseRow,
         opacity: dragIndex === idx ? 0.4 : 1,
         borderTop: dragOverIndex === idx && dragIndex !== null && dragIndex !== idx
-          ? "2px solid #FF5B22"
+          ? "2px solid #ED4D0C"
           : "none",
         cursor: dragIndex !== null ? "grabbing" : "default",
         transition: "opacity 0.15s",
@@ -1711,7 +1706,7 @@ function CourseRow({
       >
         <span style={{
           width: "34px", height: "20px", borderRadius: "10px",
-          backgroundColor: course.published ? "#FF5B22" : "#D1D5DB",
+          backgroundColor: course.published ? "#ED4D0C" : "#D1D5DB",
           position: "relative",
           transition: "background-color 0.15s",
           flexShrink: 0,
@@ -1725,7 +1720,7 @@ function CourseRow({
             boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
           }} />
         </span>
-        <span style={{ fontSize: "13px", fontWeight: 600, color: course.published ? "#FF5B22" : "#9CA3AF", width: "40px" }}>
+        <span style={{ fontSize: "13px", fontWeight: 600, color: course.published ? "#ED4D0C" : "#9CA3AF", width: "40px" }}>
           {course.published ? "顯示中" : "已隱藏"}
         </span>
       </button>
@@ -2165,12 +2160,10 @@ export default function AdminCoursesPage() {
                     display: "flex", alignItems: "center", gap: "10px", width: "100%",
                     padding: "9px 10px", marginBottom: "2px", borderRadius: "999px",
                     cursor: "pointer", textAlign: "left",
-                    background: activeTab === item.key ? "rgba(255, 91, 34, 0.55)" : "transparent",
-                    backdropFilter: activeTab === item.key ? "blur(10px) saturate(160%)" : undefined,
-                    WebkitBackdropFilter: activeTab === item.key ? "blur(10px) saturate(160%)" : undefined,
-                    border: activeTab === item.key ? "1px solid rgba(255, 255, 255, 0.45)" : "1px solid transparent",
-                    boxShadow: activeTab === item.key ? "0 4px 16px rgba(255, 91, 34, 0.25)" : "none",
-                    color: activeTab === item.key ? "#fff" : ink,
+                    background: activeTab === item.key ? "#ED4D0C" : "transparent",
+                    border: "1px solid transparent",
+                    boxShadow: activeTab === item.key ? "0 4px 16px rgba(237, 77, 12, 0.25)" : "none",
+                    color: activeTab === item.key ? "#2F0D01" : ink,
                     fontWeight: activeTab === item.key ? 700 : 500,
                     fontSize: "16px",
                   }}
