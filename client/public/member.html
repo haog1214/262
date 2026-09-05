@@ -25,23 +25,15 @@
 
     --orange:#ED4D0C;
     --orange-ink:#2F0D01;
-    --yellow:#ffc531;
-    --yellow-ink:#221a00;
-    --cream:#fff3e2;
-    --cream-ink:#1c1a14;
-    --mint:#dbe9d8;
-    --mint-ink:#16261a;
-    --forest:#132417;
-    --forest-ink:#f6f6f2;
-    --coral:#ff8a72;
-    --coral-ink:#2a0f08;
 
-    --good:#39c07c;
-    --good-bg:rgba(57,192,124,.16);
-    --warn:#ffc531;
-    --warn-bg:rgba(255,197,49,.16);
-    --crit:#ff5b4a;
-    --crit-bg:rgba(255,91,74,.16);
+    /* No red/green/yellow anywhere — status colors are the same 3 brand
+       tones: the accent orange for positive/warning, dark ink for critical. */
+    --good:#ED4D0C;
+    --good-bg:#FBE0D2;
+    --warn:#ED4D0C;
+    --warn-bg:#FBE0D2;
+    --crit:#2F0D01;
+    --crit-bg:#E8DDD8;
 
     --shell-shadow: 0 40px 80px -30px rgba(47,13,1,.18), 0 10px 26px -14px rgba(47,13,1,.1);
     --shadow-card: 0 8px 32px rgba(47,13,1,.08);
@@ -53,23 +45,6 @@
     --r-md:12px;
     --r-pill:999px;
     --font-body:'Manrope','Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;
-
-    /* ---- Puzzle-block palette (fixed identity, doesn't invert with theme —
-       same reasoning as a printed sticker sheet: the graphic blocks are a
-       constant brand surface, only the page chrome around them follows theme).
-       Palette: Dare Devil (primary) / Gold / Royal / Electric, with Arctic
-       reserved as a light accent surface and a deep Electric-indigo as ink. ---- */
-    --pz-orange:#ED4D0C;
-    --pz-orange-ink:#2F0D01;
-    --pz-green:#F2BB05;
-    --pz-green-ink:#241A42;
-    --pz-pink:#DBB8FF;
-    --pz-pink-ink:#241A42;
-    --pz-blue:#3939FF;
-    --pz-blue-ink:#ffffff;
-    --pz-line:#241A42;
-    --arctic:#AEE6ED;
-    --arctic-ink:#173238;
   }
   :root[data-theme="dark"]{
     --bg:#0c0a1d;
@@ -239,7 +214,7 @@
   .login-btn-primary{ background:var(--orange); color:var(--orange-ink); flex:1.2; }
   .login-btn-primary:hover{ background:#ff7a49; }
   .login-btn-outline{
-    background:#ffffff; color:#241A42; flex:0.8;
+    background:#ffffff; color:#2F0D01; flex:0.8;
     border:2px solid var(--orange);
   }
   .login-btn-outline:hover{ background:#fdeee6; }
@@ -248,7 +223,7 @@
   .home-hero-date-row{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; }
   .home-hero-date{ font-size:64px; font-weight:300; line-height:1; letter-spacing:-.01em; }
   .home-hero-date .wd{ display:inline-block; white-space:nowrap; font-size:20px; font-weight:400; margin-left:6px; margin-top:16px; vertical-align:middle; }
-  .home-hero-name{ font-size:18px; font-weight:300; color:#0C1115; opacity:.85; margin-top:8px; margin-left:5px; }
+  .home-hero-name{ font-size:18px; font-weight:300; color:#2F0D01; opacity:.85; margin-top:8px; margin-left:5px; }
 
   .avatar-circle{
     width:62px; height:62px; border-radius:50%; flex:none;
@@ -431,9 +406,9 @@
     box-shadow:var(--shadow-card);
   }
   .checkin-qr-box{ width:190px; height:190px; margin:0 auto; }
-  .checkin-qr-box svg{ width:100%; height:100%; color:#14150f; shape-rendering:crispEdges; }
-  .checkin-qr-sub{ font-size:14px; font-weight:800; color:#241A42; margin-top:16px; font-variant-numeric:tabular-nums; }
-  .checkin-qr-hint{ font-size:12px; font-weight:500; color:#8a887c; margin-top:4px; }
+  .checkin-qr-box svg{ width:100%; height:100%; color:#2F0D01; shape-rendering:crispEdges; }
+  .checkin-qr-sub{ font-size:14px; font-weight:800; color:#2F0D01; margin-top:16px; font-variant-numeric:tabular-nums; }
+  .checkin-qr-hint{ font-size:12px; font-weight:500; color:#6E5850; margin-top:4px; }
   .checkin-list-item{
     display:flex; align-items:center; gap:12px;
     background:var(--glass-bg); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
@@ -486,7 +461,7 @@
   }
   .avatar-edit-badge svg{ width:12px; height:12px; }
   .profile-name-row{ display:flex; align-items:center; gap:8px; }
-  .profile-name{ font-size:20px; font-weight:800; color:#0C1115; }
+  .profile-name{ font-size:20px; font-weight:800; color:#2F0D01; }
   .pencil-btn{
     width:26px; height:26px; border-radius:50%; border:none; cursor:pointer;
     background:var(--card); color:var(--text-2); flex:none;

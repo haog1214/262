@@ -8,8 +8,11 @@ export const inkSoft = "#6E5850";
 export const accent = "#ED4D0C";
 export const paper = "#D6DEE0";
 export const line = "#C3CDD0";
-export const danger = "#CF4F39";
-export const good = "#1F8F5C";
+// No red/green/yellow anywhere in the system — "danger" and "good" states are
+// expressed with the same 3 brand tones (dark ink for stop/critical, the
+// accent orange for positive/active), never a separate hue.
+export const danger = ink;
+export const good = accent;
 export const mono = "'SF Mono', ui-monospace, Menlo, Consolas, monospace";
 export const bodyFont = "'Manrope', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif";
 

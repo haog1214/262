@@ -73,9 +73,9 @@ function sessionStatus(sess: HoursSession): { label: string; color: string; bg: 
   const now = new Date();
   const start = new Date(`${sess.session_date}T${sess.start_time}`);
   const end = new Date(`${sess.session_date}T${sess.end_time}`);
-  if (now < start) return { label: "未開始", color: inkSoft, bg: "#EFF0E6" };
-  if (now > end) return { label: "已結束", color: inkSoft, bg: "#EFF0E6" };
-  return { label: "進行中", color: good, bg: "#DFF3E7" };
+  if (now < start) return { label: "未開始", color: inkSoft, bg: "#E4E9EA" };
+  if (now > end) return { label: "已結束", color: inkSoft, bg: "#E4E9EA" };
+  return { label: "進行中", color: good, bg: "#FBE0D2" };
 }
 
 export function DashboardView() {
@@ -117,7 +117,7 @@ export function DashboardView() {
   const inactiveCount = students.length - activeCount;
 
   const miniStat = (icon: React.ReactNode, label: string, value: React.ReactNode) => (
-    <div style={{ background: "#F7F8F2", borderRadius: "12px", padding: "14px", flex: "1 1 45%", minWidth: "140px" }}>
+    <div style={{ background: "#E4E9EA", borderRadius: "12px", padding: "14px", flex: "1 1 45%", minWidth: "140px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "6px", color: inkSoft, fontSize: "12px", marginBottom: "8px" }}>
         {icon} {label}
       </div>
@@ -131,24 +131,24 @@ export function DashboardView() {
 
       <div style={{ display: "flex", gap: "14px", marginBottom: "16px", flexWrap: "wrap" }}>
         <StatCard
-          icon={<BookOpen size={17} strokeWidth={2} />} iconBg="#FFE3D6" iconColor={accent}
+          icon={<BookOpen size={17} strokeWidth={2} />} iconBg="#FBE0D2" iconColor={accent}
           label="今日課程" value={todaySessions.length} unit="場"
-          badge={todaySessions[0] ? `最近一場 ${todaySessions[0].start_time.slice(0, 5)} 開始` : "今天沒有場次"} badgeColor="#F2F3EC"
+          badge={todaySessions[0] ? `最近一場 ${todaySessions[0].start_time.slice(0, 5)} 開始` : "今天沒有場次"} badgeColor="#E4E9EA"
         />
         <StatCard
-          icon={<CheckSquare size={17} strokeWidth={2} />} iconBg="#DFF3E7" iconColor={good}
+          icon={<CheckSquare size={17} strokeWidth={2} />} iconBg="#FBE0D2" iconColor={good}
           label="今日報到人次" value={todayCheckins.length} unit="人次"
-          badge={`${todayCheckins.length >= yesterdayCheckins.length ? "↗" : "↘"} ${Math.abs(todayCheckins.length - yesterdayCheckins.length)} 較昨日同時段`} badgeColor="#DFF3E7"
+          badge={`${todayCheckins.length >= yesterdayCheckins.length ? "↗" : "↘"} ${Math.abs(todayCheckins.length - yesterdayCheckins.length)} 較昨日同時段`} badgeColor="#FBE0D2"
         />
         <StatCard
-          icon={<AlertTriangle size={17} strokeWidth={2} />} iconBg="#F6ECD2" iconColor="#B17F2A"
+          icon={<AlertTriangle size={17} strokeWidth={2} />} iconBg="#FBE0D2" iconColor="#ED4D0C"
           label="時數偏低學員" value={lowCount} unit="位"
-          badge={lowCount > 0 ? `${lowHours.filter(s => Number(s.remaining_hours) <= 0).length} 位已用罄` : "目前都正常"} badgeColor="#F6ECD2"
+          badge={lowCount > 0 ? `${lowHours.filter(s => Number(s.remaining_hours) <= 0).length} 位已用罄` : "目前都正常"} badgeColor="#FBE0D2"
         />
         <StatCard
-          icon={<Clock3 size={17} strokeWidth={2} />} iconBg="#FBE2DB" iconColor={danger}
+          icon={<Clock3 size={17} strokeWidth={2} />} iconBg="#E8DDD8" iconColor={danger}
           label="本月扣除時數" value={fmtHours(monthHours)} unit="小時"
-          badge={`${monthChangePct >= 0 ? "↗" : "↘"} ${Math.abs(monthChangePct)}% 較上月`} badgeColor="#FBE2DB"
+          badge={`${monthChangePct >= 0 ? "↗" : "↘"} ${Math.abs(monthChangePct)}% 較上月`} badgeColor="#E8DDD8"
         />
       </div>
 
@@ -196,7 +196,7 @@ export function DashboardView() {
           {lowHours.length === 0 ? <div style={emptyStyle}>目前沒有時數偏低的學員</div> : lowHours.slice(0, 6).map(s => (
             <div key={s.id} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${line}`, fontSize: "13px" }}>
               <span style={{ color: ink }}>{s.name}</span>
-              <span style={{ color: Number(s.remaining_hours) <= 0 ? danger : "#B17F2A", fontWeight: 700 }}>{fmtHours(s.remaining_hours)} hr</span>
+              <span style={{ color: Number(s.remaining_hours) <= 0 ? danger : "#ED4D0C", fontWeight: 700 }}>{fmtHours(s.remaining_hours)} hr</span>
             </div>
           ))}
         </div>
@@ -217,15 +217,15 @@ export function DashboardView() {
         <div style={{ ...a.card, flex: "1 1 220px", marginBottom: 0 }}>
           <h3 style={{ fontSize: "14px", fontWeight: 700, color: ink, margin: "0 0 12px" }}>學生狀態</h3>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0" }}>
-            <span style={{ padding: "3px 10px", borderRadius: "999px", background: "#DFF3E7", color: good, fontSize: "12px", fontWeight: 700 }}>正常</span>
+            <span style={{ padding: "3px 10px", borderRadius: "999px", background: "#FBE0D2", color: good, fontSize: "12px", fontWeight: 700 }}>正常</span>
             <span style={{ fontWeight: 700, color: ink }}>{activeCount - lowCount} 位</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0" }}>
-            <span style={{ padding: "3px 10px", borderRadius: "999px", background: "#F6ECD2", color: "#B17F2A", fontSize: "12px", fontWeight: 700 }}>時數偏低</span>
+            <span style={{ padding: "3px 10px", borderRadius: "999px", background: "#FBE0D2", color: "#ED4D0C", fontSize: "12px", fontWeight: 700 }}>時數偏低</span>
             <span style={{ fontWeight: 700, color: ink }}>{lowCount} 位</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0" }}>
-            <span style={{ padding: "3px 10px", borderRadius: "999px", background: "#EFF0E6", color: inkSoft, fontSize: "12px", fontWeight: 700 }}>已停用</span>
+            <span style={{ padding: "3px 10px", borderRadius: "999px", background: "#E4E9EA", color: inkSoft, fontSize: "12px", fontWeight: 700 }}>已停用</span>
             <span style={{ fontWeight: 700, color: ink }}>{inactiveCount} 位</span>
           </div>
         </div>
@@ -431,7 +431,7 @@ function StepDots({ step }: { step: 1 | 2 | 3 }) {
             <div style={{
               width: "24px", height: "24px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: "12px", fontWeight: 700,
-              background: step >= s.n ? ink : "#EFF0E6",
+              background: step >= s.n ? ink : "#E4E9EA",
               color: step >= s.n ? "#fff" : inkSoft,
             }}>
               {s.n}
@@ -492,7 +492,7 @@ export function ImportRosterView() {
           <p style={{ fontSize: "13px", color: inkSoft, marginBottom: "16px" }}>
             必要欄位：公司名稱、統一編號、購買時數。統一編號是判斷客戶是否重複的依據——統一編號不存在時新增客戶，統一編號已存在時累加購買時數。
           </p>
-          <div style={{ background: "#F7F8F2", borderRadius: "12px", padding: "16px", marginBottom: "16px" }}>
+          <div style={{ background: "#E4E9EA", borderRadius: "12px", padding: "16px", marginBottom: "16px" }}>
             <div style={{ fontWeight: 700, fontSize: "14px", color: ink }}>學員名單匯入範本</div>
             <div style={{ fontSize: "12px", color: inkSoft, marginTop: "4px" }}>
               公司名稱・統一編號・購買時數・備註（選填）・Email（選填）・課程名稱（選填）・到期日（選填）
@@ -808,9 +808,9 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
         ? "duplicate"
         : "existing";
   const statusMeta = {
-    new: { label: "新增會員", color: good, bg: "#DFF3E7" },
+    new: { label: "新增會員", color: good, bg: "#FBE0D2" },
     existing: { label: "原有會員", color: accent, bg: "#FFF3EC" },
-    duplicate: { label: "重複會員", color: danger, bg: "#FBEAE7" },
+    duplicate: { label: "重複會員", color: danger, bg: "#E8DDD8" },
   } as const;
 
   const runLookup = async () => {
@@ -977,9 +977,9 @@ type ParsedImportRow = {
 };
 type EnrollStatus = "new" | "existing" | "duplicate";
 const ENROLL_STATUS_META: Record<EnrollStatus, { label: string; color: string; bg: string }> = {
-  new: { label: "新增會員", color: good, bg: "#DFF3E7" },
+  new: { label: "新增會員", color: good, bg: "#FBE0D2" },
   existing: { label: "原有會員", color: accent, bg: "#FFF3EC" },
-  duplicate: { label: "重複會員", color: danger, bg: "#FBEAE7" },
+  duplicate: { label: "重複會員", color: danger, bg: "#E8DDD8" },
 };
 
 function ImportStudentsModal({ onClose, onImported }: { onClose: () => void; onImported: () => void }) {
@@ -1303,7 +1303,7 @@ function StudentDetailModal({
   };
 
   const statBoxStyle: React.CSSProperties = {
-    flex: 1, textAlign: "center", background: "#F7F8F2",
+    flex: 1, textAlign: "center", background: "#E4E9EA",
     border: `1px solid ${line}`, borderRadius: "12px", padding: "13px 8px",
   };
   const bigActionBtnStyle: React.CSSProperties = {
@@ -1418,7 +1418,7 @@ function StudentDetailModal({
             <div key={c.id} style={{
               display: "flex", justifyContent: "space-between", alignItems: "center", gap: "9px",
               fontSize: "12px", color: ink, padding: "10px 9px",
-              background: i % 2 === 0 ? "#F7F8F2" : "transparent", borderRadius: "8px",
+              background: i % 2 === 0 ? "#E4E9EA" : "transparent", borderRadius: "8px",
             }}>
               <span style={{ fontWeight: 600 }}>{c.session_name || "課程"}</span>
               <span style={{ flexShrink: 0, color: danger, fontWeight: 700 }}>-{fmtHours(c.hours_deducted)} hr</span>
@@ -1434,7 +1434,7 @@ function StudentDetailModal({
             <div key={x.id} style={{
               display: "flex", justifyContent: "space-between", alignItems: "center", gap: "9px",
               fontSize: "12px", color: ink, padding: "10px 9px",
-              background: i % 2 === 0 ? "#F7F8F2" : "transparent", borderRadius: "8px",
+              background: i % 2 === 0 ? "#E4E9EA" : "transparent", borderRadius: "8px",
             }}>
               <span style={{ fontWeight: 600 }}>{x.reason}</span>
               <span style={{ flexShrink: 0, color: Number(x.amount) >= 0 ? good : danger, fontWeight: 700 }}>
@@ -1462,7 +1462,7 @@ function StudentDetailModal({
         </div>
 
         {showDeleteConfirm && (
-          <div style={{ marginTop: "12px", padding: "14px", borderRadius: "12px", border: `1px solid ${danger}`, background: "#FBEAE7" }}>
+          <div style={{ marginTop: "12px", padding: "14px", borderRadius: "12px", border: `1px solid ${danger}`, background: "#E8DDD8" }}>
             <div style={{ fontSize: "13px", color: ink, marginBottom: "8px" }}>
               此操作無法復原。請輸入此帳號的統編 <b>{student.phone}</b> 以確認刪除：
             </div>
@@ -1581,7 +1581,7 @@ export function AdjustView() {
                 <div style={{
                   width: "22px", height: "22px", borderRadius: "50%", flexShrink: 0, marginTop: "2px",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  background: isAdd ? "#DFF3E7" : "#FBE2DB", color: isAdd ? good : danger, fontWeight: 800, fontSize: "13px",
+                  background: isAdd ? "#FBE0D2" : "#E8DDD8", color: isAdd ? good : danger, fontWeight: 800, fontSize: "13px",
                 }}>
                   {isAdd ? "+" : "−"}
                 </div>

@@ -953,8 +953,8 @@ function EnrollmentView({
           position: "sticky",
           top: 0,
           zIndex: 100,
-          backgroundColor: "#FEF3C7",
-          border: "1px solid #F59E0B",
+          backgroundColor: "#FBE0D2",
+          border: `1px solid ${accent}`,
           borderRadius: "10px",
           padding: "12px 20px",
           marginBottom: "16px",
@@ -963,11 +963,11 @@ function EnrollmentView({
           justifyContent: "space-between",
           gap: "12px",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#92400E", fontWeight: 600 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: ink, fontWeight: 600 }}>
             ⚠️ 有未儲存的變更，請記得儲存
           </div>
           <button
-            style={{ ...s.btnPrimary, backgroundColor: "#D97706", padding: "8px 20px", fontSize: "14px" }}
+            style={{ ...s.btnPrimary, padding: "8px 20px", fontSize: "14px" }}
             onClick={saveCurrentEdit}
           >
             💾 儲存
@@ -997,7 +997,7 @@ function EnrollmentView({
           style={{
             ...s.btnGreen,
             opacity: course.status === "open" ? 1 : 0.4,
-            outline: course.status === "open" ? "3px solid #059669" : "none",
+            outline: course.status === "open" ? "3px solid #ED4D0C" : "none",
           }}
           onClick={() => !togglingStatus && handleToggleStatus("open")}
           disabled={togglingStatus || course.status === "open"}
@@ -1008,7 +1008,7 @@ function EnrollmentView({
           style={{
             ...s.btnDanger,
             opacity: course.status === "full" ? 1 : 0.4,
-            outline: course.status === "full" ? "3px solid #DC2626" : "none",
+            outline: course.status === "full" ? "3px solid #2F0D01" : "none",
           }}
           onClick={() => !togglingStatus && handleToggleStatus("full")}
           disabled={togglingStatus || course.status === "full"}
@@ -1096,8 +1096,8 @@ function EnrollmentView({
                   <td style={s.td}>
                     <button
                       style={{
-                        backgroundColor: isFull ? "#FEE2E2" : "#D1FAE5",
-                        color: isFull ? "#DC2626" : "#065F46",
+                        backgroundColor: isFull ? "#E8DDD8" : "#FBE0D2",
+                        color: isFull ? "#2F0D01" : "#ED4D0C",
                         border: "none",
                         borderRadius: "999px",
                         padding: "5px 12px",
@@ -1566,7 +1566,7 @@ function PreviewModal({ course, onClose }: { course: Course; onClose: () => void
           status={course.status}
         />
         {!course.published && (
-          <p style={{ fontSize: "12px", color: "#DC2626", marginTop: "12px", textAlign: "center" }}>
+          <p style={{ fontSize: "12px", color: "#2F0D01", marginTop: "12px", textAlign: "center" }}>
             此課程目前為「未顯示」狀態，不會出現在首頁
           </p>
         )}
