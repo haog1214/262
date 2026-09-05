@@ -1346,18 +1346,18 @@ function StudentDetailModal({
             <div>
               <div style={{ fontWeight: 800, fontSize: "20px", color: ink, lineHeight: 1.3 }}>{student.name}</div>
               <div style={{ fontSize: "13px", color: inkSoft, marginTop: "3px" }}>統編 {student.phone}</div>
-              <div style={{ marginTop: "6px", display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+              <div style={{ marginTop: "7px", display: "flex", alignItems: "center", gap: "7px", flexWrap: "wrap" }}>
                 {myPlanNames.length > 0 ? (
                   myPlanNames.map((n, i) => (
-                    <span key={i} style={{ fontSize: "11px", fontWeight: 700, color: accent, background: "#FFF3EC", padding: "3px 10px", borderRadius: "999px" }}>
+                    <span key={i} style={{ fontSize: "12.5px", fontWeight: 700, color: accent, background: "#FFF3EC", padding: "3.5px 11.5px", borderRadius: "999px" }}>
                       {n}
                     </span>
                   ))
                 ) : (
-                  <span style={{ fontSize: "12px", color: inkSoft }}>尚未設定專案</span>
+                  <span style={{ fontSize: "14px", color: inkSoft }}>尚未設定專案</span>
                 )}
                 <select
-                  style={{ fontSize: "11px", border: `1px solid ${line}`, borderRadius: "999px", padding: "3px 8px", color: inkSoft, background: "#fff" }}
+                  style={{ fontSize: "12.5px", border: `1px solid ${line}`, borderRadius: "999px", padding: "3.5px 9px", color: inkSoft, background: "#fff" }}
                   value={tagPlanId}
                   onChange={e => setTagPlanId(e.target.value)}
                   disabled={tagging}
@@ -1368,7 +1368,7 @@ function StudentDetailModal({
                   ))}
                 </select>
                 {tagPlanId && (
-                  <button style={{ ...a.btnGhost, fontSize: "11px", padding: "3px 10px" }} onClick={addTag} disabled={tagging}>
+                  <button style={{ ...a.btnGhost, fontSize: "12.5px", padding: "3.5px 11.5px" }} onClick={addTag} disabled={tagging}>
                     {tagging ? "處理中..." : "確認"}
                   </button>
                 )}
