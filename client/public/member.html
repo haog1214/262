@@ -1193,6 +1193,22 @@
   function fmtPhoneDisplay(digits){
     return digits || '';
   }
+  function isValidTaxId(id){
+    if (!/^\d{8}$/.test(id)) return false;
+    const weights = [1, 2, 1, 2, 1, 2, 4, 1];
+    let sum = 0;
+    for (let i = 0; i < 8; i++) {
+      const mul = Number(id[i]) * weights[i];
+      sum += Math.floor(mul / 10) + (mul % 10);
+    }
+    if (sum % 10 === 0) return true;
+    return id[6] === '7' && (sum + 1) % 10 === 0;
+  }
+  function isValidLoginId(id){
+    if (id.length === 8) return isValidTaxId(id);
+    if (id.length === 10) return true;
+    return false;
+  }
   function fmtHours(n){
     let s = Number(n || 0).toFixed(2);
     s = s.replace(/0+$/, '').replace(/\.$/, '');
@@ -1286,6 +1302,13 @@
   loginContinueBtn.addEventListener('click', async () => {
     const phone = normPhone(loginPhoneInput.value);
     if (phone.length !== 8 && phone.length !== 10) {
+      loginPhoneErr.textContent = '請輸入正確的統一編號（8碼）或手機號碼（10碼）';
+      loginPhoneErr.classList.add('show');
+      loginPhoneInput.focus();
+      return;
+    }
+    if (!isValidLoginId(phone)) {
+      loginPhoneErr.textContent = '統一編號檢查碼錯誤，請確認輸入是否正確';
       loginPhoneErr.classList.add('show');
       loginPhoneInput.focus();
       return;
@@ -1320,6 +1343,13 @@
   document.getElementById('login-register-btn').addEventListener('click', () => {
     const phone = normPhone(loginPhoneInput.value);
     if (phone.length !== 8 && phone.length !== 10) {
+      loginPhoneErr.textContent = '請輸入正確的統一編號（8碼）或手機號碼（10碼）';
+      loginPhoneErr.classList.add('show');
+      loginPhoneInput.focus();
+      return;
+    }
+    if (!isValidLoginId(phone)) {
+      loginPhoneErr.textContent = '統一編號檢查碼錯誤，請確認輸入是否正確';
       loginPhoneErr.classList.add('show');
       loginPhoneInput.focus();
       return;
