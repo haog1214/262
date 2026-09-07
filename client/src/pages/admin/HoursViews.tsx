@@ -717,9 +717,9 @@ export function StudentsView() {
         </div>
       </div>
       <div style={a.card}>
-        <input style={{ ...a.input, maxWidth: "280px" }} placeholder="搜尋名稱或統編..." value={q} onChange={e => setQ(e.target.value)} />
+        <input style={{ ...a.input, maxWidth: "280px" }} placeholder="搜尋名稱或統編/手機..." value={q} onChange={e => setQ(e.target.value)} />
         <table style={a.table}>
-          <thead><tr><th style={a.th}>名稱</th><th style={a.th}>統編</th><th style={a.th}>剩餘時數</th><th style={a.th}>狀態</th><th style={a.th}></th></tr></thead>
+          <thead><tr><th style={a.th}>名稱</th><th style={a.th}>統編/手機</th><th style={a.th}>剩餘時數</th><th style={a.th}>狀態</th><th style={a.th}></th></tr></thead>
           <tbody>
             {sorted.map(s => (
               <tr key={s.id}>
@@ -798,7 +798,7 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
   }, []);
   const selectedPlan = plans.find(p => p.id === planId) ?? null;
 
-  const validTaxId = /^\d{8}$/.test(taxId.trim());
+  const validTaxId = /^\d{8}$|^\d{10}$/.test(taxId.trim());
   const matchedStudent = validTaxId ? students.find(s => s.phone === taxId.trim()) ?? null : null;
   const enrollStatus: "new" | "existing" | "duplicate" | null = !validTaxId
     ? null
@@ -815,8 +815,12 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
 
   const runLookup = async () => {
     const id = taxId.trim();
+    if (/^\d{10}$/.test(id)) {
+      setLookupErr("手機號碼無法查詢公司登記資料，請手動輸入名稱等資訊");
+      return;
+    }
     if (!/^\d{8}$/.test(id)) {
-      setLookupErr("統一編號需為 8 碼數字");
+      setLookupErr("請輸入 8 碼統一編號，或 10 碼手機號碼");
       return;
     }
     setLooking(true);
@@ -881,14 +885,14 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
           </button>
         </div>
 
-        <label style={a.label}>統一編號</label>
+        <label style={a.label}>統一編號/手機號碼</label>
         <div style={{ display: "flex", gap: "8px", marginBottom: "4px" }}>
           <input
             style={{ ...a.input, marginBottom: 0, flex: 1 }}
-            placeholder="請輸入 8 碼統編"
+            placeholder="請輸入 8 碼統編或 10 碼手機號碼"
             value={taxId}
             onChange={e => { setTaxId(e.target.value); setFound(false); }}
-            maxLength={8}
+            maxLength={10}
           />
           <button style={{ ...a.btnGhost, flexShrink: 0 }} onClick={runLookup} disabled={looking}>
             {looking ? "查詢中..." : "查詢"}
@@ -905,12 +909,12 @@ function AddStudentModal({ onClose, onCreated }: { onClose: () => void; onCreate
         </div>
         {enrollStatus === "duplicate" && (
           <div style={{ fontSize: "12px", color: danger, marginBottom: "10px" }}>
-            此統編已加入所選專案，無法重複新增
+            此統編/手機號碼已加入所選專案，無法重複新增
           </div>
         )}
         {enrollStatus === "existing" && (
           <div style={{ fontSize: "12px", color: accent, marginBottom: "10px" }}>
-            此統編已是既有學員，送出後會把此專案加到該學員底下並加總時數
+            此統編/手機號碼已是既有學員，送出後會把此專案加到該學員底下並加總時數
           </div>
         )}
         {lookupErr && <div style={{ fontSize: "12px", color: danger, marginBottom: "10px" }}>{lookupErr}</div>}
@@ -1014,7 +1018,7 @@ function ImportStudentsModal({ onClose, onImported }: { onClose: () => void; onI
 
   const downloadTemplate = () => {
     const ws = XLSX.utils.aoa_to_sheet([
-      ["統一編號", "公司名稱", "負責人姓名", "聯絡人", "聯絡電話", "登記地址", "專案名稱"],
+      ["統一編號/手機號碼", "公司名稱", "負責人姓名", "聯絡人", "聯絡電話", "登記地址", "專案名稱"],
       ["12345678", "範例股份有限公司", "王小明", "李小華", "0912345678", "台中市西屯區某路1號", "新生方案"],
     ]);
     ws["!cols"] = [{ wch: 12 }, { wch: 22 }, { wch: 12 }, { wch: 12 }, { wch: 14 }, { wch: 28 }, { wch: 14 }];
@@ -1034,7 +1038,7 @@ function ImportStudentsModal({ onClose, onImported }: { onClose: () => void; onI
         const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
         const parsed: ParsedImportRow[] = json
           .map(r => ({
-            taxId: String(r["統一編號"] ?? "").trim(),
+            taxId: String(r["統一編號/手機號碼"] ?? r["統一編號"] ?? "").trim(),
             name: String(r["公司名稱"] ?? "").trim(),
             representative: String(r["負責人姓名"] ?? "").trim(),
             contactPerson: String(r["聯絡人"] ?? "").trim(),
@@ -1130,7 +1134,7 @@ function ImportStudentsModal({ onClose, onImported }: { onClose: () => void; onI
         {step === 1 && (
           <>
             <p style={{ fontSize: "13px", color: inkSoft, marginBottom: "18px" }}>
-              先下載範本填好資料，再上傳同一個檔案。欄位：統一編號（必填）、公司名稱、負責人姓名、聯絡人、聯絡電話、登記地址、專案名稱。
+              先下載範本填好資料，再上傳同一個檔案。欄位：統一編號/手機號碼（必填，8碼或10碼）、公司名稱、負責人姓名、聯絡人、聯絡電話、登記地址、專案名稱。
             </p>
             <div style={{ display: "flex", gap: "10px" }}>
               <button
@@ -1168,7 +1172,7 @@ function ImportStudentsModal({ onClose, onImported }: { onClose: () => void; onI
 
             {inFileDupCount > 0 && (
               <div style={{ fontSize: "12px", color: danger, marginBottom: "10px" }}>
-                檔案內有 {inFileDupCount} 組統一編號重複出現，請確認資料是否正確（重複列已標示）
+                檔案內有 {inFileDupCount} 組統一編號/手機號碼重複出現，請確認資料是否正確（重複列已標示）
               </div>
             )}
             <p style={{ fontSize: "13px", color: inkSoft, marginBottom: "12px" }}>
@@ -1181,7 +1185,7 @@ function ImportStudentsModal({ onClose, onImported }: { onClose: () => void; onI
               <table style={a.table}>
                 <thead>
                   <tr>
-                    <th style={a.th}>統一編號</th><th style={a.th}>公司名稱</th>
+                    <th style={a.th}>統一編號/手機號碼</th><th style={a.th}>公司名稱</th>
                     <th style={a.th}>狀態</th><th style={a.th}></th>
                   </tr>
                 </thead>
@@ -1345,7 +1349,7 @@ function StudentDetailModal({
           ) : (
             <div>
               <div style={{ fontWeight: 800, fontSize: "20px", color: ink, lineHeight: 1.3 }}>{student.name}</div>
-              <div style={{ fontSize: "13px", color: inkSoft, marginTop: "3px" }}>統編 {student.phone}</div>
+              <div style={{ fontSize: "13px", color: inkSoft, marginTop: "3px" }}>統編/手機 {student.phone}</div>
               <div style={{ marginTop: "7px", display: "flex", alignItems: "center", gap: "7px", flexWrap: "wrap" }}>
                 {myPlanNames.length > 0 ? (
                   myPlanNames.map((n, i) => (
@@ -1464,13 +1468,13 @@ function StudentDetailModal({
         {showDeleteConfirm && (
           <div style={{ marginTop: "12px", padding: "14px", borderRadius: "12px", border: `1px solid ${danger}`, background: "#E8DDD8" }}>
             <div style={{ fontSize: "13px", color: ink, marginBottom: "8px" }}>
-              此操作無法復原。請輸入此帳號的統編 <b>{student.phone}</b> 以確認刪除：
+              此操作無法復原。請輸入此帳號的統編/手機號碼 <b>{student.phone}</b> 以確認刪除：
             </div>
             <input
               style={{ ...a.input, marginBottom: "8px" }}
               value={deleteInput}
               onChange={e => setDeleteInput(e.target.value)}
-              placeholder="請輸入統編"
+              placeholder="請輸入統編/手機號碼"
             />
             {deleteErr && <div style={{ fontSize: "12px", color: danger, marginBottom: "8px" }}>{deleteErr}</div>}
             <button

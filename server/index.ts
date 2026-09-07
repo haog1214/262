@@ -525,7 +525,7 @@ async function startServer() {
 
         for (const row of rows) {
           const taxId = String(row.taxId ?? "").trim();
-          if (!/^\d{8}$/.test(taxId)) { skipped++; results.push({ taxId, status: "invalid" }); continue; }
+          if (!/^\d{8}$|^\d{10}$/.test(taxId)) { skipped++; results.push({ taxId, status: "invalid" }); continue; }
 
           let student = students.find(s => s.phone === taxId);
           if (!student) {
