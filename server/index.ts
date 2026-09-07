@@ -53,6 +53,22 @@ function deriveSessionFromSchedule(course: Course, sch: Schedule): HoursSession 
   };
 }
 
+// Rebuilds hours_sessions from every published course's schedules. Called
+// both by the manual "同步真實課程" admin button and automatically after any
+// course/schedule write, so newly added or edited courses show up for
+// students (學員專區「課程」頁) without someone remembering to click sync.
+async function syncSessionsFromCourses(): Promise<number> {
+  const [coursesConfig, schedules] = await Promise.all([readCoursesFromSheet(), readSchedulesFromSheet()]);
+  const coursesById = new Map(coursesConfig.courses.map(c => [String(c.id), c]));
+
+  const sessions = schedules
+    .filter(sch => coursesById.get(sch.courseId)?.published === true)
+    .map(sch => deriveSessionFromSchedule(coursesById.get(sch.courseId)!, sch));
+
+  await hours.withHoursLock(() => hours.writeSessions(sessions));
+  return sessions.length;
+}
+
 async function startServer() {
   const app = express();
   const server = createServer(app);
@@ -81,6 +97,9 @@ async function startServer() {
     try {
       await writeCoursesToSheet(req.body);
       res.json({ ok: true });
+      // Best-effort — a course's published/title/code change shouldn't be
+      // blocked by the sessions sync, but should still show up for students.
+      syncSessionsFromCourses().catch(err => console.error("Auto sync sessions (courses) failed:", err));
     } catch (err) {
       console.error("POST /api/courses error:", err);
       res.status(500).json({ error: "Failed to write courses" });
@@ -137,6 +156,8 @@ async function startServer() {
     try {
       await writeSchedulesToSheet(req.body);
       res.json({ ok: true });
+      // Best-effort, same reasoning as the /api/courses hook above.
+      syncSessionsFromCourses().catch(err => console.error("Auto sync sessions (schedules) failed:", err));
     } catch (err) {
       console.error("POST /api/schedules error:", err);
       res.status(500).json({ error: "Failed to write schedules" });
@@ -973,15 +994,8 @@ async function startServer() {
   app.post("/api/hours/sessions/sync-from-courses", async (req, res) => {
     if (!requireHoursAdmin(req, res)) return;
     try {
-      const [coursesConfig, schedules] = await Promise.all([readCoursesFromSheet(), readSchedulesFromSheet()]);
-      const coursesById = new Map(coursesConfig.courses.map(c => [String(c.id), c]));
-
-      const sessions = schedules
-        .filter(sch => coursesById.get(sch.courseId)?.published === true)
-        .map(sch => deriveSessionFromSchedule(coursesById.get(sch.courseId)!, sch));
-
-      await hours.withHoursLock(() => hours.writeSessions(sessions));
-      res.json({ ok: true, count: sessions.length });
+      const count = await syncSessionsFromCourses();
+      res.json({ ok: true, count });
     } catch (err) {
       res.status(500).json({ error: "Sync failed", detail: String(err) });
     }
