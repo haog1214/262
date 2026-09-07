@@ -332,6 +332,14 @@ export default function EnrollPage() {
                 <div className="space-y-5">
                   <div>
                     <label className="block text-[14px] font-medium text-gray-700 mb-1.5">
+                      公司 / 職稱 <span className="text-gray-400 font-normal">（選填）</span>
+                    </label>
+                    <input type="text" placeholder="例：自由工作者、OO 公司行銷專員" value={form.company}
+                      onChange={(e) => handleChange("company", e.target.value)} className={inputClass("company")} />
+                  </div>
+
+                  <div>
+                    <label className="block text-[14px] font-medium text-gray-700 mb-1.5">
                       姓名 <span className="text-red-500">*</span>
                     </label>
                     <input type="text" placeholder="請輸入真實姓名" value={form.name}
@@ -356,14 +364,6 @@ export default function EnrollPage() {
                         onChange={(e) => handleChange("email", e.target.value)} className={inputClass("email")} />
                       {errors.email && <p className="text-red-500 text-[12px] mt-1">{errors.email}</p>}
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[14px] font-medium text-gray-700 mb-1.5">
-                      公司 / 職稱 <span className="text-gray-400 font-normal">（選填）</span>
-                    </label>
-                    <input type="text" placeholder="例：自由工作者、OO 公司行銷專員" value={form.company}
-                      onChange={(e) => handleChange("company", e.target.value)} className={inputClass("company")} />
                   </div>
 
                   <div>
