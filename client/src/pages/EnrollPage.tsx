@@ -103,7 +103,7 @@ export default function EnrollPage() {
         .filter((c) => c.published !== false && !STATIC_DETAIL_PATHS.has(c.detailPath))
         .map((c) => ({
           id: String(c.id),
-          label: `${c.title}${c.badge ? `（${c.badge}）` : ""}`,
+          label: `${c.courseCode ? `${c.courseCode} ` : ""}${c.title}${c.badge ? `（${c.badge}）` : ""}`,
           image: c.backgroundImage,
           sessions: buildSessions(c.id, schedules, enrollments),
         }));
