@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getCoursesConfig } from "@/lib/coursesStorage";
 import { fetchSchedules, fetchEnrollments, type Schedule, type Enrollment } from "@/lib/enrollmentsStorage";
+import { formatPrice } from "@/lib/utils";
 
 interface EnrollSession {
   id: string;
@@ -21,6 +22,39 @@ interface EnrollCourse {
   label: string;
   image: string;
   sessions: EnrollSession[];
+  originalPrice: string;
+  discountPrice: string;
+}
+
+const MEMBER_SESSION_KEY = "student_portal_session";
+
+interface MemberInfo {
+  is_active: boolean;
+  purchased_hours: number;
+}
+
+async function fetchMember(): Promise<MemberInfo | null> {
+  let phone = "";
+  try {
+    const raw = localStorage.getItem(MEMBER_SESSION_KEY);
+    phone = raw ? JSON.parse(raw)?.phone ?? "" : "";
+  } catch {
+    return null;
+  }
+  if (!phone) return null;
+  try {
+    const res = await fetch(`/api/hours/students/by-phone/${encodeURIComponent(phone)}`);
+    const data = await res.json();
+    return data?.student ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// A verified member is someone with an actual purchase history (imported/paid), not
+// just anyone who has self-registered a phone number on the member portal.
+function isEligibleMember(m: MemberInfo | null): boolean {
+  return !!m && m.is_active && Number(m.purchased_hours) > 0;
 }
 
 // The 5 hand-built course detail pages link here with these slugs; each maps
@@ -66,6 +100,8 @@ const initialCourses: EnrollCourse[] = Object.entries(STATIC_META).map(([slug, m
   label: meta.label,
   image: meta.image,
   sessions: [NO_SESSION_PLACEHOLDER],
+  originalPrice: "",
+  discountPrice: "",
 }));
 
 const referralOptions = [
@@ -90,15 +126,26 @@ export default function EnrollPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [member, setMember] = useState<MemberInfo | null>(null);
+  const isMember = isEligibleMember(member);
+
+  useEffect(() => {
+    fetchMember().then(setMember);
+  }, []);
 
   useEffect(() => {
     Promise.all([getCoursesConfig(), fetchSchedules(), fetchEnrollments()]).then(([config, schedules, enrollments]) => {
-      const staticBuilt: EnrollCourse[] = Object.entries(STATIC_META).map(([slug, meta]) => ({
-        id: slug,
-        label: meta.label,
-        image: meta.image,
-        sessions: buildSessions(meta.courseId, schedules, enrollments),
-      }));
+      const staticBuilt: EnrollCourse[] = Object.entries(STATIC_META).map(([slug, meta]) => {
+        const matched = config.courses.find((c) => c.id === meta.courseId);
+        return {
+          id: slug,
+          label: meta.label,
+          image: meta.image,
+          sessions: buildSessions(meta.courseId, schedules, enrollments),
+          originalPrice: matched?.originalPrice ?? "",
+          discountPrice: matched?.discountPrice ?? "",
+        };
+      });
       const dynamicBuilt: EnrollCourse[] = config.courses
         .filter((c) => c.published !== false && !STATIC_DETAIL_PATHS.has(c.detailPath))
         .map((c) => ({
@@ -106,6 +153,8 @@ export default function EnrollPage() {
           label: `${c.courseCode ? `${c.courseCode} ` : ""}${c.title}${c.badge ? `（${c.badge}）` : ""}`,
           image: c.backgroundImage,
           sessions: buildSessions(c.id, schedules, enrollments),
+          originalPrice: c.originalPrice,
+          discountPrice: c.discountPrice,
         }));
       setCourses([...staticBuilt, ...dynamicBuilt]);
     });
@@ -170,6 +219,8 @@ export default function EnrollPage() {
       referral: form.referral,
       transfer: form.transfer,
       note: form.note,
+      priceType: isMember ? "會員優惠價" : "原價",
+      price: isMember ? currentCourse.discountPrice : currentCourse.originalPrice,
     };
     try {
       await fetch(SHEET_URL, {
@@ -259,6 +310,31 @@ export default function EnrollPage() {
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
+
+                {/* 2.5 價格 */}
+                {(currentCourse.originalPrice || currentCourse.discountPrice) && (
+                  <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                    <h2 className="font-bold text-[15px] text-gray-900 mb-3">報名費用</h2>
+                    {isMember ? (
+                      <div className="flex items-center gap-3">
+                        {currentCourse.originalPrice && (
+                          <span className="text-[14px] text-gray-400 line-through">{formatPrice(currentCourse.originalPrice)}</span>
+                        )}
+                        <span className="text-[20px] font-bold" style={{ color: "#1B3A6B" }}>{formatPrice(currentCourse.discountPrice)}</span>
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#D4AF37", color: "#1B3A6B" }}>會員優惠價</span>
+                      </div>
+                    ) : (
+                      <div>
+                        <span className="text-[20px] font-bold text-gray-900">{formatPrice(currentCourse.originalPrice)}</span>
+                        <p className="text-[12px] text-gray-400 mt-1.5">
+                          會員享優惠價，請先至
+                          <a href="/member.html" className="mx-1 underline" style={{ color: "#1B3A6B" }}>學員登入</a>
+                          驗證身分
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* 3. 場次選擇 */}
                 <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
