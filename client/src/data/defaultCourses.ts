@@ -8,6 +8,7 @@ export interface Course {
   tools: string;
   originalPrice: string;
   discountPrice: string;
+  memberOnly?: boolean;
   badge: string;
   badgeColor: BadgeColor;
   location?: string;

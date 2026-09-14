@@ -72,6 +72,7 @@ function emptyCourseDraft(): Omit<Course, "id"> {
     tools: "",
     originalPrice: "NT$ 0",
     discountPrice: "2000",
+    memberOnly: false,
     badge: "",
     badgeColor: "pink",
     location: "台中市西屯區河南路二段262號7F-3",
@@ -577,6 +578,14 @@ function CourseForm({
         <div>
           <label style={s.label}>優惠價</label>
           <input style={s.input} value={draft.discountPrice} onChange={e => set("discountPrice", e.target.value)} placeholder="NT$ 2,000" />
+          <label style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "8px", fontSize: "13px", color: inkSoft, cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              checked={!!draft.memberOnly}
+              onChange={e => setDraft(d => ({ ...d, memberOnly: e.target.checked }))}
+            />
+            會員（優惠價僅開放已驗證會員，需登入學員專區選課）
+          </label>
         </div>
         <div>
           <label style={s.label}>上課地點</label>

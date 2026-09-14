@@ -1526,6 +1526,30 @@
     renderCourses();
     renderCheckinQr();
     renderProfile();
+    handleDeepLinkEnroll();
+  }
+
+  // Supports "立即報名" links from a course detail page (?enroll=<sessionId>) that
+  // jump straight into this course's 確認加入選課 modal once the member is logged
+  // in — login itself is already gated by view-login staying up until enterApp()
+  // runs, so a non-member simply lands on the login screen first.
+  function handleDeepLinkEnroll(){
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('enroll');
+    if (!sessionId) return;
+    history.replaceState(null, '', window.location.pathname);
+    const registeredIds = new Set(myRegistrations.map(r => r.id));
+    const s = upcomingSessions.find(x => x.id === sessionId);
+    if (!s || isSessionExpired(s) || !s.is_open || registeredIds.has(sessionId)) {
+      showToast(!s ? '找不到這堂課程場次' : (registeredIds.has(sessionId) ? '你已選過這堂課' : '這堂課目前無法選課'));
+      goTo('courses');
+      return;
+    }
+    selectedSessions.clear();
+    selectedSessions.set(sessionId, 1);
+    goTo('courses');
+    renderCourses();
+    openEnrollConfirm();
   }
 
   async function loadRegistrations(){

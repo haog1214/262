@@ -64,7 +64,9 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
     );
   }
 
-  const enrollHref = `/enroll?course=${course.id}${selectedSessionId ? `&session=${selectedSessionId}` : ""}`;
+  const enrollHref = course.memberOnly
+    ? (selectedSessionId ? `/member.html?enroll=course-${course.id}-${selectedSessionId}` : "/member.html")
+    : `/enroll?course=${course.id}${selectedSessionId ? `&session=${selectedSessionId}` : ""}`;
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -139,7 +141,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
                   )}
                   <div className="hidden md:block flex-shrink-0" style={{ marginLeft: schedules.length > 0 ? "40px" : 0 }}>
                     {course.discountPrice && (
-                      <p className="text-3xl font-bold text-gray-900"><span style={{ fontSize: "18px" }}>NT：</span>{extractPriceDigits(course.discountPrice)}</p>
+                      <p className="text-3xl font-bold text-gray-900"><span style={{ fontSize: "18px" }}>NT：</span>{course.memberOnly ? "會員" : extractPriceDigits(course.discountPrice)}</p>
                     )}
                     <a
                       href={enrollHref}
@@ -249,7 +251,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
         >
           <div className="flex items-center justify-center" style={{ gap: "20px" }}>
             <p className="text-2xl font-bold text-gray-900">
-              <span style={{ fontSize: "14px" }}>NT：</span>{extractPriceDigits(course.discountPrice)}
+              <span style={{ fontSize: "14px" }}>NT：</span>{course.memberOnly ? "會員" : extractPriceDigits(course.discountPrice)}
             </p>
             <a
               href={enrollHref}
