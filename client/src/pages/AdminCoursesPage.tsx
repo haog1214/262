@@ -1768,11 +1768,25 @@ function CourseRow({
   );
 }
 
+// Reads the "#edit-<id>" / "#enrollment-<id>" hash so a browser refresh lands
+// back on the same view instead of being bounced to the course list.
+function parseHash(hash: string): { view: "list" | "edit" | "enrollment"; editingId: number | "new" | null; enrollCourseId: number | null } {
+  if (hash.startsWith("#edit-")) {
+    const raw = hash.replace("#edit-", "");
+    return { view: "edit", editingId: raw === "new" ? "new" : Number(raw), enrollCourseId: null };
+  }
+  if (hash.startsWith("#enrollment-")) {
+    return { view: "enrollment", editingId: null, enrollCourseId: Number(hash.replace("#enrollment-", "")) };
+  }
+  return { view: "list", editingId: null, enrollCourseId: null };
+}
+
 export default function AdminCoursesPage() {
-  const [view, setView] = useState<"list" | "edit" | "enrollment">("list");
+  const initialHashState = parseHash(window.location.hash);
+  const [view, setView] = useState<"list" | "edit" | "enrollment">(initialHashState.view);
   const [config, setConfig] = useState<CoursesConfig>(getLocalCoursesConfig);
-  const [editingId, setEditingId] = useState<number | "new" | null>(null);
-  const [enrollCourseId, setEnrollCourseId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | "new" | null>(initialHashState.editingId);
+  const [enrollCourseId, setEnrollCourseId] = useState<number | null>(initialHashState.enrollCourseId);
   const [previewCourseId, setPreviewCourseId] = useState<number | null>(null);
   type SidebarView = "courses" | "closed" | "ci-dashboard" | "ci-sessions" | "ci-import" | "ci-checkins" | "ci-plans" | "ci-students" | "ci-adjust" | "ci-selfquery";
   const [activeTab, setActiveTab] = useState<SidebarView>(() => {
@@ -1794,8 +1808,18 @@ export default function AdminCoursesPage() {
 
   // Sync view with browser hash navigation
   useEffect(() => {
-    // Clear any leftover hash on mount, set to #list
-    window.history.replaceState(null, "", window.location.pathname + "#list");
+    // Normalize a missing/unrecognized hash to #list, but otherwise leave the
+    // hash alone so refreshing on #edit-x / #enrollment-x stays put instead of
+    // bouncing back to the list.
+    if (!window.location.hash) {
+      window.history.replaceState(null, "", window.location.pathname + "#list");
+    }
+    if (initialHashState.view === "enrollment" && initialHashState.enrollCourseId != null) {
+      Promise.all([fetchSchedules(), fetchEnrollments()]).then(([schedData, enrollData]) => {
+        setAllSchedules(schedData);
+        setAllEnrollments(enrollData);
+      });
+    }
 
     const handleHashChange = () => {
       const hash = window.location.hash;
@@ -1819,6 +1843,7 @@ export default function AdminCoursesPage() {
       // Clean up hash when leaving admin
       window.history.replaceState(null, "", window.location.pathname);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
