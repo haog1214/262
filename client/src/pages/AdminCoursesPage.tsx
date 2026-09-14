@@ -579,7 +579,7 @@ function CourseForm({
           <label style={s.label}>優惠價</label>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <input style={{ ...s.input, marginBottom: 0 }} value={draft.discountPrice} onChange={e => set("discountPrice", e.target.value)} placeholder="NT$ 2,000" />
-            <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: inkSoft, cursor: "pointer", whiteSpace: "nowrap" }} title="優惠價僅開放已驗證會員，需登入學員專區選課">
+            <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "20px", color: inkSoft, cursor: "pointer", whiteSpace: "nowrap" }} title="優惠價僅開放已驗證會員，需登入學員專區選課">
               <input
                 type="checkbox"
                 checked={!!draft.memberOnly}
